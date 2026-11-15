@@ -1,0 +1,254 @@
+[
+  {
+    "screen": "pro",
+    "sidebar": {
+      "x": 0,
+      "y": 0,
+      "width": 248,
+      "height": 1035
+    },
+    "loans": {
+      "x": 296,
+      "y": 94,
+      "width": 1096,
+      "height": 293
+    },
+    "repayment": {
+      "x": 296,
+      "y": 411,
+      "width": 614.65625,
+      "height": 384
+    },
+    "risk": {
+      "x": 934.65625,
+      "y": 411,
+      "width": 457.34375,
+      "height": 384
+    },
+    "report": {
+      "x": 296,
+      "y": 819,
+      "width": 1096,
+      "height": 108
+    },
+    "rows": 2,
+    "assets": [
+      {
+        "slot": "sidebar-logo",
+        "loaded": true,
+        "width": 38,
+        "height": 20
+      },
+      {
+        "slot": "pace-badge steady",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "slot": "pace-badge slow",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      }
+    ],
+    "overflow": false,
+    "font": true
+  },
+  {
+    "screen": "free",
+    "sidebar": {
+      "x": 0,
+      "y": 0,
+      "width": 248,
+      "height": 1047
+    },
+    "loans": {
+      "x": 296,
+      "y": 94,
+      "width": 1096,
+      "height": 293
+    },
+    "repayment": {
+      "x": 296,
+      "y": 411,
+      "width": 614.65625,
+      "height": 396
+    },
+    "risk": {
+      "x": 934.65625,
+      "y": 411,
+      "width": 457.34375,
+      "height": 396
+    },
+    "report": {
+      "x": 296,
+      "y": 831,
+      "width": 1096,
+      "height": 108
+    },
+    "rows": 2,
+    "assets": [
+      {
+        "slot": "sidebar-logo",
+        "loaded": true,
+        "width": 38,
+        "height": 20
+      },
+      {
+        "slot": "pace-badge steady",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "slot": "pace-badge slow",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "slot": "lock-circle",
+        "loaded": true,
+        "width": 20,
+        "height": 20
+      }
+    ],
+    "overflow": false,
+    "font": true,
+    "upgrade": true
+  },
+  {
+    "screen": "seven-loans",
+    "sidebar": {
+      "x": 0,
+      "y": 0,
+      "width": 248,
+      "height": 1163
+    },
+    "loans": {
+      "x": 296,
+      "y": 94,
+      "width": 1096,
+      "height": 421
+    },
+    "repayment": {
+      "x": 296,
+      "y": 539,
+      "width": 614.65625,
+      "height": 384
+    },
+    "risk": {
+      "x": 934.65625,
+      "y": 539,
+      "width": 457.34375,
+      "height": 384
+    },
+    "report": {
+      "x": 296,
+      "y": 947,
+      "width": 1096,
+      "height": 108
+    },
+    "rows": 4,
+    "assets": [
+      {
+        "slot": "sidebar-logo",
+        "loaded": true,
+        "width": 38,
+        "height": 20
+      },
+      {
+        "slot": "pace-badge ahead",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "slot": "pace-badge steady",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      }
+    ],
+    "overflow": false,
+    "font": true
+  },
+  {
+    "screen": "rate-change",
+    "sidebar": {
+      "x": 0,
+      "y": 0,
+      "width": 248,
+      "height": 1123
+    },
+    "loans": {
+      "x": 296,
+      "y": 182,
+      "width": 1096,
+      "height": 293
+    },
+    "repayment": {
+      "x": 296,
+      "y": 499,
+      "width": 614.65625,
+      "height": 384
+    },
+    "risk": {
+      "x": 934.65625,
+      "y": 499,
+      "width": 457.34375,
+      "height": 384
+    },
+    "report": {
+      "x": 296,
+      "y": 907,
+      "width": 1096,
+      "height": 108
+    },
+    "rows": 2,
+    "assets": [
+      {
+        "slot": "sidebar-logo",
+        "loaded": true,
+        "width": 38,
+        "height": 20
+      },
+      {
+        "slot": "rate-banner",
+        "loaded": true,
+        "width": 20,
+        "height": 20
+      },
+      {
+        "slot": "icon-button",
+        "loaded": true,
+        "width": 16,
+        "height": 16
+      },
+      {
+        "slot": "pace-badge steady",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "slot": "pace-badge slow",
+        "loaded": true,
+        "width": 6,
+        "height": 6
+      }
+    ],
+    "overflow": false,
+    "font": true,
+    "dismissed": true
+  },
+  {
+    "width": 1024,
+    "overflow": false
+  },
+  {
+    "width": 390,
+    "overflow": false
+  }
+]

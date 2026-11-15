@@ -1,0 +1,19 @@
+.data-chart-scroll { max-width: 100%; overflow-x: auto; }
+.data-bar-chart {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+  overflow: visible;
+  font-family: inherit;
+  .data-chart-grid { stroke: var(--divider, #e6f2ff); stroke-width: 1; }
+  .data-chart-axis { fill: var(--tertiary, #7b94a9); font-size: 14px; font-weight: 400; }
+  .data-chart-principal { fill: var(--primary, #229eb1); }
+  .data-chart-interest { fill: #71d5e4; }
+  .data-chart-extra { fill: #f5c451; }
+  .data-chart-plan { fill: none; stroke: #7b94a9; stroke-width: 2; stroke-dasharray: 4 3; }
+  .data-chart-point { fill: #7b94a9; }
+  .data-chart-event { stroke: #7b94a9; stroke-width: 1; stroke-dasharray: 2 2; }
+  .data-chart-event-label { fill: var(--secondary, #496174); font-size: 14px; }
+}
+.data-progress-ring { display: block; flex-shrink: 0; }

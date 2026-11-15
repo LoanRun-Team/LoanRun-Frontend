@@ -1,0 +1,21 @@
+import { useState } from 'react'
+import { money } from '../data.js'
+import { icons } from '../icons.js'
+export default function PlanEditor({ filter, onSave, onCancel, comparison }) {
+  const credit = filter === 'credit'
+  const base = credit ? 200000 : filter === 'all' ? 900000 : 700000
+  const currentExtra = credit ? 100000 : filter === 'all' ? 113000 : 13000
+  const [mode,setMode] = useState('date')
+  const [extra,setExtra] = useState(50000)
+  const [year,setYear] = useState(2043)
+  const [month,setMonth] = useState(10)
+  const [personality,setPersonality] = useState('')
+  const finish = mode==='date' ? `${year}년 ${month}월` : credit ? '2033년 7월' : '2044년 12월'
+  const changed = mode==='date' || (mode==='amount' ? extra !== currentExtra : Boolean(personality))
+  return <>
+    <div className="edit-tabs" role="group" aria-label="계획 수정 기준">{[['personality','상환 성향으로'],['date','완납일 기준'],['amount','추가 상환액 기준']].map(([id,label])=><button className={mode===id?'selected':''} key={id} aria-pressed={mode===id} onClick={()=>{setMode(id);setExtra(id==='amount'?currentExtra:50000)}}>{label}</button>)}</div>
+    <div className="plan-edit-grid" data-mode={mode}><section className="lm-card plan-input"><h2>{mode==='date'?'희망 완납일':mode==='amount'?'월 추가 상환액':'상환 성향'}</h2>
+      {mode==='date'?<><label>희망 완납일</label><div className="field-row"><select aria-label="희망 완납 연도" value={year} onChange={e=>setYear(Number(e.target.value))}>{Array.from({length:25},(_,i)=>2027+i).map(y=><option key={y} value={y}>{y}년</option>)}</select><select aria-label="희망 완납 월" value={month} onChange={e=>setMonth(Number(e.target.value))}>{Array.from({length:12},(_,i)=>i+1).map(m=><option key={m} value={m}>{m}월</option>)}</select></div><div className="edit-preview"><div><p>월 상환액</p><strong>{money(base+extra)}원</strong></div><div><p>월 추가 상환</p><strong>{money(extra)}원</strong></div><div><p>예상 완납일</p><strong>{finish}</strong></div></div></>:mode==='amount'?<><label htmlFor="plan-extra">변경할 월 추가 상환액</label><div className="amount-stepper"><input id="plan-extra" type="number" min="0" step="1000" value={extra} onChange={e=>setExtra(Math.max(0,Number(e.target.value)))}/><button aria-label="추가 상환액 줄이기" onClick={()=>setExtra(Math.max(0,extra-10000))}>−</button><button aria-label="추가 상환액 늘리기" onClick={()=>setExtra(extra+10000)}>+</button></div><button className="lm-button outline small" onClick={()=>setExtra(0)}>기본 상환만</button></>:<div className="personality-options">{[['빠른 상환','매달 더 갚아서 이자를 가장 많이 줄여요',icons.fast,150000],['균형 상환','상환과 생활비를 적당히 나눠요',icons.target,currentExtra],['생활 안정 우선','기본 상환만 하고 생활비 여유를 지켜요',icons.stable,0]].map(([name,description,icon,amount])=><button key={name} className={personality===name?'selected':''} onClick={()=>{setPersonality(name);setExtra(amount)}}><span><img src={icon} alt=""/></span><div><strong>{name}{name==='균형 상환'?' (현재)':''}</strong><p>{description}</p></div></button>)}</div>}
+    </section><section className="lm-card plan-comparison"><h2>현재 계획과 비교</h2>{changed?<><table className="lm-table"><thead><tr><th>항목</th><th>현재</th><th>변경 후</th></tr></thead><tbody><tr><th>월 상환액</th><td className="comparison-current"><span>{money(comparison.current.monthly)}원</span><small>원금 {money(comparison.current.principal)} + 이자 {money(comparison.current.interest)}</small></td><td><strong>{money(comparison.proposed.monthly)}원</strong><small>원금 {money(comparison.proposed.principal)} + 이자 {money(comparison.proposed.interest)}</small></td></tr><tr><th>월 추가 상환</th><td>{money(currentExtra)}원</td><td><strong>{money(extra)}원</strong></td></tr><tr><th>예상 완납일</th><td>{credit?'2033년 7월':'2044년 12월'}</td><td><strong>{finish}</strong></td></tr><tr><th>총 이자(예상)</th><td>약 3,651만원</td><td><strong>약 3,396만원</strong><small>−255만원</small></td></tr></tbody></table><p className="lm-caption">현재 금리 {credit?'5.8':'3.08'}% 기준 · 예시 계산</p></>:<div className="comparison-empty"><img src={icons.compare} alt=""/><p>{mode==='amount'?'금액을 바꾸면 비교가 보여요':'목표를 고르면 비교가 보여요'}</p></div>}<footer><button className="lm-button outline" onClick={onCancel}>취소</button><button disabled={!changed} className="lm-button primary" onClick={()=>onSave({extra,finish,personality:personality||'균형 상환'})}>이 계획으로 바꾸기</button></footer></section></div>
+  </>
+}

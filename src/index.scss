@@ -1,0 +1,14 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@600&display=swap');
+@font-face { font-family: Pretendard; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/PretendardVariable.woff2') format('woff2'); }
+:root { --text: #021e2f; --secondary: #496174; --tertiary: #7b94a9; --page: #f2f3f8; --card: #fff; --card-border: #dbedff; --divider: #e6f2ff; --primary: #229eb1; --primary-light: #e0f4f6; --primary-text: #006876; font-family: Pretendard, 'Malgun Gothic', sans-serif; font-size: 16px; line-height: 24px; color: var(--text); background: var(--page); color-scheme: light; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2, p, dl, dd { margin: 0; }
+h1 { font-size: 22px; line-height: 30px; font-weight: 600; }
+h2 { font-size: 20px; line-height: 28px; font-weight: 600; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+button:hover { filter: brightness(.96); }
+strong { font-weight: 600; }
+
