@@ -1,0 +1,29 @@
+// 예산·지출. 색·글꼴 토큰은 index.scss 의 :root 를 쓴다.
+.budget-shell {
+  --bd-input-border: #b0cae0;
+  display: flex;
+  min-height: 100vh;
+  .bd-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 24px; padding: 40px 48px 64px; }
+  .bd-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; h1 { font-size: 22px; line-height: 30px; } }
+  .bd-footnote { margin: 0; font-size: 14px; line-height: 20px; color: var(--tertiary); }
+
+  // 월 이동
+  .bd-month { display: flex; align-items: center; gap: 8px;
+    strong { min-width: 96px; text-align: center; font-size: 16px; line-height: 24px; font-weight: 600; }
+    button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--bd-input-border); border-radius: 8px; background: var(--card);
+      &:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+    }
+  }
+
+  // 카드와 큰 숫자
+  .bd-card { display: flex; flex-direction: column; gap: 24px; padding: 32px; border-radius: 16px; background: var(--card); min-width: 0;
+    h2 { font-size: 20px; line-height: 28px; font-weight: 600; }
+  }
+  .bd-stats { display: flex; gap: 32px; }
+  .bd-stat { display: flex; flex-direction: column; gap: 4px; flex: 1 0 0; min-width: 0;
+    span { font-size: 14px; line-height: 20px; color: var(--secondary); }
+    strong { font-size: 36px; line-height: 44px; font-weight: 600; small { margin-left: 2px; font-size: 14px; line-height: 20px; font-weight: 500; } }
+    &.small strong { font-size: 24px; line-height: 32px; }
+  }
+}
+@media (max-width: 760px) { .budget-shell { flex-direction: column; .bd-content { padding: 24px 16px 48px; } .bd-stats { flex-direction: column; gap: 16px; } } }
