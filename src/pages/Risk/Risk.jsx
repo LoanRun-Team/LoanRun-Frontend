@@ -3,6 +3,7 @@ import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import { onboardingApi, riskApi } from '../../api/index.js'
 import LevelCard from './components/LevelCard.jsx'
 import UpcomingCard from './components/UpcomingCard.jsx'
+import ChangesCard from './components/ChangesCard.jsx'
 import './Risk.scss'
 
 const footnote = '모든 날짜와 금액은 예시 계산이에요 (주담대 연 3.08%, 신용대출 연 5.8% 가정).'
@@ -46,6 +47,7 @@ export default function Risk({ navigate }) {
       {state.status === 'ready' && <div className={`rk-columns${state.data.upcoming_events.length > 1 ? ' even' : ''}`}>
         <LevelCard data={state.data} onStrategy={() => setNotice('상환 전략 화면은 준비 중이에요')} />
         <UpcomingCard data={state.data} loans={loans} />
+        <ChangesCard data={state.data} />
       </div>}
       <p className="rk-footnote">{footnote}</p>
     </main>
