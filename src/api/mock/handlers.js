@@ -2,6 +2,7 @@
 // 인증(Bearer)은 mock 에서 검사하지 않는다.
 import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
+import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
 import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
@@ -38,6 +39,36 @@ export const mockHandlers = [
     respond: ({ body }) => {
       const errors = validateProfile(body ?? {})
       return Object.keys(errors).length ? validationError(errors) : ok('FINANCE_PROFILE_SAVE_SUCCESS', '기본 재정정보 등록·수정 처리를 완료했습니다.', saveProfile(body))
+    },
+  },
+  // 월별 예산 — 경로가 겹치지 않게 /api/budgets/profile/ 핸들러 뒤에 둔다.
+  {
+    method: 'GET', path: '/api/budgets/{year_month}/',
+    respond: ({ params }) => isMonth(params.year_month)
+      ? ok('MONTHLY_BUDGET_DETAIL_SUCCESS', '월별 예산·재정정보 정보를 조회했습니다.', monthView(params.year_month))
+      : { status: 400, body: { success: false, code: 'INVALID_MONTH', message: '월 형식을 확인해 주세요.', errors: {} } },
+  },
+  {
+    method: 'PUT', path: '/api/budgets/{year_month}/',
+    respond: ({ params, body }) => {
+      if (!isMonth(params.year_month)) return { status: 400, body: { success: false, code: 'INVALID_MONTH', message: '월 형식을 확인해 주세요.', errors: {} } }
+      const errors = validateMonthBody(params.year_month, body ?? {})
+      return Object.keys(errors).length ? validationError(errors) : ok('MONTHLY_BUDGET_SAVE_SUCCESS', '월별 재정정보를 저장했습니다.', saveMonth(params.year_month, body))
+    },
+  },
+  {
+    method: 'PUT', path: '/api/budgets/{year_month}/allocation/',
+    respond: ({ params, body }) => {
+      if (!isMonth(params.year_month)) return { status: 400, body: { success: false, code: 'INVALID_MONTH', message: '월 형식을 확인해 주세요.', errors: {} } }
+      const errors = validateAllocation(params.year_month, body ?? {})
+      return Object.keys(errors).length ? validationError(errors) : ok('BUDGET_ALLOCATION_SUCCESS', '여유자금 배분을 저장했습니다.', saveAllocation(params.year_month, body))
+    },
+  },
+  {
+    method: 'POST', path: '/api/income-entries/',
+    respond: ({ body }) => {
+      const errors = validateIncomeEntry(body)
+      return Object.keys(errors).length ? validationError(errors) : ok('INCOME_ENTRY_CREATE_SUCCESS', '소득 입금 기록을 저장했습니다.', createIncomeEntry(body), 201)
     },
   },
   {
