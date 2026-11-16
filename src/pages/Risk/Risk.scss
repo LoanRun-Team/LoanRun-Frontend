@@ -67,7 +67,36 @@
   .rk-link { align-self: flex-start; padding: 0; border: 0; background: transparent; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--primary-text); }
   .rk-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border: 1px solid var(--primary); border-radius: 12px; background: var(--primary-light); color: var(--primary-text); box-shadow: 0 8px 24px #021e2f1f; }
 
-  @media (max-width: 1439px) { .rk-columns, .rk-columns.even { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); } }
+  // PRO 가 아닐 때: 흐린 미리보기 + 안내 카드
+  .rk-content.locked { position: relative; }
+  .rk-preview { display: flex; flex-direction: column; gap: 24px; }
+  .rk-preview .rk-card { gap: 24px; }
+  .rk-preview-top { display: flex; gap: 48px; }
+  .rk-preview-level { display: flex; flex: none; flex-direction: column; gap: 16px; width: 400px; max-width: 100%; }
+  .rk-preview-caption { margin: 0; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  .rk-track-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .rk-track { position: relative; display: flex; gap: 2px; height: 12px; margin: 4px 0; border-radius: 999px; overflow: visible;
+    i { flex: 1 0 0; &.stable { background: var(--primary-light); } &.caution { background: var(--rk-warning-bg); } &.danger { background: var(--rk-danger-bg); } }
+    b { position: absolute; top: -4px; left: 49.38%; right: 49.38%; height: 20px; border-radius: 999px; background: var(--text); }
+  }
+  .rk-track-labels { display: flex; text-align: center; font-size: 14px; line-height: 20px; color: var(--tertiary); span { flex: 1 0 0; } .on { font-weight: 500; color: var(--rk-warning-text); } }
+  .rk-preview-why { display: flex; flex: 1 0 0; min-width: 0; flex-direction: column; }
+  .rk-why-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 0; border-bottom: 1px solid var(--divider); font-size: 16px; line-height: 24px;
+    span { flex: 1 0 0; color: var(--secondary); } strong { font-weight: 600; } em { font-style: normal; }
+  }
+  .rk-preview-why .rk-banner { margin-top: 16px; justify-content: flex-start; }
+  .rk-preview-range { h2 { font-size: 20px; line-height: 28px; font-weight: 600; } p { margin: 0; font-size: 14px; line-height: 22px; color: var(--secondary); } .rk-button { align-self: flex-start; } }
+  .rk-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: #0000004d; backdrop-filter: blur(6px); }
+  .rk-lock-card { display: flex; flex-direction: column; align-items: center; gap: 16px; width: min(480px, 100%); padding: 32px; border-radius: 16px; background: var(--card);
+    h2 { font-size: 16px; line-height: 24px; font-weight: 600; text-align: center; }
+    ul { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 0; padding: 8px 0; list-style: none; }
+    li { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 22px; font-weight: 500; img { flex: none; } }
+    .rk-button { width: 100%; }
+  }
+  .rk-button.primary { background: var(--primary); color: #fff; font-weight: 600; }
+  .rk-button.large { height: 52px; }
+
+  @media (max-width: 1439px) { .rk-columns, .rk-columns.even { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); } .rk-preview-top { flex-direction: column; gap: 24px; } .rk-preview-level { width: 100%; } }
   @media (max-width: 760px) { & { flex-direction: column; } .rk-content { padding: 24px 16px 48px; } .rk-card { padding: 24px; } }
 
   .rk-button { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; border: 1px solid transparent; border-radius: 8px; background: var(--card); font-size: 16px; line-height: 24px; font-weight: 500; color: var(--primary-text);
