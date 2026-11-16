@@ -37,7 +37,7 @@ export default function Loans({ location, navigate, apiData = mockLoanViewData }
   useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(saved))}catch{/* The current session remains usable if browser storage is full. */}},[saved])
   useEffect(()=>{document.title='론런 | '+(loanTabs.find(t=>t.id===validPage)?.label||(validPage==='history'?'상환 내역':'계획 수정'))},[validPage])
   function onFilter(id) {navigate(path+'?loan='+id)}
-  function onNavigate(item) {if(item.id==='home'||item.id==='loans'||item.id==='budget'||item.parent==='loans')navigate(item.href);else setDialog({type:'unavailable',title:item.label})}
+  function onNavigate(item) {if(item.id==='home'||item.id==='loans'||item.id==='budget'||item.id==='risk'||item.parent==='loans')navigate(item.href);else setDialog({type:'unavailable',title:item.label})}
   function addLoan(form) {
     const percent=Math.round((1-form.balance/form.original)*100)
     const loan={...form,id:'loan-'+crypto.randomUUID(),custom:true,product:form.bank+' · '+form.product,percent,interest:'입력 조건 기준 예시',principalPayment:Math.max(0,Math.round(form.payment-form.balance*form.rate/1200)),interestPayment:Math.round(form.balance*form.rate/1200),day:Number(form.day),finish:form.maturity.slice(0,4)+'년 '+Number(form.maturity.slice(5,7))+'월'}

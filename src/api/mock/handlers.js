@@ -3,6 +3,7 @@
 import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
 import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
+import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView } from './risks.js'
 import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
@@ -69,6 +70,18 @@ export const mockHandlers = [
     respond: ({ body }) => {
       const errors = validateIncomeEntry(body)
       return Object.keys(errors).length ? validationError(errors) : ok('INCOME_ENTRY_CREATE_SUCCESS', '소득 입금 기록을 저장했습니다.', createIncomeEntry(body), 201)
+    },
+  },
+  // 위험 분석
+  {
+    method: 'GET', path: '/api/risks/',
+    respond: ({ query }) => {
+      const { errors, value } = parseRiskQuery(query)
+      if (Object.keys(errors).length) return validationError(errors)
+      if (isFreePlan()) return { status: 403, body: { success: false, code: 'PRO_REQUIRED', message: 'PRO 이용자만 사용할 수 있습니다.', errors: {} } }
+      if (value.loanId !== undefined && !loanExists(value.loanId)) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
+      if (!hasProfile()) return notFound('FINANCE_PROFILE_NOT_FOUND', '기본 재정정보를 찾을 수 없습니다.')
+      return ok('RISK_DETAIL_SUCCESS', '재정 위험 분석 정보를 조회했습니다.', riskView(value))
     },
   },
   {
