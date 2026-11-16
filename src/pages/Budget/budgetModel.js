@@ -98,3 +98,18 @@ export function payoffYM(loans, extras = {}) {
   })
   return months.length ? shiftYM(now, Math.max(...months)) : null
 }
+
+// ── 지난달(읽기 전용) ───────────────────────────────────────────────────
+// TODO: 지난달 실적은 월별 예산 API(GET /api/budgets/{year_month}/) 응답으로 바꾼다. 지금은 Figma(D1-c) 예시 값이다.
+export const pastRecord = () => ({
+  income: 3500000, planned: 1000000, repaid: 1100000, savings: 500000, essential: 1200000,
+  discretionary: { limit: 800000, used: 620000 }, leftover: 80000,
+  surplusUse: { extra: 200000, reserve: 20000, carry: 60000 },
+})
+export const pastSlices = r => [
+  { key: 'repay', label: '상환', value: r.repaid, color: SLICE_COLORS.repay },
+  { key: 'savings', label: '저축', value: r.savings, color: SLICE_COLORS.savings },
+  { key: 'essential', label: '필수 생활비', value: r.essential, color: SLICE_COLORS.fixed },
+  { key: 'discretionary', label: '선택 지출', value: r.discretionary.used, color: SLICE_COLORS.discretionary },
+  { key: 'leftover', label: '남은 돈', value: r.leftover, color: SLICE_COLORS.surplus },
+]

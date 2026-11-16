@@ -6,9 +6,11 @@ import RepaymentCard from './components/RepaymentCard.jsx'
 import IncomeFlowCard from './components/IncomeFlowCard.jsx'
 import AllocationCard from './components/AllocationCard.jsx'
 import AmountDialog from './components/AmountDialog.jsx'
+import SettlementCard from './components/SettlementCard.jsx'
+import info from '../../assets/onboarding/icon-info.svg'
 import {
-  allocationSum, baseSchedule, baseTotal, currentYM, defaultMonth, extraTotal, lastDayOf, loadMonths, nextPayDay, paidSoFar,
-  saveMonths, shiftYM, suggestAllocation, surplusOf, todayDay,
+  allocationSum, baseSchedule, baseTotal, currentYM, defaultMonth, extraTotal, lastDayOf, loadMonths, monthName, nextPayDay, paidSoFar,
+  pastRecord, pastSlices, saveMonths, shiftYM, suggestAllocation, surplusOf, todayDay, won,
 } from './budgetModel.js'
 import './Budget.scss'
 
@@ -70,19 +72,30 @@ export default function Budget({ navigate }) {
   const applyAllocation = () => { update({ allocation: { ...allocation, applied: true } }); setNotice('여유자금 분할을 반영했어요') }
   const resetAllocation = () => update({ allocation: { ...suggestAllocation(available, loans), forAvailable: available } })
 
+  const isPast = ym < thisMonth
+  const past = pastRecord()
   const detail = mismatch ? { ym, base: repayment, extra, applied: allocation.applied, schedule, nextDay: nextPayDay(schedule, today), extraLoanIds: Object.entries(allocation.extras).filter(([, v]) => v > 0).map(([id]) => Number(id)) } : null
   return <div className="budget-shell">
     <Sidebar active="budget" onNavigate={onNavigate} />
     <main className="bd-content" id="main-content">
       <header className="bd-header">
         <h1>예산·지출</h1>
-        <MonthSwitcher ym={ym} canPrev={false} canNext={ym < thisMonth} onPrev={() => setYm(shiftYM(ym, -1))} onNext={() => setYm(shiftYM(ym, 1))} />
+        <MonthSwitcher ym={ym} canPrev={ym > shiftYM(thisMonth, -1)} canNext={isPast} onPrev={() => setYm(shiftYM(ym, -1))} onNext={() => setYm(shiftYM(ym, 1))} />
       </header>
-      <RepaymentCard planned={repayment + extra} paid={paidSoFar(schedule, today)} detail={detail} />
-      <div className="bd-columns">
-        <IncomeFlowCard ym={ym} month={month} repayment={repayment} onEnter={openAmount} />
-        <AllocationCard ym={ym} available={available} loans={loans} allocation={allocation} onChange={changeAllocation} onReset={resetAllocation} onApply={applyAllocation} />
-      </div>
+      {isPast ? <>
+        <p className="bd-banner"><img src={info} alt="" width="20" height="20" /><span>지난달 기록이에요 · 수정할 수 없어요</span></p>
+        <RepaymentCard title={`${monthName(ym)} 상환`} plannedLabel={`${monthName(ym)} 상환 예정액 총합`} paidLabel={`${monthName(ym)} 상환액`} planned={past.planned} paid={past.repaid} />
+        <div className="bd-columns">
+          <IncomeFlowCard ym={ym} readOnly slices={pastSlices(past)} incomeText={`실수령 ${won(past.income)}`} />
+          <SettlementCard ym={ym} record={past} />
+        </div>
+      </> : <>
+        <RepaymentCard planned={repayment + extra} paid={paidSoFar(schedule, today)} detail={detail} />
+        <div className="bd-columns">
+          <IncomeFlowCard ym={ym} month={month} repayment={repayment} onEnter={openAmount} />
+          <AllocationCard ym={ym} available={available} loans={loans} allocation={allocation} onChange={changeAllocation} onReset={resetAllocation} onApply={applyAllocation} />
+        </div>
+      </>}
       <p className="bd-footnote">{footnote}</p>
     </main>
     {notice && <div className="bd-toast" role="status">{notice}</div>}

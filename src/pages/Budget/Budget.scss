@@ -39,6 +39,16 @@
   }
   .bd-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border: 1px solid var(--card-border); border-radius: 999px; font-style: normal; font-size: 14px; color: var(--secondary); &.brand { border-color: transparent; background: #e6f2ff; color: var(--primary-text); } }
 
+  // 지난달 정산
+  .bd-card h3.large { font-size: 20px; line-height: 28px; }
+  .bd-card h4 { font-size: 16px; line-height: 24px; font-weight: 600; }
+  .bd-inset-note { margin: 0; padding: 14px 20px; border-radius: 12px; background: #f7f8fb; font-size: 14px; line-height: 22px; font-weight: 600; }
+  .bd-settle-list { display: flex; flex-direction: column; margin: -8px 0 0;
+    > div { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--divider); }
+    dt { font-size: 16px; line-height: 24px; }
+    dd { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; &.brand { color: var(--primary-text); } }
+  }
+
   // 여유자금 분할하기
   .bd-alloc-total { margin: 8px 0 0; font-size: 20px; line-height: 28px; font-weight: 600; }
   .bd-alloc { display: flex; flex-direction: column; margin-top: -8px; }
