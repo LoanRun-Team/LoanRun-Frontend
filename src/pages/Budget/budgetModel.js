@@ -64,3 +64,37 @@ export const pieSlices = (m, repayment) => [
   { key: 'discretionary', label: '선택 지출', value: m.discretionary || 0 },
   { key: 'surplus', label: '여유자금', value: Math.max(0, surplusOf(m, repayment)) },
 ].map(s => ({ ...s, color: SLICE_COLORS[s.key] }))
+
+// ── 여유자금 분할 ──────────────────────────────────────────────────────
+// month.allocation = { extras: { [loan_id]: 추가 상환액 }, reserve: 남겨두기, applied: 반영 여부 }
+// TODO: 반영하기는 PUT /api/budgets/{year_month}/allocation/ 로 보낸다(요청 필드 확인 필요).
+export const STEP = 10000
+const TYPE_LABEL = { CREDIT: '신용대출', MORTGAGE: '주택담보대출', JEONSE: '전세자금대출', STUDENT: '학자금대출', AUTO: '자동차대출', OTHER: '기타' }
+export const loanName = loan => (loan.loan_form === 'CREDIT_LINE' ? '마이너스통장' : (TYPE_LABEL[loan.loan_type] ?? loan.loan_type))
+
+// 제안: 예비비 20,000원만 남기고, 나머지는 금리가 가장 높은 대출의 추가 상환에 배분한다.
+export function suggestAllocation(available, loans) {
+  const reserve = Math.min(Math.max(available, 0), 20000)
+  const extras = Object.fromEntries(loans.map(l => [l.loan_id, 0]))
+  const top = loans.toSorted((a, b) => b.annual_rate - a.annual_rate)[0]
+  if (top) extras[top.loan_id] = Math.max(available, 0) - reserve
+  return { extras, reserve, applied: false }
+}
+export const allocationSum = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0) + (a.reserve || 0)
+export const extraTotal = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0)
+
+// 예상 완납 시점(YYYY-MM): 대출별로 월 상환액(+추가 상환)으로 갚는 데 걸리는 기간 중 가장 늦은 것
+const periods = (principal, rate, pmt) => {
+  if (pmt <= principal * rate) return Infinity
+  return rate === 0 ? Math.ceil(principal / pmt) : Math.ceil(-Math.log(1 - (principal * rate) / pmt) / Math.log(1 + rate))
+}
+export function payoffYM(loans, extras = {}) {
+  const now = currentYM()
+  const months = loans.map(loan => {
+    const principal = loan.loan_form === 'CREDIT_LINE' ? loan.used_amount : loan.remaining_principal
+    const toMaturity = Math.max(1, (Number(loan.maturity_date.slice(0, 4)) - Number(now.slice(0, 4))) * 12 + Number(loan.maturity_date.slice(5, 7)) - Number(now.slice(5, 7)))
+    if (loan.repayment_category === 'LUMP_SUM') return toMaturity
+    return Math.min(toMaturity, periods(principal, loan.annual_rate / 1200, loan.estimated_monthly_payment + (extras[loan.loan_id] || 0)))
+  })
+  return months.length ? shiftYM(now, Math.max(...months)) : null
+}
