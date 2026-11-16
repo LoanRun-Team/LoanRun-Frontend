@@ -135,5 +135,7 @@ export const pastSlices = m => [
 // 여유자금 사용 내역: 총 추가 상환, 예비비, 배분하지 않은 금액(이월)
 export const settlementOf = m => {
   const extra = extraTotal(m.allocation)
-  return { available: Math.max(0, m.available), extra, reserve: m.allocation.reserve, carry: Math.max(0, m.available - m.allocation.total) }
+  // 선택 지출 한도 = 소득 − 정기 상환 − 필수 − 저축 = 여유자금 + 선택 지출(API 에 한도 필드가 없어 계산한다). 절약 = 한도 − 사용.
+  const limit = m.available + m.discretionary
+  return { available: Math.max(0, m.available), extra, reserve: m.allocation.reserve, carry: Math.max(0, m.available - m.allocation.total), limit, used: m.discretionary, saved: limit - m.discretionary }
 }
