@@ -25,3 +25,6 @@ dist-ssr
 verification/chrome-profile/
 
 verification/loan-chrome-profile/
+
+# Claude Code local settings
+.claude/
