@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Dialog from './Dialog.jsx'
 import MoneyField from './MoneyField.jsx'
-import { incomeTotal, monthName, spendTotal, surplusOf, won, fmt } from '../budgetModel.js'
+import { incomeTotal, monthName, surplusOf, won, fmt } from '../budgetModel.js'
 
 // Figma: 이번 달 금액 입력 (D1-e 정기 소득 / D1-e-1 추가 수령 기록 / D1-e-2 비정기 소득)
 // 소득 유형(정기·비정기)은 온보딩에서 정한 값을 따르고, 소득·지출·저축 금액은 이번 달 실제 값으로 고칠 수 있다.
@@ -18,15 +18,25 @@ function DayAmountRows({ ym, rows, lastDay, onChange, dayLabel, amountLabel }) {
   </div>)
 }
 
+// lastDay: 고를 수 있는 마지막 날(이번 달이면 오늘, 아니면 말일). onSave 는 Promise 를 돌려주고, 실패하면 오류 문구를 모달 안에 보여준다.
 export default function AmountDialog({ ym, initial, repayment, lastDay, onSave, onClose }) {
   const [m, setM] = useState(initial)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  async function submit() {
+    setSaving(true)
+    setError('')
+    try { await onSave(m) } catch (e) { setError(e?.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.') } finally { setSaving(false) }
+  }
   const regular = m.income_type === 'REGULAR'
   const patch = p => setM(prev => ({ ...prev, ...p }))
   const surplus = surplusOf(m, repayment)
   const fieldsFilled = [m.fixed, m.variable, m.discretionary, m.savings].every(v => v != null)
-  const incomeOk = incomeTotal(m) > 0 && (regular ? m.extras.every(r => r.amount != null) : m.receipts.every(r => r.amount != null))
+  // 추가 수령·비정기 입금은 1원 이상이어야 한다(서버 규칙). 비정기는 입금이 한 건 이상 있어야 한다.
+  const rows = regular ? m.extras : m.receipts
+  const incomeOk = rows.every(r => r.amount >= 1) && (regular || rows.length > 0)
   const canSave = fieldsFilled && incomeOk && surplus >= 0
-  const newRow = () => ({ day: Math.min(lastDay, new Date().getDate()), amount: null })
+  const newRow = () => ({ day: lastDay, amount: null })
 
   return <Dialog title="이번 달 금액 입력" onClose={onClose}>
     <div className="bd-inset">
@@ -52,11 +62,11 @@ export default function AmountDialog({ ym, initial, repayment, lastDay, onSave, 
       <div className="bd-inset-line"><span>정기 상환</span><span>{won(repayment)}</span></div>
       <div className="bd-inset-line"><strong>여유자금(자동 계산)</strong><strong className={`big${surplus < 0 ? ' danger' : ''}`}>{surplus < 0 ? '−' : ''}{fmt(Math.abs(surplus))}원</strong></div>
       {surplus < 0 && <p className="bd-danger" role="alert">지출·저축·상환이 소득보다 {won(-surplus)} 많아요. 금액을 다시 확인해 주세요.</p>}
-      {spendTotal(m) === 0 && <p className="bd-hint">지출과 저축 금액을 입력해 주세요.</p>}
     </div>
+    {error && <p className="bd-danger" role="alert">{error}</p>}
     <footer>
-      <button type="button" className="bd-button outline" onClick={onClose}>취소</button>
-      <button type="button" className="bd-button primary" disabled={!canSave} onClick={() => onSave({ ...m, entered: true })}>저장하기</button>
+      <button type="button" className="bd-button outline" onClick={onClose} disabled={saving}>취소</button>
+      <button type="button" className="bd-button primary" disabled={!canSave || saving} onClick={submit}>{saving ? '저장 중…' : '저장하기'}</button>
     </footer>
   </Dialog>
 }

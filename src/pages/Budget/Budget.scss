@@ -64,6 +64,8 @@
     small { color: var(--secondary); font-size: 14px; }
   }
   .bd-banner { display: flex; align-items: center; gap: 12px; margin: 0; padding: 16px 20px; border-radius: 12px; background: var(--primary-light); font-size: 16px; line-height: 24px; font-weight: 500; color: var(--primary-text); span { flex: 1 0 0; min-width: 1px; } }
+  .bd-banner.danger { background: #fdecec; color: #c0392b; justify-content: space-between; }
+  .bd-loading { margin: 0; color: var(--secondary); }
   .bd-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
   // 버튼
