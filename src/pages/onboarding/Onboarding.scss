@@ -1,0 +1,215 @@
+// 수치는 Figma 기준 (헤더 72, 본문 폭 800, Step nav 버튼 52). 공통 색 변수는 index.scss 의 :root 를 쓴다.
+.onboarding-shell {
+  --ob-bg: #f2f5f9;
+  --ob-input-border: #b0cae0;
+  --ob-disabled-text: #95aec4;
+  min-height: 100vh;
+  background: var(--ob-bg);
+
+  .onboarding-header { display: flex; align-items: center; justify-content: space-between; height: 72px; padding: 0 48px; background: var(--card); border-bottom: 1px solid var(--divider);
+    p { font-size: 14px; line-height: 20px; color: var(--secondary); }
+  }
+
+  .ob-content { display: flex; flex-direction: column; width: min(800px, 100% - 48px); margin: 0 auto; padding: 48px 0 80px; }
+  .ob-stepper-wrap { padding-bottom: 48px; }
+  .ob-title-block { display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; }
+  .ob-card { padding: 32px; background: var(--card); border-radius: 16px; }
+
+  // Stepper (3단계 + 깃발)
+  .ob-stepper { display: flex; align-items: flex-start; width: min(720px, 100%); margin: 0; padding: 0; list-style: none;
+    .ob-stepper-item { display: contents; }
+    .ob-stepper-line { flex: 1 0 0; min-width: 1px; height: 2px; margin-top: 19px; background: var(--ob-input-border); &.on { background: var(--primary); } }
+    .ob-step { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; padding-top: 4px; font-size: 14px; line-height: 22px; font-weight: 600; color: var(--tertiary); white-space: nowrap; }
+    .ob-step-circle { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--ob-input-border); border-radius: 999px; background: var(--card); font-size: 16px; line-height: 24px; }
+    .current { color: var(--primary-text); .ob-step-circle { border-color: transparent; background: var(--primary); color: #fff; } }
+    .done { color: var(--secondary); font-weight: 500; .ob-step-circle { border-color: transparent; background: var(--primary); img { filter: brightness(0) invert(1); } } }
+    .ob-step-sub { display: flex; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--tertiary);
+      .active { font-weight: 500; color: var(--primary-text); }
+    }
+    .ob-stepper-finish { display: flex; align-items: flex-start; gap: 4px; flex-shrink: 0;
+      .ob-stepper-line { flex: none; width: 32px; }
+      img { margin-top: 10px; }
+    }
+  }
+
+  // 입력 단계 "1 / 3"
+  .ob-input-stepper { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 22px;
+    strong { color: var(--primary-text); }
+    .ob-input-count span { font-weight: 500; color: var(--tertiary); }
+    .ob-input-bars { display: flex; gap: 4px;
+      i { width: 32px; height: 4px; border-radius: 2px; background: var(--ob-input-border); }
+      i.on { background: var(--primary); }
+    }
+  }
+
+  // SelectCard
+  .ob-options { display: flex; gap: 16px; }
+  .ob-select-card { position: relative; display: flex; flex: 1 0 0; align-items: center; gap: 16px; min-width: 1px; min-height: 112px; padding: 24px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); cursor: pointer;
+    input { position: absolute; opacity: 0; pointer-events: none; }
+    &:has(input:focus-visible) { outline: 3px solid var(--primary); outline-offset: 3px; }
+    .ob-select-icon { display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); }
+    .ob-select-label { flex: 1 0 0; min-width: 1px; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .ob-radio { flex-shrink: 0; width: 22px; height: 22px; }
+    span.ob-radio { border: 1.5px solid var(--ob-input-border); border-radius: 999px; background: var(--card); }
+    &.selected { border: 2px solid var(--primary); background: var(--primary-light); .ob-select-icon { background: var(--card); } }
+  }
+
+  // 폼 카드 (S-01b~): 필드 간격 24
+  .ob-card { display: flex; flex-direction: column; gap: 24px; }
+
+  // Field: 라벨 + Dropdown / Input
+  .ob-field { position: relative; display: flex; flex-direction: column; gap: 8px; width: 100%;
+    .ob-label { font-size: 14px; line-height: 22px; font-weight: 600; color: var(--text); }
+    .ob-control { display: flex; align-items: center; gap: 8px; width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--ob-input-border); border-radius: 8px; background: var(--card); text-align: left;
+      &.open { border: 1.5px solid var(--primary); padding: 0 15.5px; img { transform: rotate(180deg); } }
+    }
+    .ob-control-value { flex: 1 0 0; min-width: 1px; font-size: 16px; line-height: 24px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; &.placeholder { color: var(--tertiary); } }
+    .ob-input { width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--ob-input-border); border-radius: 8px; background: var(--card); font: inherit; color: var(--text);
+      &::placeholder { color: var(--tertiary); }
+      &:focus { outline: none; border: 1.5px solid var(--primary); padding: 0 15.5px; }
+    }
+    &.disabled { .ob-label { color: var(--ob-disabled-text); }
+      .ob-control { background: var(--divider); cursor: not-allowed; filter: none; }
+      .ob-control-value { color: var(--ob-disabled-text); }
+    }
+  }
+
+  // Dropdown 메뉴 (Figma: Menu — 흐름 안에서 열려 아래 요소를 밀어낸다)
+  .ob-menu { display: flex; flex-direction: column; gap: 2px; padding: 8px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); box-shadow: 0 8px 24px rgba(2, 30, 47, .12);
+    ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; max-height: 320px; overflow-y: auto; }
+    li button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--card); text-align: left; font-size: 16px; line-height: 24px; color: var(--text);
+      span { flex: 1 0 0; min-width: 1px; }
+      &:hover { background: var(--ob-bg); filter: none; }
+      &.selected { background: var(--primary-light); font-weight: 500; color: var(--primary-text); }
+    }
+    hr { width: 100%; height: 1px; margin: 0; border: 0; background: var(--divider); }
+    .ob-menu-footer { display: flex; align-items: center; gap: 4px; width: 100%; padding: 10px 16px; border: 0; border-radius: 8px; background: transparent; text-align: left; font-size: 14px; line-height: 22px; font-weight: 600; color: var(--primary-text); span { flex: 1 0 0; } }
+    .ob-menu-empty { margin: 0; padding: 10px 16px; font-size: 14px; line-height: 20px; color: var(--secondary); }
+  }
+
+  .ob-manual-link { display: flex; justify-content: center;
+    button { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--primary-text); }
+  }
+  .ob-error { margin: 0; font-size: 14px; line-height: 20px; color: #c0392b;
+    button { border: 0; padding: 0; background: transparent; font-size: inherit; font-weight: 600; color: var(--primary-text); text-decoration: underline; }
+  }
+
+  // S-01c: 선택 요약 / 행 / 숫자·날짜·기간 입력 / 결과
+  .ob-summary { padding: 14px 20px; border-radius: 12px; background: #f7f8fb; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--secondary); }
+  .ob-divider { width: 100%; height: 1px; margin: 0; border: 0; background: var(--divider); }
+  .ob-row { display: flex; gap: 16px; align-items: flex-end; width: 100%; > * { flex: 1 0 0; min-width: 1px; } }
+  .ob-row-spacer { height: 10px; }
+  .ob-label-row { display: flex; align-items: center; gap: 8px; min-height: 22px; .ob-label { line-height: 22px; } }
+  .ob-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .ob-number, .ob-date { display: flex; align-items: center; gap: 8px; width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--ob-input-border); border-radius: 8px; background: var(--card);
+    &:focus-within { border: 1.5px solid var(--primary); padding: 0 15.5px; }
+    input[type=text] { flex: 1 0 0; min-width: 1px; padding: 0; border: 0; outline: none; background: transparent; font: inherit; color: var(--text); }
+    span { flex-shrink: 0; color: var(--secondary); }
+  }
+  .ob-number input { text-align: right; }
+  .ob-number input::placeholder, .ob-date input::placeholder { color: var(--tertiary); }
+  .ob-date { position: relative; button { display: grid; place-items: center; padding: 0; border: 0; background: transparent; } }
+  .ob-date-native { position: absolute; right: 12px; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .ob-period { display: flex; gap: 8px; > * { flex: 1 0 0; min-width: 1px; } }
+  .ob-field.readonly .ob-input { background: var(--divider); color: var(--ob-disabled-text); }
+  .ob-field.disabled .ob-number { background: var(--divider); }
+
+  .ob-chip { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 8px; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--secondary); }
+  button.ob-chip { cursor: pointer; }
+  .ob-link-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--primary-text); }
+
+  .ob-result { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-radius: 12px; background: #f7f8fb;
+    span { font-size: 14px; line-height: 22px; font-weight: 500; color: var(--secondary); }
+    strong { font-size: 20px; line-height: 28px; font-weight: 600; color: var(--text); }
+  }
+
+  // 공통: 도움말 / 제목 위 작은 글씨 / 하단 고정 바
+  .ob-helper { margin: 0; font-size: 14px; line-height: 22px; color: var(--tertiary); }
+  .ob-eyebrow { margin: 0; font-size: 14px; line-height: 22px; font-weight: 600; letter-spacing: .02em; color: var(--primary-text); }
+  main { display: flex; flex-direction: column; min-height: calc(100vh - 72px); }
+  .ob-content { flex: 1; }
+  .ob-content.wide { width: min(1032px, 100% - 48px); }
+  .ob-bar { position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--divider); }
+  .ob-bar-inner { width: min(800px, 100% - 48px); margin: 0 auto; padding: 14px 0; }
+  .ob-step-nav.in-bar { padding-top: 0; }
+
+  // S-01d 등록한 대출
+  .ob-registered { display: flex; flex-direction: column; gap: 12px;
+    h2 { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--primary-text); }
+    ul { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  }
+  .ob-loan-row { display: flex; align-items: center; gap: 16px; padding: 32px; border-radius: 16px; background: var(--card);
+    strong { flex-shrink: 0; width: 110px; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .ob-loan-detail { flex: 1 0 0; min-width: 1px; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  }
+  .ob-danger-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #fdecec; font-size: 14px; line-height: 22px; font-weight: 500; color: #c0392b; &:disabled { opacity: .4; } }
+  .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: var(--card); font-size: 16px; line-height: 24px; font-weight: 600; color: var(--primary-text); }
+
+  // S-02 선택 칩 / 안내 배너
+  .ob-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; &.two { grid-template-columns: repeat(2, 1fr); } }
+  .ob-choice { display: flex; align-items: center; height: 48px; padding: 0 16px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card); font-size: 16px; line-height: 24px; color: var(--text); text-align: left;
+    &.large { height: 56px; padding: 0 20px; }
+    &.selected { padding: 0 15.5px; border: 1.5px solid var(--primary); background: var(--primary-light); color: var(--primary-text); }
+    &.large.selected { padding: 0 19.5px; }
+  }
+  .ob-banner { display: flex; align-items: center; gap: 12px; margin: 0; padding: 16px 20px; border-radius: 12px; background: var(--primary-light); font-size: 16px; line-height: 24px; font-weight: 500; color: var(--primary-text); span { flex: 1 0 0; min-width: 1px; } }
+
+  // S-03 상환 목표
+  .ob-loan-context { display: flex; align-items: center; gap: 12px; margin: 0 0 24px; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  .ob-chip.large { height: 28px; padding: 0 12px; }
+  button.ob-chip.large { cursor: pointer; }
+  .ob-required-row { display: flex; align-items: center; gap: 12px; margin: 0 0 20px; font-size: 14px; line-height: 22px; color: var(--secondary); strong { font-size: 16px; color: var(--text); } }
+  .ob-tag { display: inline-flex; align-items: center; width: fit-content; height: 28px; padding: 0 12px; border-radius: 999px; background: var(--primary-light); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--primary-text);
+    &.warn { background: #fdf0d5; color: #a8620a; height: 24px; padding: 0 10px; }
+  }
+  .ob-plan-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .ob-plan-card { display: flex; flex-direction: column; gap: 20px; min-height: 520px; padding: 32px; border-radius: 16px; background: var(--card); h2 { font-size: 20px; line-height: 28px; font-weight: 600; } }
+  .ob-plan-options { display: flex; flex-direction: column; gap: 12px; }
+  .ob-plan-option { display: flex; align-items: center; gap: 16px; width: 100%; padding: 20px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); text-align: left;
+    .ob-plan-option-icon { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 8px; background: var(--primary-light); }
+    .ob-plan-option-text { display: flex; flex: 1 0 0; flex-direction: column; gap: 4px; min-width: 1px; font-size: 16px; line-height: 24px; color: var(--secondary); strong { font-weight: 600; color: var(--text); } }
+    &.selected { padding: 19px; border: 2px solid var(--primary); background: var(--primary-light); .ob-plan-option-icon { background: var(--card); } }
+  }
+  .ob-segment { display: inline-flex; gap: 4px; width: fit-content; margin-bottom: 24px; padding: 4px; border: 1px solid var(--ob-input-border); border-radius: 8px; background: var(--card);
+    button { height: 32px; padding: 0 16px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-size: 14px; line-height: 22px; color: var(--secondary);
+      &.selected { border-color: var(--ob-input-border); background: var(--card); font-weight: 600; color: var(--text); box-shadow: 0 1px 2px rgba(2, 30, 47, .08); }
+    }
+  }
+  .ob-stat-box { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 20px 24px; border-radius: 12px; background: #f7f8fb;
+    > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .ob-stat-label { font-size: 14px; line-height: 20px; color: var(--secondary); }
+    strong { font-size: 20px; line-height: 28px; font-weight: 600; &.accent { color: var(--primary-text); } }
+    .ob-stat-sub { font-size: 14px; line-height: 20px; color: var(--tertiary); }
+  }
+  .ob-stat-pending { margin: 0; font-size: 14px; line-height: 20px; color: var(--secondary); }
+  .ob-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;
+    .ob-empty-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #f7f8fb; }
+    p { margin: 0; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  }
+  .ob-quick { display: flex; gap: 8px; }
+  .ob-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+    button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: #e6edf3; font-size: 14px; line-height: 20px; color: var(--secondary); &.selected { background: var(--primary); color: #fff; } }
+  }
+  .ob-overview { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none;
+    li { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--divider); }
+    strong { flex-shrink: 0; width: 200px; font-size: 16px; }
+    span { flex: 1 0 0; font-size: 14px; color: var(--secondary); }
+  }
+  .ob-plan-footer { position: sticky; bottom: 0; border-top: 2px solid var(--primary); background: var(--card); }
+  .ob-plan-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; width: min(1032px, 100% - 48px); margin: 0 auto; padding: 14px 0;
+    dl { display: flex; gap: 32px; margin: 0; }
+    dt { font-size: 14px; line-height: 20px; color: var(--secondary); }
+    dd { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .ob-error { margin: 0; }
+  }
+
+  // Step nav
+  .ob-step-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding-top: 32px; }
+  .ob-nav-error { flex: 0 0 100%; margin-bottom: 12px; }
+  .ob-button { height: 52px; padding: 0 24px; border: 1px solid transparent; border-radius: 8px; font-size: 16px; line-height: 24px; font-weight: 600;
+    &.outline { border-color: var(--primary); background: var(--card); color: var(--primary-text); }
+    &.primary { background: var(--primary); color: #fff; }
+    &:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+  }
+}
