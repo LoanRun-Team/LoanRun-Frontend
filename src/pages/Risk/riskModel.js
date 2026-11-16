@@ -9,7 +9,7 @@ export const LEVELS = [
 export const levelLabel = code => LEVELS.find(l => l.code === code)?.label ?? '-'
 
 // 비율(%)은 소수 첫째 자리까지, 값이 없으면 '-'
-export const pct = n => (n == null ? '-' : `${Number(Number(n).toFixed(1))}%`)
+export const pct = n => (n == null ? '-' : `${Number(n) < 0 ? '−' : ''}${Math.abs(Number(Number(n).toFixed(1)))}%`)
 
 // 재정 위험도 설명 문구. 금리 임계값(rate_thresholds)이 있으면 "금리 +x%p에 추가 상환이 흔들려요"로 이어 붙인다.
 export function reasonText(data) {
@@ -19,6 +19,7 @@ export function reasonText(data) {
   const { reduce_extra_from: reduce, basic_at_risk_from: basic } = data.rate_thresholds
   if (reduce === 0) return `${head} · 지금도 추가 상환이 흔들리고 있어요`
   if (reduce != null) return `${head} · 금리 +${reduce}%p에 추가 상환이 흔들려요`
+  if (basic === 0) return `${head} · 지금도 기본 상환이 빠듯해요`
   if (basic != null) return `${head} · 금리 +${basic}%p에 기본 상환이 부족해져요`
   return data.level === 'STABLE' ? `${head} · 금리가 올라도 지금 계획을 지킬 수 있어요` : `${head} · 작은 변화에도 계획이 흔들릴 수 있어요`
 }

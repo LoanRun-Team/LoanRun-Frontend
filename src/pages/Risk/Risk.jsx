@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import { onboardingApi, riskApi } from '../../api/index.js'
 import LevelCard from './components/LevelCard.jsx'
+import UpcomingCard from './components/UpcomingCard.jsx'
 import './Risk.scss'
 
 const footnote = '모든 날짜와 금액은 예시 계산이에요 (주담대 연 3.08%, 신용대출 연 5.8% 가정).'
@@ -42,8 +43,9 @@ export default function Risk({ navigate }) {
       <header className="rk-header"><h1>위험 분석</h1><span className="rk-pro">PRO</span></header>
       {state.status === 'loading' && <p className="rk-loading" role="status">불러오는 중…</p>}
       {state.status === 'error' && <p className="rk-banner danger" role="alert"><span>{state.error?.message || '위험 분석 정보를 불러오지 못했어요.'}</span><button type="button" className="rk-button outline small" onClick={reload}>다시 시도</button></p>}
-      {state.status === 'ready' && <div className="rk-columns">
+      {state.status === 'ready' && <div className={`rk-columns${state.data.upcoming_events.length > 1 ? ' even' : ''}`}>
         <LevelCard data={state.data} onStrategy={() => setNotice('상환 전략 화면은 준비 중이에요')} />
+        <UpcomingCard data={state.data} loans={loans} />
       </div>}
       <p className="rk-footnote">{footnote}</p>
     </main>

@@ -42,6 +42,15 @@
     &.caution { background: var(--rk-warning-bg); color: var(--rk-warning-text); }
     &.danger { background: var(--rk-danger-bg); color: var(--rk-danger-text); }
   }
+  // 다가오는 위험
+  .rk-alerts { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .rk-alert { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border-radius: 12px; background: var(--rk-inset);
+    strong { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; line-height: 24px; font-weight: 600; }
+    p { margin: 0; font-size: 16px; line-height: 24px; color: var(--secondary); }
+  }
+  .rk-date-chip { padding: 2px 10px; border-radius: 999px; background: var(--card); font-size: 14px; line-height: 22px; font-weight: 600; color: var(--primary-text); white-space: nowrap; }
+  .rk-soon { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+  .rk-empty { margin: 0; font-size: 16px; line-height: 24px; color: var(--secondary); }
   .rk-link { align-self: flex-start; padding: 0; border: 0; background: transparent; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--primary-text); }
   .rk-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border: 1px solid var(--primary); border-radius: 12px; background: var(--primary-light); color: var(--primary-text); box-shadow: 0 8px 24px #021e2f1f; }
 
