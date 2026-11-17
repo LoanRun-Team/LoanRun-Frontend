@@ -2,6 +2,7 @@ import { createApi } from './createApi.js'
 import { createOnboardingApi } from './onboarding.js'
 import { createBudgetApi } from './budget.js'
 import { createRiskApi } from './risk.js'
+import { createReportApi } from './report.js'
 import { mockHandlers } from './mock/handlers.js'
 
 // VITE_API_MODE=mock(기본) | real. real 이면 VITE_API_BASE_URL 필요.
@@ -11,3 +12,4 @@ export const api = createApi({ env: import.meta.env, handlers: mockHandlers })
 export const onboardingApi = createOnboardingApi(api)
 export const budgetApi = createBudgetApi(api)
 export const riskApi = createRiskApi(api)
+export const reportApi = createReportApi(api)
