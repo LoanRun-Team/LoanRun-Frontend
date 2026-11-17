@@ -32,7 +32,7 @@ export default function Settings({location,navigate}) {
   }
   async function exportData(){await mutate(async()=>{const {blob,filename}=await services.exportData({format:'csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
   const financeSave=(key,value)=>services.saveFinance({...data.finance,[key]:Number(value)})
-  return <div className={'settings-shell settings-'+active}><Sidebar logoSrc={logo} active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>['home','loans','settings'].includes(item.id)?navigate(item.href):setPanel(item.label)}/>
+  return <div className={'settings-shell settings-'+active}><Sidebar logoSrc={logo} active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>navigate(item.href)}/>
     <aside className="settings-nav"><h1>설정</h1><nav aria-label="설정 메뉴">{tabs.map(([id,label])=><a key={id} href={'/settings/'+id} className={active===id?'active':''} aria-current={active===id?'page':undefined} onClick={e=>{if(!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&e.button===0){e.preventDefault();setEditing(null);setError('');navigate('/settings/'+id)}}}>{label}</a>)}</nav></aside>
     <main id="main-content" className="settings-content"><ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
     {signedOut?<p role="status">로그아웃되었습니다. 로그인 후 다시 이용해 주세요.</p>:resource.status==='success'&&data&&<>

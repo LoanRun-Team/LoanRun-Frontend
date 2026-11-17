@@ -15,7 +15,8 @@
 }
 ```
 
-현재 Notion 명세에 접근할 수 없어 제품 엔드포인트·메서드·인증 방식·리소스 스키마는 아직 등록하지 않았습니다. 홈과 대출관리는 기존 표시용 더미데이터를 계속 사용합니다. 명세에 맞춘 Mock API 화면 연결은 완료되지 않은 상태입니다.
+온보딩은 Notion 명세(2026-11-15)에 맞춰 연결했습니다. 엔드포인트·요청/응답 요약은 `ONBOARDING_API.md`, 호출 함수는 `onboarding.js`, 명세 기반 Mock 핸들러는 `mock/handlers.js`입니다(`index.js` 의 `onboardingApi`).
+홈과 대출관리는 기존 표시용 더미데이터를 계속 사용합니다. 로그인 기능은 만들지 않기로 해서 `Authorization: Bearer` 헤더는 붙이지 않습니다(명세는 토큰을 요구하므로 실서버 연결 시 백엔드와 인증 처리 방식을 정해야 합니다).
 
 ## 공통 코드
 
@@ -24,7 +25,7 @@
 - `mock/createMockFetch.js`: 등록된 핸들러를 native Response로 반환하는 가상 HTTP 전송 계층
 - `createApi.js`: `VITE_API_MODE`의 `mock`/`real` 전환. 실서버 사용 시 `VITE_API_BASE_URL` 필수
 
-인증은 명세 확인 후 `getHeaders` 또는 필요한 fetch 옵션으로 연결합니다. 토큰·로그인 방식을 임의로 정하지 않습니다.
+인증 헤더가 필요해지면 `getHeaders` 또는 필요한 fetch 옵션으로 연결합니다. 토큰 방식을 임의로 정하지 않고 백엔드와 확인한 뒤 적용합니다.
 
 Mock 핸들러는 명세의 실제 경로·메서드와 동일한 값을 등록하고 동일한 envelope를 반환해야 합니다. 현재 테스트에 쓰는 `/contract-example`은 응답 처리 검증만을 위한 경로이며 제품 API가 아닙니다.
 

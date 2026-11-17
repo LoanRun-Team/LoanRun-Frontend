@@ -35,7 +35,7 @@ export default function Home({navigate}) {
     }catch(e){setError(errorMessage(e))}finally{setPending(false)}
   }
   return <div className={`app-shell home-v2${plan==='Free'?' is-free':''}`}>
-    <Sidebar plan={plan} logoSrc={wordmark} onNavigate={item=>['home','loans','settings'].includes(item.id)?navigate(item.href):setPanel(item.label)}/>
+    <Sidebar plan={plan} logoSrc={wordmark} onNavigate={item=>navigate(item.href)}/>
     <main className="home-content" id="main-content"><ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
       {resource.status==='success'&&dashboard&&<><h1>안녕하세요, {profile.name}님.</h1>
         <LoanOverview dashboard={dashboard} loanDetails={loans} plans={plans} onViewAll={()=>navigate('/loans')}/>

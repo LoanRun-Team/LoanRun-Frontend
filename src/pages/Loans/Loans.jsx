@@ -73,7 +73,7 @@ export default function Loans({location,navigate}) {
     if(paid){record({type:'regular',loanId:String(dialog.item.loan_id)});return}
     return mutate(()=>services.confirmDue(dialog.item.due_item_id,true,dialog.idempotencyKey),'이번 회차를 미납으로 표시했어요')
   }
-  return <div className="loans-shell loans-v2" data-page={page}><Sidebar active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} logoSrc={wordmark} onNavigate={item=>item.parent==='loans'||['home','loans','settings'].includes(item.id)?go(item.href):open({type:'unavailable',title:item.label})}/>
+  return <div className="loans-shell loans-v2" data-page={page}><Sidebar active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} logoSrc={wordmark} onNavigate={item=>item.parent==='loans'||item.id==='loans'?go(item.href):navigate(item.href)}/>
     <main className="loans-content" id="main-content">
       {['history','edit'].includes(page)&&<button className="lm-text back-link" onClick={()=>go(page==='history'?'/loans':'/loans/plan?loan='+filter)}><img src={v2Icons.back} alt=""/>{page==='history'?'내 대출':'상환 계획'}</button>}
       <header className="loans-page-header"><h1>{title}</h1>{['segments','plan','history','edit'].includes(page)&&<LoanFilter loans={loans} value={filter} onChange={onFilter}/>}</header>
