@@ -3,21 +3,19 @@
 import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
 import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
-import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView } from './risks.js'
+import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView, simulateRisk, validateSimulation } from './risks.js'
 import { applyStrategy, comparisonSettings, generateReport, getReportById, isPro, isStrategyBody, latestReport, loanKnown, previewStrategy, proRequired, saveComparison, strategyView, validateComparisonBody, validateStrategyBody } from './reports.js'
-import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
+import { completeOnboarding, getProfile, onboardingState, previewPlans, previewVersion, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
 const validationError = errors => ({ status: 400, body: { success: false, code: 'VALIDATION_ERROR', message: '입력값을 확인해 주세요.', errors } })
-
-const LOAN_FORMS = ['GENERAL', 'CREDIT_LINE']
 
 function validateFilters(query) {
   const errors = {}
   const loanType = query.get('loan_type')
   const loanForm = query.get('loan_form')
   if (loanType && !loanTypes.some(t => t.code === loanType)) errors.loan_type = ['지원하지 않는 유형입니다.']
-  if (loanForm && !LOAN_FORMS.includes(loanForm)) errors.loan_form = ['GENERAL 또는 CREDIT_LINE 만 가능합니다.']
+  if (loanForm && loanForm !== 'GENERAL') errors.loan_form = ['GENERAL 만 가능합니다.']
   return errors
 }
 
@@ -152,6 +150,17 @@ export const mockHandlers = [
     },
   },
   {
+    method: 'POST', path: '/api/risks/simulate/',
+    respond: ({ body }) => {
+      const errors = validateSimulation(body)
+      if (Object.keys(errors).length) return validationError(errors)
+      if (isFreePlan()) return { status: 403, body: { success: false, code: 'PRO_REQUIRED', message: 'PRO 이용자만 사용할 수 있습니다.', errors: {} } }
+      if (!hasProfile()) return notFound('FINANCE_PROFILE_NOT_FOUND', '기본 재정정보를 찾을 수 없습니다.')
+      if (body?.loan_ids?.some(id => !loanExists(id))) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
+      return ok('RISK_SIMULATION_SUCCESS', '금리·소득 변화 시뮬레이션 처리를 완료했습니다.', simulateRisk(body ?? {}))
+    },
+  },
+  {
     method: 'POST', path: '/api/repayment-plans/preview/',
     respond: ({ body }) => {
       if (isStrategyBody(body)) return strategyBranch(body, false)
@@ -161,10 +170,17 @@ export const mockHandlers = [
   },
   {
     method: 'PUT', path: '/api/repayment-plans/',
-    respond: ({ body }) => {
-      if (isStrategyBody(body)) return strategyBranch(body, true)
+    respond: ({ body, headers }) => {
+      if (isStrategyBody(body)) {
+        if (!headers.get('Idempotency-Key')) return validationError({ 'header.Idempotency-Key': ['저장 요청에는 Idempotency-Key 헤더가 필요합니다.'] })
+        return strategyBranch(body, true)
+      }
       const errors = validatePlans(body)
-      return Object.keys(errors).length ? validationError(errors) : ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', savePlans(body))
+      if (!headers.get('Idempotency-Key')) errors['header.Idempotency-Key'] = ['저장 요청에는 Idempotency-Key 헤더가 필요합니다.']
+      if (!body?.preview_version) errors.preview_version = ['미리보기의 preview_version 이 필요합니다.']
+      if (Object.keys(errors).length) return validationError(errors)
+      if (body.preview_version !== previewVersion(body.plans)) return { status: 409, body: { success: false, code: 'PLAN_PREVIEW_STALE', message: '미리보기 이후 정보가 바뀌었습니다. 다시 계산해 주세요.', errors: {} } }
+      return ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', savePlans(body))
     },
   },
   {
@@ -190,7 +206,7 @@ export const mockHandlers = [
       const loans = listLoans()
       return ok('LOAN_LIST_SUCCESS', '보유 대출 목록 정보를 조회했습니다.', {
         loans,
-        total_remaining_principal: loans.reduce((s, l) => s + (l.remaining_principal ?? l.used_amount ?? 0), 0),
+        total_remaining_principal: loans.reduce((s, l) => s + l.remaining_principal, 0),
         total_monthly_due: loans.reduce((s, l) => s + l.estimated_monthly_payment, 0),
         estimated_payoff_date: loans.map(l => l.maturity_date).sort().at(-1) ?? null,
         count: loans.length,

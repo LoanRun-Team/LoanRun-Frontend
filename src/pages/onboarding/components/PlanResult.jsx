@@ -53,6 +53,20 @@ function statsFor(loan, draft, res) {
   ]
 }
 
+// 만기일시: 이자는 별도로 내고, 상환자금을 모으는 계획. 목표일 기준이면 월 필요 적립액, 월 적립액 기준이면 마련 예상일을 보여 준다.
+function LumpResult({ loan, draft, res }) {
+  const target = res.saving_target_amount ?? Math.max(loan.remaining_principal - (loan.initial_savings_balance ?? 0), 0)
+  const rows = [
+    { label: '매월 내는 이자', value: `${fmtWon(loan.estimated_monthly_payment)}(별도)` },
+    draft.tab === 'monthly'
+      ? { label: '월 적립액', value: fmtWon(res.planned_saving_amount), accent: true }
+      : { label: '월 필요 적립액', value: fmtWon(res.planned_saving_amount), accent: true },
+    { label: '목표일까지 마련할 상환자금', value: fmtWon(target) },
+    ...(draft.tab === 'monthly' ? [{ label: '상환자금 마련 예상', value: fmtYM(res.estimated_payoff_date) }] : []),
+  ]
+  return <dl className="ob-lump-result">{rows.map(r => <div key={r.label}><dt>{r.label}</dt><dd className={r.accent ? 'accent' : ''}>{r.value}</dd></div>)}</dl>
+}
+
 export default function PlanResult({ loan, draft, res, pending, onDraft, title = '계산 결과' }) {
   const ready = Boolean(planPayload(loan, draft))
   const lump = isLump(loan)
@@ -63,7 +77,7 @@ export default function PlanResult({ loan, draft, res, pending, onDraft, title =
   return <section className="ob-plan-card" aria-live="polite">
     <h2>{title}</h2>
     {!ready ? <EmptyResult /> : !res ? <p className="ob-stat-pending">{pending ? '계산 중…' : '계산 결과를 불러오지 못했어요.'}</p> : <>
-      <StatBox stats={statsFor(loan, draft, res)} />
+      {lump && ['date', 'monthly'].includes(draft.tab) ? <LumpResult loan={loan} draft={draft} res={res} /> : <StatBox stats={statsFor(loan, draft, res)} />}
       <NumberField label="목표 비상자금 (선택)" value={draft.emergency_fund} unit="원" placeholder="예: 6,000,000" onChange={v => onDraft({ emergency_fund: v })} />
       {showOverride && <>
         <NumberField label={lump ? '월 상환 희망액 (선택)' : '월 추가 상환 희망액 (선택)'} value={override ?? (lump ? res.monthly_amount : res.extra_monthly_payment)} unit="원" placeholder="0"

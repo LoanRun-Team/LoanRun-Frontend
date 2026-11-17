@@ -1,6 +1,6 @@
 # 예산·지출 API 스펙 요약
 
-출처: Notion "API 명세서 (11월 15일 11시 50분 기준)" 상세 페이지 (2026-11-16 확인). 상태는 전부 `BE 구현전`이라 값이 바뀔 수 있다.
+출처: Notion "API 명세서 최종본 · 2026.11.16" (이슈 #9 에서 새 필드 반영). 상태는 전부 `BE 구현전`이라 값이 바뀔 수 있다.
 호출 함수는 `budget.js`, mock 은 `mock/budgets.js`. 공통 규약(envelope·인증·snake_case)은 `ONBOARDING_API.md` 와 같다.
 
 ## GET /api/budgets/{year_month}/ — 월별 예산·재정정보 조회
@@ -15,7 +15,11 @@
 | `discretionary_expenses`, `savings`, `emergency_fund` | 선택 지출, 저축, 비상자금 |
 | `scheduled_repayment`, `actual_repayment` | 정기 납부 예정액, 그 달 납부 기록 합계 |
 | `available_cash` | 여유자금 = 소득 − 정기 상환 − 필수·선택 지출 − 저축 (서버가 계산) |
-| `allocation` | `{ allocations: [{loan_id, amount}], reserve_amount, total_allocated }` |
+| `carry_in` | 지난달에서 이월된 금액 |
+| `recurring_capacity`, `allocation_capacity`, `remaining_allocation_capacity` | 정기 배분 가능액(여유자금 ≥ 0), 이번 달 배분 가능액(= 정기 + 이월), 아직 배분하지 않은 남은 금액 |
+| `unallocated_amount`, `deficit_amount` | 배분하지 않은 금액(이월 대상), 여유자금이 모자란 금액 |
+| `discretionary_limit_amount`, `actual_discretionary_expenses`, `discretionary_savings_amount` | 선택 지출 한도·사용·절약 |
+| `allocation` | `{ allocations: [{loan_id, amount, allocation_type, actual_amount}], reserve_amount, total_allocated }` |
 | `allocation_needs_review` | 여유자금이 바뀌어 배분을 다시 확인해야 함 |
 | `income_entries[]` | `{ income_entry_id, entry_type: EXTRA\|IRREGULAR, received_date, amount }` |
 | `source` | `INPUT`(그 달 입력함) \| `DEFAULT`(기본 재정정보로 채움) — 화면은 이 값으로 "금액 입력 전"을 구분한다 |
@@ -47,6 +51,8 @@
 
 ## Figma 와 API 가 맞지 않는 부분
 
-- 지난달 정산의 "선택 지출 한도·사용·절약"은 API 에 한도 필드가 없어 계산한다: 한도 = `available_cash + discretionary_expenses`(= 소득 − 정기 상환 − 필수 − 저축), 사용 = `discretionary_expenses`, 절약 = 한도 − 사용. Figma 예시(800,000 / 620,000 / 180,000)와 일치하며, 한도의 의미는 디자인 확인이 필요하다.
-- "이월"은 `available_cash − total_allocated` 로 계산한다(별도 필드 없음).
+- 지난달 정산의 선택 지출 한도·사용·절약과 이월은 최종 명세의 `discretionary_limit_amount` 등과 `unallocated_amount` 를 쓴다. 응답에 필드가 없으면(구버전) `settlementOf` 가 예전 계산식으로 대신한다.
+- 배분 가능 금액 `allocation_capacity` = max(재정 잔여액 + 이월금, 0). 분할 합계가 이 값 **이하**이면 저장할 수 있고(남은 금액은 다음 달 이월), 넘으면 막는다(추가 로직 결정: 예산 안건 8·10). 위험 분석은 이월 전 `available_cash` 를 쓴다.
+- 이월은 지난달에 배분을 저장했을 때만 생긴다: 배분 가능 금액 − 배분 합계(남겨두기는 예비비라 이월하지 않음). 적자 달은 이월이 없다.
+- 선택 지출 절약액 = max(한도 − 실제 선택 지출, 0). 그 달 지출을 입력하지 않았으면 `discretionary_savings_amount` 는 null.
 - 여유자금 분할 제안(예비비 20,000원 + 금리 높은 대출에 나머지)은 화면에서 만든 값이다.

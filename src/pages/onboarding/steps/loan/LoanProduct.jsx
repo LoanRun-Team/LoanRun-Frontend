@@ -9,14 +9,14 @@ import { useRequest } from '../../useRequest.js'
 // 의존 순서: 대출 종류 → 은행 → 상품명. 앞 단계를 바꾸면 뒤 선택은 초기화된다.
 // "직접 입력" 모드: 은행명·상품명을 텍스트로 받는다(API: product_id=null, institution_name·product_name 필수).
 export default function LoanProduct({ form, setForm }) {
-  const { loan_form, loan_type, product_id, institution_name, product_name } = form.loan
+  const { loan_type, product_id, institution_name, product_name } = form.loan
   const { institution_id, manual } = form.selection
   const [retry, setRetry] = useState(0)
 
-  const options = useRequest(signal => onboardingApi.getLoanProductOptions({ loan_form }, { signal }), [loan_form, retry])
+  const options = useRequest(signal => onboardingApi.getLoanProductOptions({}, { signal }), [retry])
   const products = useRequest(
-    signal => (!manual && loan_type && institution_id ? onboardingApi.getLoanProducts({ loan_type, institution_id, loan_form }, { signal }) : null),
-    [manual, loan_type, institution_id, loan_form, retry],
+    signal => (!manual && loan_type && institution_id ? onboardingApi.getLoanProducts({ loan_type, institution_id }, { signal }) : null),
+    [manual, loan_type, institution_id, retry],
   )
 
   const loanTypes = (options.data?.loan_types ?? []).map(t => ({ value: t.code, label: t.label }))

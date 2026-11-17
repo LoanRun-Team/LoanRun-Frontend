@@ -2,7 +2,7 @@
 // 계산식은 화면 확인용 근사치이며 실제 계산은 서버 엔진이 한다. 등록한 대출은 새로고침 후에도 보이도록 sessionStorage 에 둔다.
 const KEY = 'loanrun-mock-loans'
 const TYPES = ['CREDIT', 'MORTGAGE', 'JEONSE', 'STUDENT', 'AUTO', 'OTHER']
-const METHODS = ['EQUAL_PAYMENT', 'EQUAL_PRINCIPAL', 'GRACE_INSTALLMENT', 'BULLET', 'CREDIT_LINE']
+const METHODS = ['EQUAL_PAYMENT', 'EQUAL_PRINCIPAL', 'GRACE_INSTALLMENT', 'BULLET']
 
 function read() {
   try { return JSON.parse(sessionStorage.getItem(KEY)) ?? { nextId: 1, loans: [] } } catch { return { nextId: 1, loans: [] } }
@@ -20,7 +20,7 @@ const annuity = (principal, monthlyRate, n) => (monthlyRate === 0 ? principal / 
 export function validateLoanBody(b) {
   const errors = {}
   const need = (key, ok, message) => { if (!ok) errors[key] = [message] }
-  need('loan_form', ['GENERAL', 'CREDIT_LINE'].includes(b.loan_form), 'GENERAL 또는 CREDIT_LINE 만 가능합니다.')
+  need('loan_form', b.loan_form === 'GENERAL', 'GENERAL 만 가능합니다.')
   need('loan_type', TYPES.includes(b.loan_type), '지원하지 않는 유형입니다.')
   need('repayment_method', METHODS.includes(b.repayment_method), '지원하지 않는 상환 방법입니다.')
   need('annual_rate', typeof b.annual_rate === 'number' && b.annual_rate >= 0 && b.annual_rate < 30, '금리는 0 이상 30 미만이어야 합니다.')
@@ -29,13 +29,14 @@ export function validateLoanBody(b) {
   need('maturity_date', /^\d{4}-\d{2}-\d{2}$/.test(b.maturity_date ?? '') && b.maturity_date > (b.start_date ?? ''), '만기일은 실행일 이후여야 합니다.')
   need('payment_day', Number.isInteger(b.payment_day) && b.payment_day >= 1 && b.payment_day <= 31, '납부일은 1~31 이어야 합니다.')
   if (!b.product_id) { need('institution_name', Boolean(b.institution_name), '직접 입력 시 은행명이 필요합니다.'); need('product_name', Boolean(b.product_name), '직접 입력 시 상품명이 필요합니다.') }
-  if (b.loan_form === 'CREDIT_LINE') {
-    need('credit_limit', Number.isInteger(b.credit_limit) && b.credit_limit > 0, '약정 한도는 양수여야 합니다.')
-    need('used_amount', Number.isInteger(b.used_amount) && b.used_amount >= 0 && b.used_amount <= (b.credit_limit ?? 0), '사용액은 0 이상 한도 이하여야 합니다.')
-  } else {
-    need('original_principal', Number.isInteger(b.original_principal) && b.original_principal > 0, '최초 원금은 양수여야 합니다.')
-    need('remaining_principal', Number.isInteger(b.remaining_principal) && b.remaining_principal >= 0 && b.remaining_principal <= (b.original_principal ?? 0), '현재 잔액은 0 이상 최초 원금 이하여야 합니다.')
-  }
+  need('original_principal', Number.isInteger(b.original_principal) && b.original_principal > 0, '최초 원금은 양수여야 합니다.')
+  need('remaining_principal', Number.isInteger(b.remaining_principal) && b.remaining_principal >= 0 && b.remaining_principal <= (b.original_principal ?? 0), '현재 잔액은 0 이상 최초 원금 이하여야 합니다.')
+  if (b.repayment_method === 'BULLET') need('prepayment_policy', b.prepayment_policy == null, '만기일시상환은 prepayment_policy 가 null 이어야 합니다.')
+  else need('prepayment_policy', ['KEEP_PAYMENT', 'KEEP_MATURITY'].includes(b.prepayment_policy), 'KEEP_PAYMENT 또는 KEEP_MATURITY 가 필요합니다.')
+  if (b.prepayment_fee_method != null) need('prepayment_fee_method', ['FIXED', 'LINEAR', 'NONE', 'UNKNOWN'].includes(b.prepayment_fee_method), '지원하지 않는 수수료 방식입니다.')
+  if (['FIXED', 'LINEAR'].includes(b.prepayment_fee_method)) need('prepayment_fee_rate', typeof b.prepayment_fee_rate === 'number' && b.prepayment_fee_rate > 0, '수수료율이 필요합니다.')
+  if (b.prepayment_fee_method === 'LINEAR') need('fee_start_date', Boolean(b.fee_start_date), '부과 시작일이 필요합니다.')
+  if (b.initial_savings_balance != null) need('initial_savings_balance', Number.isInteger(b.initial_savings_balance) && b.initial_savings_balance >= 0, '적립금은 0 이상이어야 합니다.')
   if (b.repayment_method === 'GRACE_INSTALLMENT') need('grace_months', Number.isInteger(b.grace_months) && b.grace_months >= 1, '거치 기간은 1개월 이상이어야 합니다.')
   return errors
 }
@@ -43,7 +44,7 @@ export function validateLoanBody(b) {
 export function previewLoan(b) {
   const monthlyRate = b.annual_rate / 1200
   const remainingMonths = Math.max(1, monthsBetween(today() < b.start_date ? b.start_date : today(), b.maturity_date))
-  const principal = b.loan_form === 'CREDIT_LINE' ? b.used_amount : b.remaining_principal
+  const principal = b.remaining_principal
   let payment, nextPrincipal, nextInterest
   const interest = Math.round(principal * monthlyRate)
   switch (b.repayment_method) {
@@ -53,7 +54,7 @@ export function previewLoan(b) {
       if (b.post_grace_method === 'EQUAL_PRINCIPAL') { nextPrincipal = Math.round(principal / after); nextInterest = interest } else { payment = Math.round(annuity(principal, monthlyRate, after)); nextInterest = interest; nextPrincipal = payment - interest }
       break
     }
-    case 'BULLET': case 'CREDIT_LINE': nextPrincipal = 0; nextInterest = interest; break
+    case 'BULLET': nextPrincipal = 0; nextInterest = interest; break
     default: payment = Math.round(annuity(principal, monthlyRate, remainingMonths)); nextInterest = interest; nextPrincipal = payment - interest
   }
   payment = payment ?? nextPrincipal + nextInterest
@@ -65,7 +66,7 @@ export function previewLoan(b) {
     maturity_date: b.maturity_date,
     remaining_months: remainingMonths,
     warnings: ['중도상환수수료·연체이자 미제공. 실제 계약상 부분상환 가능 여부와 수수료를 확인하세요.'],
-    repayment_category: b.repayment_method === 'BULLET' || b.repayment_method === 'CREDIT_LINE' ? 'LUMP_SUM' : 'INSTALLMENT',
+    repayment_category: b.repayment_method === 'BULLET' ? 'LUMP_SUM' : 'INSTALLMENT',
   }
 }
 
@@ -93,9 +94,14 @@ export function createLoan(b) {
     payment_day: b.payment_day,
     grace_months: b.grace_months ?? 0,
     post_grace_method: b.post_grace_method ?? null,
-    credit_limit: b.credit_limit ?? null,
-    used_amount: b.used_amount ?? null,
     contractual_monthly_payment: b.contractual_monthly_payment ?? null,
+    prepayment_policy: b.prepayment_policy ?? null,
+    prepayment_fee_method: b.prepayment_fee_method ?? 'UNKNOWN',
+    prepayment_fee_rate: b.prepayment_fee_rate ?? null,
+    fee_start_date: b.fee_start_date ?? null,
+    fee_end_date: b.fee_end_date ?? null,
+    fee_exempt: b.fee_exempt ?? null,
+    initial_savings_balance: b.initial_savings_balance ?? 0,
     estimated_monthly_payment: p.estimated_monthly_payment,
     paid_principal: paid,
     progress_percent: original ? Math.round((paid / original) * 10000) / 100 : null,

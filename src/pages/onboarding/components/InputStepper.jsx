@@ -1,5 +1,5 @@
-// Figma: Stepper / 입력 단계 — "1 / 3" + 막대 3개. 온보딩 S-01a~c(대출 입력)에서 사용.
-const TOTAL = 3
+// Figma: Stepper / 입력 단계 — "1 / 3" + 막대 3개. 온보딩 S-01b~c(대출 입력)에서 사용.
+const TOTAL = 2
 
 export default function InputStepper({ step }) {
   return <div className="ob-input-stepper" role="img" aria-label={`대출 입력 ${step} / ${TOTAL} 단계`}>

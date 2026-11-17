@@ -57,7 +57,7 @@ export default function Budget({ navigate }) {
   const schedule = baseSchedule(loans, ym)
 
   // 여유자금과 분할: 서버에 반영된 분할이 있으면 그것을, 없으면 제안값을 보여주고, 편집 중이면 편집 값을 쓴다.
-  const available = month?.available ?? 0
+  const available = month?.capacity ?? 0
   const applied = month ? isApplied(month) : false
   const baseAllocation = month && (applied ? month.allocation : suggestAllocation(available, loans))
   const allocation = draft?.ym === ym ? draft.value : baseAllocation
@@ -77,9 +77,11 @@ export default function Budget({ navigate }) {
       await budgetApi.applyAllocation(ym, toAllocationBody(allocation, loans))
       setDraft(null)
       reload()
-      setNotice('여유자금 분할을 반영했어요')
+      setNotice('이번달 여유자금 배분을 반영했어요')
+      return true
     } catch (e) {
       setNotice(e?.message || '반영하지 못했어요. 잠시 후 다시 시도해 주세요.')
+      return false
     } finally {
       setBusy(false)
     }

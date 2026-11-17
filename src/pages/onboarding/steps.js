@@ -13,7 +13,7 @@ export const STEP_GROUPS = [
   { id: 'goal', label: '상환 목표' },
 ]
 
-export const FIRST_STEP = 'loan-type'
+export const FIRST_STEP = 'loan-product'
 
 const isNumber = n => typeof n === 'number' && Number.isFinite(n)
 
@@ -37,10 +37,11 @@ const saveProfile = async ({ income, living }) => {
   })
 }
 
-// S-03 "이 계획으로 시작하기": 상환 계획 저장(PUT /api/repayment-plans/) → 온보딩 완료(POST /api/onboarding/complete/)
+// S-03 "이 계획으로 시작하기": 상환 계획 미리보기로 preview_version 을 받고 저장(PUT /api/repayment-plans/) → 온보딩 완료(POST /api/onboarding/complete/)
 const finishOnboarding = async form => {
   const plans = form.loans.map(l => planPayload(l, draftOf(form.goal, l.loan_id)))
-  await onboardingApi.saveRepaymentPlan({ plans })
+  const { preview_version } = await onboardingApi.previewRepaymentPlan({ plans })
+  await onboardingApi.saveRepaymentPlan({ plans, preview_version }, { idempotencyKey: crypto.randomUUID() })
   await onboardingApi.complete()
 }
 
@@ -49,20 +50,19 @@ const goalStep = (eyebrow, heading, title) => ({
   next: () => null, valid: allPlansReady, submit: finishOnboarding,
 })
 
-// title: 탭 제목 / heading: 화면 제목(없으면 title) / eyebrow: 제목 위 작은 글씨 / inputStep: "n / 3" 대출 입력 단계(S-01a~c만)
+// title: 탭 제목 / heading: 화면 제목(없으면 title) / eyebrow: 제목 위 작은 글씨 / inputStep: "n / 2" 대출 입력 단계(S-01b~c만)
 // sub: 재정 정보 하위 단계 / bar: 하단 고정 이동 바 / hidePrev: 이전 버튼 숨김 / wide·footer: S-03 레이아웃
 // valid(form): 다음 버튼 활성 조건(없으면 항상 가능)
 export const STEPS = {
-  'loan-type': { group: 'loan', inputStep: 1, title: '대출 형태', heading: '대출 형태를 선택해 주세요.', next: () => 'loan-product', valid: form => Boolean(form.loan.loan_form) },
   'loan-product': {
-    group: 'loan', inputStep: 2, title: '대출 종류와 상품', heading: '대출 종류와 상품을 선택해 주세요.', next: () => 'repayment-info',
+    group: 'loan', inputStep: 1, title: '대출 종류와 상품', heading: '대출 종류와 상품을 선택해 주세요.', next: () => 'repayment-info',
     // 카탈로그 상품을 골랐거나, 직접 입력 모드에서 은행명·상품명을 모두 적어야 다음으로 갈 수 있다.
     valid: ({ loan, selection }) => Boolean(loan.loan_type) && (selection.manual
       ? Boolean(loan.institution_name?.trim() && loan.product_name?.trim())
       : loan.product_id != null),
   },
   'repayment-info': {
-    group: 'loan', inputStep: 3, title: '상환 정보', heading: '상환 정보를 입력해 주세요.', next: () => 'loan-summary',
+    group: 'loan', inputStep: 2, title: '상환 방식', heading: '상환 방식을 확인해 주세요.', nextLabel: '대출 추가하기', next: () => 'loan-summary',
     valid: form => buildLoanBody(form) !== null,
     // "다음"을 누르면 대출을 등록하고(POST /api/loans/), 다음 대출을 입력할 수 있게 입력 중이던 값을 비운다.
     // 등록된 대출을 수정하던 중이면 기존 대출을 지우고 새로 등록한다.
@@ -91,7 +91,7 @@ export const STEPS = {
   'goal-direction': goalStep('STEP 03 · 상환 목표', '대출을 언제까지 갚을지 정해 주세요.', '목표 방향 선택'),
   'early-repayment': goalStep('STEP 03 · 조기 상환 설정', '얼마나 일찍 갚을지 정해 주세요.', '조기 상환 설정'),
   'target-date': goalStep('STEP 03 · 목표 완납일', '언제까지 다 갚을지 정해 주세요.', '목표 완납일 설정'),
-  'multi-loan': goalStep('STEP 03 · 상환 목표', '대출마다 상환 목표를 정해 주세요.', '다중채무'),
+  'multi-loan': goalStep('STEP 03 · 상환 목표', '매달 얼마나 더 갚을지 정해 주세요.', '다중채무'),
 }
 
 export const isStepId = id => Object.hasOwn(STEPS, id)

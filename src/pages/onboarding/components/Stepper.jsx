@@ -1,9 +1,8 @@
-import flag from '../../../assets/onboarding/icon-flag.svg'
 import check from '../../../assets/onboarding/icon-check.svg'
 import { STEP_GROUPS } from '../steps.js'
 
 // Figma: Stepper (온보딩 3단계). done(체크) / current(primary 채움) / todo. 연결선은 단계 사이에만 있고,
-// 현재 단계까지 이어진 선은 primary 색이다. 끝에 결승 깃발. 현재 단계에 하위 라벨(2-1 소득 / 2-2 생활비·저축)이 있으면 함께 보여준다.
+// 현재 단계까지 이어진 선은 primary 색이다. 현재 단계에 하위 라벨(2-1 소득 / 2-2 생활비·저축)이 있으면 함께 보여준다.
 export default function Stepper({ group, sub }) {
   const current = STEP_GROUPS.findIndex(g => g.id === group)
   return <ol className="ob-stepper" aria-label="온보딩 진행 단계">
@@ -20,6 +19,5 @@ export default function Stepper({ group, sub }) {
         </div>
       </li>
     })}
-    <li className="ob-stepper-finish" aria-hidden="true"><span className="ob-stepper-line" /><img src={flag} alt="" width="20" height="20" /></li>
   </ol>
 }

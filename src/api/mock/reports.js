@@ -157,11 +157,12 @@ export function strategyView(reportId) {
   else if (shortOfSaving) recommendation = null // 만기 상환자금 부족 → 추천 보류(F4-v)
   else if (type === 'MULTI') {
     candidates = ['RATE_RISK', 'INTEREST_SAVING', 'PARALLEL'].map(code => candidate(code, allocationsFor(code, installments, budget)))
-    const rateRisk = risk.indicators.variable_rate_exposure >= 50 && risk.rate_thresholds.reduce_extra_from != null && risk.rate_thresholds.reduce_extra_from <= 1
+    const exposure = risk.indicators.variable_rate_exposure
+    const rateRisk = exposure >= 50
     const best = rateRisk ? candidates[0] : [...candidates].sort((a, b) => b.interest_saving - a.interest_saving)[0]
     recommendation = {
       strategy_code: best.strategy_code, type: current?.code === best.strategy_code ? 'KEEP' : 'NEW',
-      reason: rateRisk ? '+1%p 상승 시 현재 추가 상환계획 유지가 어려워 변동금리 노출을 먼저 줄입니다.' : best.reason,
+      reason: rateRisk ? `변동금리 노출이 ${Math.round(exposure)}%라 금리 위험 대비가 맞아요.` : best.reason,
     }
   } else if (type === 'SINGLE_PREFERENCE') {
     const loan = installments[0]

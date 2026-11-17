@@ -18,9 +18,11 @@ export function createReportApi({ request }) {
     previewStrategy: ({ reportId, strategyCode, strategyVersion }, opts) =>
       request('/api/repayment-plans/preview/', { method: 'POST', body: { report_id: reportId, strategy_code: strategyCode, strategy_version: strategyVersion }, ...opts }),
     // 전략을 계획에 반영(원자적 저장). preview 응답의 preview_version·data_revision 을 그대로 돌려보낸다. 최신이 아니면 409 STRATEGY_STALE.
-    applyStrategy: ({ reportId, strategyCode, strategyVersion, previewVersion, dataRevision }, opts) =>
+    // 저장 요청은 헤더 Idempotency-Key 가 필수라 호출마다 새로 만든다(같은 요청을 다시 보낼 때만 같은 키를 넘긴다).
+    applyStrategy: ({ reportId, strategyCode, strategyVersion, previewVersion, dataRevision, idempotencyKey = crypto.randomUUID() }, opts) =>
       request('/api/repayment-plans/', {
         method: 'PUT',
+        headers: { 'Idempotency-Key': idempotencyKey },
         body: { report_id: reportId, strategy_code: strategyCode, strategy_version: strategyVersion, preview_version: previewVersion, data_revision: dataRevision },
         ...opts,
       }),

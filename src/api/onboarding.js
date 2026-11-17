@@ -23,10 +23,13 @@ export function createOnboardingApi({ request }) {
     // S-02: 기본 재정정보(소득·생활비·저축) / 비정기 소득 입금
     getBudgetProfile: opts => request('/api/budgets/profile/', opts),
     saveBudgetProfile: (body, opts) => request('/api/budgets/profile/', { method: 'PUT', body, ...opts }),
+    // S-03: 이번 달 여유자금(상환 성향 금액의 기준). recurring_capacity 가 있으면 그 값, 없으면 available_cash.
+    getBudgetMonth: (ym, opts) => request(`/api/budgets/${encodeURIComponent(ym)}/`, opts),
     createIncomeEntry: (body, opts) => request('/api/income-entries/', { method: 'POST', body, ...opts }),
 
     // S-03: 상환 계획 미리보기(DB 저장 없음) / 초기 목표 저장
     previewRepaymentPlan: (body, opts) => request('/api/repayment-plans/preview/', { method: 'POST', body, ...opts }),
-    saveRepaymentPlan: (body, opts) => request('/api/repayment-plans/', { method: 'PUT', body, ...opts }),
+    // 저장은 헤더 Idempotency-Key 와 미리보기에서 받은 preview_version 이 필수다(최신과 다르면 409 PLAN_PREVIEW_STALE).
+    saveRepaymentPlan: (body, { idempotencyKey, ...opts } = {}) => request('/api/repayment-plans/', { method: 'PUT', body, headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined, ...opts }),
   }
 }

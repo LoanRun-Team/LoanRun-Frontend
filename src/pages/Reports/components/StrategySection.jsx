@@ -21,7 +21,7 @@ function Candidate({ candidate, loans, recommended, selected, current, onSelect 
   return <button type="button" role="radio" aria-checked={selected} className={`rp-candidate${selected ? ' selected' : ''}`} onClick={() => onSelect(candidate.strategy_code)}>
     <span className="rp-candidate-badges">
       {recommended && <span className="rp-chip recommend small">추천</span>}
-      {current && <span className="rp-chip neutral small">적용 중</span>}
+      {current && <span className="rp-chip neutral small">현재 전략</span>}
     </span>
     <span className="rp-candidate-head"><b>{candidate.label}</b><span>{candidate.reason}</span></span>
     <span className="rp-candidate-basis"><b>배분</b><span>{allocationLine(candidate, loans)}</span></span>
@@ -70,8 +70,9 @@ export default function StrategySection({ strategy, loans, selected, onSelect, o
           : <div className="rp-sub">
             <h3>전략 선택</h3>
             {picked && <div className="rp-explain">
-              <b>{picked.strategy_code === data.recommendation?.strategy_code ? '이 전략을 추천해요' : `${picked.label} 전략을 골랐어요`}</b>
-              <span>{picked.strategy_code === data.recommendation?.strategy_code ? data.recommendation.reason : picked.reason}</span>
+              {picked.strategy_code === current
+                ? <><b>현재 전략이에요</b><span>{picked.strategy_code === data.recommendation?.strategy_code ? '달라지는 게 없어요. 이 전략으로 유지하길 추천해요.' : '달라지는 게 없어요.'}</span></>
+                : <><b>{picked.strategy_code === data.recommendation?.strategy_code ? '이 전략을 추천해요' : `${picked.label} 전략을 골랐어요`}</b><span>{picked.strategy_code === data.recommendation?.strategy_code ? data.recommendation.reason : picked.reason}</span></>}
             </div>}
             <div className="rp-candidates" role="radiogroup" aria-label="상환 전략">
               {data.candidates.map(c => <Candidate key={c.strategy_code} candidate={c} loans={loans} recommended={c.strategy_code === data.recommendation?.strategy_code}
