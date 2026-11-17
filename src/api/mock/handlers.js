@@ -4,6 +4,7 @@ import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
 import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
 import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView } from './risks.js'
+import { applyStrategy, comparisonSettings, generateReport, getReportById, isPro, isStrategyBody, latestReport, loanKnown, previewStrategy, proRequired, saveComparison, strategyView, validateComparisonBody, validateStrategyBody } from './reports.js'
 import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
@@ -21,6 +22,18 @@ function validateFilters(query) {
 }
 
 const notFound = (code, message) => ({ status: 404, body: { success: false, code, message, errors: {} } })
+
+const failure = (status, code, message) => ({ status, body: { success: false, code, message, errors: {} } })
+// 상환 계획 시뮬레이션·저장의 전략 분기(report_id + strategy_code + strategy_version). PRO 만 쓸 수 있다.
+function strategyBranch(body, save) {
+  if (!isPro()) return proRequired()
+  const errors = validateStrategyBody(body, save)
+  if (Object.keys(errors).length) return validationError(errors)
+  const result = save ? applyStrategy(body) : previewStrategy(body)
+  if (result.error === 'STRATEGY_STALE') return failure(409, 'STRATEGY_STALE', '추천 전략 기준 데이터가 변경되었습니다. 다시 조회해 주세요.')
+  if (result.error) return notFound('STRATEGY_NOT_FOUND', '전략을 찾을 수 없습니다.')
+  return save ? ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', result.data) : ok('REPAYMENT_PLAN_PREVIEW_SUCCESS', '상환 계획을 계산했습니다.', result.data)
+}
 
 export const mockHandlers = [
   {
@@ -84,9 +97,64 @@ export const mockHandlers = [
       return ok('RISK_DETAIL_SUCCESS', '재정 위험 분석 정보를 조회했습니다.', riskView(value))
     },
   },
+  // 상환 리포트. /latest/·/strategy/·/comparison-settings/ 를 /{report_id}/ 보다 먼저 둔다.
+  {
+    method: 'GET', path: '/api/reports/latest/',
+    respond: ({ query }) => {
+      if (!isPro()) return proRequired()
+      const loanId = query.get('loan_id')
+      if (loanId !== null && !/^[1-9]\d*$/.test(loanId)) return validationError({ loan_id: ['입력값이 올바르지 않습니다.'] })
+      if (loanId !== null && !loanKnown(Number(loanId))) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
+      return ok('REPORT_LATEST_SUCCESS', '최신 상환 리포트 정보를 조회했습니다.', latestReport())
+    },
+  },
+  {
+    method: 'GET', path: '/api/reports/strategy/',
+    respond: ({ query }) => {
+      if (!isPro()) return proRequired()
+      const reportId = query.get('report_id')
+      const latest = latestReport()
+      if (reportId !== null && Number(reportId) !== latest.report_id) return notFound('REPORT_NOT_FOUND', '상환 리포트를 찾을 수 없습니다.')
+      if (latest.status !== 'COMPLETED') return ok('REPORT_STRATEGY_SUCCESS', '상환 전략 정보를 조회했습니다.', { ...strategyView(latest.report_id), strategy_available: false, unavailable_reason: 'REPORT_NOT_READY', candidates: [], recommendation: null, strategy_version: null })
+      return ok('REPORT_STRATEGY_SUCCESS', '상환 전략 정보를 조회했습니다.', strategyView(latest.report_id))
+    },
+  },
+  {
+    method: 'GET', path: '/api/reports/comparison-settings/',
+    respond: () => isPro() ? ok('REPORT_COMPARISON_SETTINGS_SUCCESS', '또래 비교 기준·동의 정보를 조회했습니다.', comparisonSettings()) : proRequired(),
+  },
+  {
+    method: 'PATCH', path: '/api/reports/comparison-settings/',
+    respond: ({ body }) => {
+      if (!isPro()) return proRequired()
+      const errors = validateComparisonBody(body ?? {})
+      return Object.keys(errors).length ? validationError(errors) : ok('REPORT_COMPARISON_SETTINGS_UPDATE_SUCCESS', '또래 비교 기준·동의 정보를 수정했습니다.', saveComparison(body ?? {}))
+    },
+  },
+  {
+    method: 'POST', path: '/api/reports/',
+    respond: ({ body }) => {
+      if (!isPro()) return proRequired()
+      const loanId = body?.loan_id ?? null
+      if (loanId !== null && !loanKnown(loanId)) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
+      const result = generateReport({ force: body?.force === true })
+      if (result.error === 'RATE_LIMIT_EXCEEDED') return failure(429, 'RATE_LIMIT_EXCEEDED', '잠시 후 다시 시도해 주세요.')
+      if (result.error) return failure(400, 'REPORT_INPUT_INCOMPLETE', '리포트를 만들 대출·재정 정보가 부족합니다.')
+      return ok(result.status === 200 ? 'REPORT_LATEST_SUCCESS' : 'REPORT_GENERATE_ACCEPTED', result.status === 200 ? '최신 상환 리포트 정보를 조회했습니다.' : '리포트 생성 요청을 접수했습니다.', result.data, result.status)
+    },
+  },
+  {
+    method: 'GET', path: '/api/reports/{report_id}/',
+    respond: ({ params }) => {
+      if (!isPro()) return proRequired()
+      const found = /^[1-9]\d*$/.test(params.report_id) ? getReportById(Number(params.report_id)) : null
+      return found ? ok('REPORT_DETAIL_SUCCESS', '상환 리포트 결과·상태를 조회했습니다.', found) : notFound('REPORT_NOT_FOUND', '상환 리포트를 찾을 수 없습니다.')
+    },
+  },
   {
     method: 'POST', path: '/api/repayment-plans/preview/',
     respond: ({ body }) => {
+      if (isStrategyBody(body)) return strategyBranch(body, false)
       const errors = validatePlans(body)
       return Object.keys(errors).length ? validationError(errors) : ok('REPAYMENT_PLAN_PREVIEW_SUCCESS', '상환 계획을 계산했습니다.', previewPlans(body))
     },
@@ -94,6 +162,7 @@ export const mockHandlers = [
   {
     method: 'PUT', path: '/api/repayment-plans/',
     respond: ({ body }) => {
+      if (isStrategyBody(body)) return strategyBranch(body, true)
       const errors = validatePlans(body)
       return Object.keys(errors).length ? validationError(errors) : ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', savePlans(body))
     },
