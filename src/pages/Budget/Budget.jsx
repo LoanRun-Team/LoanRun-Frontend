@@ -47,8 +47,7 @@ export default function Budget({ navigate }) {
   useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 3000); return () => clearTimeout(t) }, [notice])
 
   function onNavigate(item) {
-    if (item.id === 'home') navigate('/')
-    else if (item.id === 'loans' || item.parent === 'loans' || item.id === 'risk' || item.id === 'reports') navigate(item.href)
+    navigate(item.href)
   }
   const goMonth = next => { setState(s => ({ ...s, status: 'loading' })); setYm(next) }
 

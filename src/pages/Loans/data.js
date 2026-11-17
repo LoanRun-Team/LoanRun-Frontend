@@ -1,4 +1,4 @@
-export const money = value => Number(value).toLocaleString('ko-KR')
+export const money = value => value == null ? '—' : Number(value).toLocaleString('ko-KR')
 export const loanTabs = [
   { id: 'overview', label: '내 대출', href: '/loans' },
   { id: 'monthly', label: '이번 달 상환', href: '/loans/monthly' },

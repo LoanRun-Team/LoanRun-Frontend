@@ -42,10 +42,7 @@ export default function Risk({ navigate }) {
   useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 3000); return () => clearTimeout(t) }, [notice])
 
   function onNavigate(item) {
-    if (item.id === 'loans' || item.parent === 'loans') navigate(item.href)
-    else if (item.id === 'home') navigate('/')
-    else if (item.id === 'budget') navigate('/budget')
-    else if (item.id === 'reports') navigate('/reports')
+    navigate(item.href)
   }
 
   return <div className="risk-shell">

@@ -125,10 +125,7 @@ export default function Reports({ navigate }) {
   function recalc() { setDialog(null); setApplyError(null); reload(false) }
 
   function onNavigate(item) {
-    if (item.id === 'loans' || item.parent === 'loans') navigate(item.href)
-    else if (item.id === 'home') navigate('/')
-    else if (item.id === 'budget') navigate('/budget')
-    else if (item.id === 'risk') navigate('/risk')
+    navigate(item.href)
   }
 
   const { status, report, error } = state

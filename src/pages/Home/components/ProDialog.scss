@@ -1,0 +1,11 @@
+.pro-dialog { position: fixed; inset: 0; margin: auto; transform: translateY(-12px); width: 480px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 48px); overflow: auto; padding: 32px; border: 0; border-radius: 16px; background: var(--card); color: var(--text); box-shadow: 0 8px 24px #021e2f1f; font: inherit; }
+.pro-dialog::backdrop { background: #021e2f66; }
+.pro-dialog header { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; }
+.pro-dialog h2 { flex: 1; font-size: 16px; line-height: 24px; }
+.pro-dialog header button { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; }
+.pro-dialog header img { display: block; }
+.pro-dialog ul { margin: 0 0 24px; padding-left: 24px; color: var(--secondary); font-size: 16px; line-height: 24px; }
+.pro-dialog footer { display: flex; justify-content: flex-end; gap: 12px; }
+.pro-dialog footer button { height: 44px; padding: 0 20px; border-radius: 8px; font-weight: 500; white-space: nowrap; }
+.pro-later { background: var(--card); border: 1px solid var(--primary); color: var(--primary-text); }
+.pro-start { background: var(--primary); border: 1px solid var(--primary); color: white; }

@@ -1,0 +1,3 @@
+export default function AmountField({label,value,onChange,name,unit='원',helper,required=false,disabled=false,error,placeholder='0'}) {
+  return <label className={'lm-field amount-field'+(error?' has-error':'')}><span>{label}</span><div className="payment-amount-field"><input name={name} aria-label={label} type="text" inputMode="numeric" pattern="[0-9,]+" required={required} disabled={disabled} placeholder={placeholder} value={value==null||value===''?'':Number(value).toLocaleString('ko-KR')} onChange={e=>onChange(e.target.value.replace(/[^0-9]/g,''))}/><span>{unit}</span></div>{(helper||error)&&<small className={error?'field-error':'field-helper'}>{error||helper}</small>}</label>
+}
