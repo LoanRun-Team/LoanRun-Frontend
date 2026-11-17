@@ -23,7 +23,7 @@ export default function ScenarioCards({ data, budget, loans }) {
   }, [data])
 
   const sim = sims[tab]
-  const stats = !current.body || sim ? scenarioStats(tab, data, budget, sim ?? null) : null
+  const stats = !current.body || sim ? scenarioStats(tab, data, budget, sim ?? null, loans) : null
   const runway = emergencyRunway(budget, sims.INCOME_DOWN)
   const lump = lumpNeeds(data, budget, loans)
 
@@ -43,18 +43,17 @@ export default function ScenarioCards({ data, budget, loans }) {
         <h2 id="rk-limit-title" className="rk-title">어디까지 버틸 수 있나요</h2>
         {limitGroups(data, budget, loans).map(g => <div key={g.key} className="rk-limit">
           <h3>{g.title}</h3>
-          {g.lines.map((l, i) => <p key={i}>{l.bold && <strong>{l.bold}</strong>}{l.text}</p>)}
+          {g.lines.map((l, i) => <p key={i} className={l.muted ? 'muted' : undefined}>{l.bold && <strong>{l.bold}</strong>}{l.text}</p>)}
         </div>)}
       </section>
       <div className="rk-side">
-        <section className="rk-card" aria-labelledby="rk-runway-title">
+        {(!hasEmergency(budget) || runway.shortfall > 0) && <section className="rk-card" aria-labelledby="rk-runway-title">
           <h2 id="rk-runway-title" className="rk-title">비상자금으로 버티는 기간</h2>
           <p className="rk-row"><span>비상자금</span><strong>{won(runway.reserve)}</strong></p>
           <div className="rk-limit"><h3>매달 부족할 때</h3>
-          {!hasEmergency(budget) ? <p className="rk-row"><span>비상자금을 입력하면 버티는 기간을 알려드려요</span></p> : runway.shortfall > 0
-            ? <p className="rk-row"><span>소득 −5% · 매달 {won(runway.shortfall)} 부족</span><strong>{runway.months >= 1 ? `약 ${runway.months}개월` : '1개월 미만'}</strong></p>
-            : <p className="rk-row"><span>소득 −5%여도 매달 부족하지 않아요</span></p>}</div>
-        </section>
+          {!hasEmergency(budget) ? <p className="rk-row"><span>비상자금을 입력하면 버티는 기간을 알려드려요</span></p>
+            : <p className="rk-row"><span>소득 −5% · 매달 {won(runway.shortfall)} 부족</span><strong>{runway.months >= 1 ? `약 ${runway.months}개월` : '1개월 미만'}</strong></p>}</div>
+        </section>}
         <section className="rk-card" aria-labelledby="rk-lump-title">
           <h2 id="rk-lump-title" className="rk-title">한 번에 필요한 돈</h2>
           <div className="rk-lump"><p className="rk-row"><span>예상 못 한 지출</span><strong>{won(EXPENSE_SHOCK)}</strong></p><span className="rk-sub">{lump.shock.sub}</span></div>
