@@ -28,10 +28,10 @@ export default function MultiLoan({ form, setForm, preview }) {
         onDraft={planUpdater(setForm, active.loan_id, isLump(active) ? {} : { direction: 'early' })} res={preview.byLoan[active.loan_id]} pending={preview.pending} surplus={surplus} />
     </> : <>
     <HouseholdPlan form={form} setForm={setForm} preview={preview} surplus={surplus} />
-    <section className="ob-plan-card ob-overview-card">
-      <h2>대출별 설정 현황</h2>
+    {loans.some(isLump) && <section className="ob-plan-card ob-overview-card">
+      <h2>만기일시 대출 설정 현황</h2>
       <ul className="ob-overview">
-        {loans.map(l => {
+        {loans.filter(isLump).map(l => {
           const draft = draftOf(goal, l.loan_id)
           const res = preview.byLoan[l.loan_id]
           const done = Boolean(planPayload(l, { ...draft, direction: isLump(l) ? draft.direction : 'early' }))
@@ -42,7 +42,7 @@ export default function MultiLoan({ form, setForm, preview }) {
           </li>
         })}
       </ul>
-    </section>
+    </section>}
     </>}
   </>
 }

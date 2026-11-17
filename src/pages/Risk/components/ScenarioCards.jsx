@@ -28,7 +28,7 @@ export default function ScenarioCards({ data, budget, loans }) {
   const lump = lumpNeeds(data, budget, loans)
 
   return <>
-    <section className="rk-card" aria-labelledby="rk-scenario-title">
+    <section className="rk-card rk-scenario" aria-labelledby="rk-scenario-title">
       <h2 id="rk-scenario-title" className="rk-title">위험 시나리오</h2>
       <div className="rk-tabs" role="tablist" aria-label="시나리오">
         {SCENARIO_TABS.map(t => <button key={t.key} type="button" role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'selected' : ''} onClick={() => setTab(t.key)}>{t.label}</button>)}
@@ -50,10 +50,10 @@ export default function ScenarioCards({ data, budget, loans }) {
         <section className="rk-card" aria-labelledby="rk-runway-title">
           <h2 id="rk-runway-title" className="rk-title">비상자금으로 버티는 기간</h2>
           <p className="rk-row"><span>비상자금</span><strong>{won(runway.reserve)}</strong></p>
-          <h3>매달 부족할 때</h3>
+          <div className="rk-limit"><h3>매달 부족할 때</h3>
           {!hasEmergency(budget) ? <p className="rk-row"><span>비상자금을 입력하면 버티는 기간을 알려드려요</span></p> : runway.shortfall > 0
             ? <p className="rk-row"><span>소득 −5% · 매달 {won(runway.shortfall)} 부족</span><strong>{runway.months >= 1 ? `약 ${runway.months}개월` : '1개월 미만'}</strong></p>
-            : <p className="rk-row"><span>소득 −5%여도 매달 부족하지 않아요</span></p>}
+            : <p className="rk-row"><span>소득 −5%여도 매달 부족하지 않아요</span></p>}</div>
         </section>
         <section className="rk-card" aria-labelledby="rk-lump-title">
           <h2 id="rk-lump-title" className="rk-title">한 번에 필요한 돈</h2>

@@ -151,7 +151,7 @@
     .ob-loan-detail { display: flex; flex-direction: column; flex: 1 0 0; min-width: 1px; font-size: 16px; line-height: 24px; color: var(--secondary); }
   }
   .ob-danger-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #fdecec; font-size: 14px; line-height: 22px; font-weight: 500; color: #c0392b; &:disabled { opacity: .4; } }
-  .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: var(--card); font-size: 16px; line-height: 24px; font-weight: 600; color: var(--primary-text); }
+  .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: transparent; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--text); }
 
   // S-02 선택 칩 / 안내 배너
   .ob-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; &.two { grid-template-columns: repeat(2, 1fr); } }
@@ -195,12 +195,13 @@
       &.selected { border-color: var(--ob-input-border); background: var(--card); font-weight: 600; color: var(--text); box-shadow: 0 1px 2px rgba(2, 30, 47, .08); }
     }
   }
-  .ob-stat-box { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 20px 24px; border-radius: 12px; background: #f7f8fb;
+  .ob-stat-box { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 24px; padding: 20px 24px; border-radius: 12px; background: #f7f8fb;
     > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .ob-stat-label { font-size: 14px; line-height: 20px; color: var(--secondary); }
     strong { font-size: 20px; line-height: 28px; font-weight: 600; &.accent { color: var(--primary-text); } }
     .ob-stat-sub { font-size: 14px; line-height: 20px; color: var(--tertiary); }
   }
+  .ob-stat-box:has(> div:nth-child(3)) { gap: 16px; padding: 16px 20px; .ob-stat-label, .ob-stat-sub { font-size: 12px; line-height: 16px; } strong { font-size: 18px; line-height: 26px; } }
   .ob-stat-pending { margin: 0; font-size: 14px; line-height: 20px; color: var(--secondary); }
   .ob-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;
     .ob-empty-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #f7f8fb; }
@@ -211,13 +212,15 @@
     button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: #e6edf3; font-size: 14px; line-height: 20px; color: var(--secondary); &.selected { background: var(--primary); color: #fff; } }
   }
   .ob-overview-card { min-height: 0; margin-top: 24px; }
+  .ob-household-line { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 20px; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  .ob-chip-static { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: var(--card); font-size: 14px; font-weight: 500; color: var(--text); }
   .ob-alloc { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 12px; background: #f7f8fb;
     h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
+    .ob-alloc-sub { margin: -8px 0 0; font-size: 14px; line-height: 22px; color: var(--tertiary); }
     ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
-    li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 20px; }
-    .ob-alloc-rank { display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); font-size: 12px; font-weight: 600; color: var(--primary-text); }
+    li { display: flex; align-items: center; gap: 12px; font-size: 16px; line-height: 24px; strong { font-weight: 600; } }
     .ob-alloc-name { flex: 1 0 0; min-width: 0; color: var(--secondary); }
-    .ob-alloc-total { display: flex; justify-content: space-between; margin: 0; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 14px; color: var(--secondary); strong { color: var(--text); } }
+    .ob-alloc-total { display: flex; justify-content: space-between; margin: 0; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 16px; line-height: 24px; font-weight: 600; strong { color: var(--primary-text); } }
   }
   .ob-overview { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none;
     li { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--divider); }

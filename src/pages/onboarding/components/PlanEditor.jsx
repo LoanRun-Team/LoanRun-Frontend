@@ -5,7 +5,7 @@ import SegmentTabs from './SegmentTabs.jsx'
 import PlanResult from './PlanResult.jsx'
 import { PREFERENCES, preferenceText } from '../preferences.js'
 import { fmtNumber } from '../format.js'
-import { fmtYM, isLump, savingChips, tabsFor } from '../planModel.js'
+import { fmtYM, isLump, savingChips, tabsFor, targetYM } from '../planModel.js'
 
 // Figma: S-03b / S-03c 조기 상환 설정 — 세그먼트 탭 + 왼쪽(입력) / 오른쪽(계산 결과) 카드
 const EXTRA_CHIPS = [50000, 100000, 200000]
@@ -23,13 +23,21 @@ export default function PlanEditor({ loan, draft, onDraft, res, pending, surplus
         selected={draft.preference === p.value && draft.extra_override == null && draft.monthly_override == null}
         onSelect={() => onDraft({ preference: p.value, extra_override: null, monthly_override: null })} />)}
     </div> },
-    date: { title: '희망 완납일', body: <>
-      <div className="ob-row">
-        <SelectField label="희망 완납 연도" hideLabel options={years} value={draft.target_year} onChange={v => onDraft({ target_year: v })} />
-        <SelectField label="희망 완납 월" hideLabel options={MONTHS} value={draft.target_month} onChange={v => onDraft({ target_month: v })} />
-      </div>
-      <p className="ob-helper">만기 {fmtYM(loan.maturity_date)}보다 앞선 날짜를 골라요</p>
-    </> },
+    date: lump
+      ? { title: '목표 완납일', body: <>
+        <div className="ob-row">
+          <SelectField label="목표 완납일 (필수)" options={years} value={targetYM(loan, draft).y} onChange={v => onDraft({ target_year: v, target_month: targetYM(loan, draft).m })} />
+          <SelectField label="월" hideLabel options={MONTHS} value={targetYM(loan, draft).m} onChange={v => onDraft({ target_month: v, target_year: targetYM(loan, draft).y })} />
+        </div>
+        <p className="ob-helper">계약 만기일 {loan.maturity_date.slice(0, 4)}.{loan.maturity_date.slice(5, 7)}까지 정할 수 있어요</p>
+      </> }
+      : { title: '희망 완납일', body: <>
+        <div className="ob-row">
+          <SelectField label="희망 완납 연도" hideLabel options={years} value={draft.target_year} onChange={v => onDraft({ target_year: v })} />
+          <SelectField label="희망 완납 월" hideLabel options={MONTHS} value={draft.target_month} onChange={v => onDraft({ target_month: v })} />
+        </div>
+        <p className="ob-helper">만기 {fmtYM(loan.maturity_date)}보다 앞선 날짜를 골라요</p>
+      </> },
     extra: { title: '월 추가 상환액', body: <>
       <NumberField label="월 추가 상환액" hideLabel value={draft.extra_monthly_payment} unit="원" placeholder="0" onChange={v => onDraft({ extra_monthly_payment: v })} />
       <div className="ob-quick">{EXTRA_CHIPS.map(n => <button key={n} type="button" className="ob-chip large" onClick={() => onDraft({ extra_monthly_payment: (draft.extra_monthly_payment ?? 0) + n })}>+{n / 10000}만원</button>)}</div>

@@ -91,7 +91,7 @@ export const STEPS = {
   'goal-direction': goalStep('STEP 03 · 상환 목표', '대출을 언제까지 갚을지 정해 주세요.', '목표 방향 선택'),
   'early-repayment': goalStep('STEP 03 · 조기 상환 설정', '얼마나 일찍 갚을지 정해 주세요.', '조기 상환 설정'),
   'target-date': goalStep('STEP 03 · 목표 완납일', '언제까지 다 갚을지 정해 주세요.', '목표 완납일 설정'),
-  'multi-loan': goalStep('STEP 03 · 상환 목표', '대출마다 상환 목표를 정해 주세요.', '다중채무'),
+  'multi-loan': goalStep('STEP 03 · 상환 목표', '매달 얼마나 더 갚을지 정해 주세요.', '다중채무'),
 }
 
 export const isStepId = id => Object.hasOwn(STEPS, id)

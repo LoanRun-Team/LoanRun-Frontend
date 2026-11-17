@@ -5,7 +5,7 @@ import { loanTypeLabels } from './data.js'
 
 export const isLump = loan => loan.repayment_category === 'LUMP_SUM'
 
-export const PREFERENCE_LABEL = { FAST: '빠른 상환', BALANCED: '균형 있는 상환', STABLE: '생활 안정 우선' }
+export const PREFERENCE_LABEL = { FAST: '빠른 상환', BALANCED: '균형 상환', STABLE: '생활 안정 우선' }
 
 // draft: 한 대출의 목표 입력 상태. tab 은 화면의 탭, *_override 는 성향 값을 사용자가 직접 바꾼 경우("직접 설정").
 export const emptyDraft = {
@@ -29,12 +29,17 @@ export const tabsFor = loan => [
   isLump(loan) ? { id: 'monthly', label: '월 적립액 기준' } : { id: 'extra', label: '추가 상환액 기준' },
 ]
 
-// 희망 완납일(년·월) → 날짜. 오늘 이후 ~ 만기 이전만 유효.
+// 희망 완납일(년·월) → 날짜. 오늘 이후여야 하고, 분할상환은 만기 이전, 만기일시는 계약 만기일 이내만 유효.
+// 만기일시는 값을 고르지 않으면 만기 년·월을 기본으로 쓴다.
+export const targetYM = (loan, draft) => (isLump(loan)
+  ? { y: draft.target_year ?? Number(loan.maturity_date.slice(0, 4)), m: draft.target_month ?? Number(loan.maturity_date.slice(5, 7)) }
+  : { y: draft.target_year, m: draft.target_month })
 export function targetDateOf(loan, draft) {
-  const { target_year: y, target_month: m } = draft
+  const { y, m } = targetYM(loan, draft)
   if (!y || !m) return null
   const iso = toISO(y, m, Math.min(loan.payment_day, new Date(y, m, 0).getDate()))
-  return iso > todayISO() && iso < loan.maturity_date ? iso : null
+  const withinMaturity = isLump(loan) ? iso <= loan.maturity_date : iso < loan.maturity_date
+  return iso > todayISO() && withinMaturity ? iso : null
 }
 
 // 입력이 완성되면 plans[] 항목을, 아니면 null.

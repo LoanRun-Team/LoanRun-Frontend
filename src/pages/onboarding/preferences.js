@@ -5,7 +5,7 @@ import { fmtNumber } from './format.js'
 
 export const PREFERENCES = [
   { value: 'FAST', title: '빠른 상환', description: '매달 더 갚아서 이자를 가장 많이 줄여요', icon: target },
-  { value: 'BALANCED', title: '균형 있는 상환', description: '상환과 생활비를 적당히 나눠요', icon: swap },
+  { value: 'BALANCED', title: '균형 상환', description: '상환과 생활비를 적당히 나눠요', icon: swap },
   { value: 'STABLE', title: '생활 안정 우선', description: '기본 상환만 하고 생활비 여유를 지켜요', icon: shield },
 ]
 
