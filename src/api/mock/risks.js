@@ -143,3 +143,41 @@ export function parseRiskQuery(query) {
   return { errors, value: { month, loanId } }
 }
 export const loanExists = id => listLoans().some(l => l.loan_id === id)
+
+// ── POST /api/risks/simulate/ ───────────────────────────────────────────
+// 요청: loan_ids(선택), rate_increase_pp(0~5), income_change_pct(-100~100). 변동금리 대출 잔액에만 금리 상승분이 월 이자로 붙는다.
+export function validateSimulation(b) {
+  const errors = {}
+  const body = b ?? {}
+  if (body.loan_ids != null && !(Array.isArray(body.loan_ids) && body.loan_ids.every(id => Number.isInteger(id) && id > 0))) errors.loan_ids = ['대출 ID 배열이어야 합니다.']
+  if (body.rate_increase_pp != null && !(typeof body.rate_increase_pp === 'number' && body.rate_increase_pp >= 0 && body.rate_increase_pp <= 5)) errors.rate_increase_pp = ['0~5 사이여야 합니다.']
+  if (body.income_change_pct != null && !(typeof body.income_change_pct === 'number' && body.income_change_pct >= -100 && body.income_change_pct <= 100)) errors.income_change_pct = ['-100~100 사이여야 합니다.']
+  return errors
+}
+
+export function simulateRisk(b) {
+  const ym = ymd(new Date()).slice(0, 7)
+  const view = monthView(ym)
+  const all = listLoans()
+  const loans = b.loan_ids?.length ? all.filter(l => b.loan_ids.includes(l.loan_id)) : all
+  const income = view.monthly_income
+  const pp = b.rate_increase_pp ?? 0
+  const payment = loans.reduce((s, l) => s + l.estimated_monthly_payment, 0)
+  const variable = loans.filter(l => l.rate_type === 'VARIABLE')
+  const rateUp = Math.round(variable.reduce((s, l) => s + ((l.remaining_principal ?? 0) * pp) / 1200, 0))
+  const fixedCost = view.essential_expenses + view.discretionary_expenses + view.savings
+  const scenarioIncome = Math.round(income * (1 + (b.income_change_pct ?? 0) / 100))
+  const baselineCash = income - payment - fixedCost
+  const scenarioCash = scenarioIncome - (payment + rateUp) - fixedCost
+  const extra = view.allocation.allocations.reduce((s, a) => s + a.amount, 0)
+  const levelOf = (cash, inc) => surplusLevel(inc > 0 ? (100 * cash) / inc : null)
+  const warnings = []
+  if (pp > 0 && variable.length === 0) warnings.push('고정금리 대출에는 금리 상승폭이 적용되지 않습니다.')
+  return {
+    baseline: { income, monthly_payment: payment, available_cash: baselineCash, level: levelOf(baselineCash, income) },
+    scenario: { income: scenarioIncome, monthly_payment: payment + rateUp, available_cash: scenarioCash, level: levelOf(scenarioCash, scenarioIncome), payoff_feasibility: scenarioCash >= extra ? 'HIGH' : scenarioCash >= 0 ? 'MEDIUM' : 'LOW' },
+    delta: { income: scenarioIncome - income, monthly_payment: rateUp, available_cash: scenarioCash - baselineCash },
+    warnings,
+    rate_thresholds: riskView({ month: ym }).rate_thresholds,
+  }
+}

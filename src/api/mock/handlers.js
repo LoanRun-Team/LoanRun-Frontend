@@ -3,7 +3,7 @@
 import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
 import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
-import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView } from './risks.js'
+import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView, simulateRisk, validateSimulation } from './risks.js'
 import { completeOnboarding, getProfile, onboardingState, previewPlans, previewVersion, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
@@ -80,6 +80,17 @@ export const mockHandlers = [
       if (value.loanId !== undefined && !loanExists(value.loanId)) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
       if (!hasProfile()) return notFound('FINANCE_PROFILE_NOT_FOUND', '기본 재정정보를 찾을 수 없습니다.')
       return ok('RISK_DETAIL_SUCCESS', '재정 위험 분석 정보를 조회했습니다.', riskView(value))
+    },
+  },
+  {
+    method: 'POST', path: '/api/risks/simulate/',
+    respond: ({ body }) => {
+      const errors = validateSimulation(body)
+      if (Object.keys(errors).length) return validationError(errors)
+      if (isFreePlan()) return { status: 403, body: { success: false, code: 'PRO_REQUIRED', message: 'PRO 이용자만 사용할 수 있습니다.', errors: {} } }
+      if (!hasProfile()) return notFound('FINANCE_PROFILE_NOT_FOUND', '기본 재정정보를 찾을 수 없습니다.')
+      if (body?.loan_ids?.some(id => !loanExists(id))) return notFound('LOAN_NOT_FOUND', '대출을 찾을 수 없습니다.')
+      return ok('RISK_SIMULATION_SUCCESS', '금리·소득 변화 시뮬레이션 처리를 완료했습니다.', simulateRisk(body ?? {}))
     },
   },
   {
