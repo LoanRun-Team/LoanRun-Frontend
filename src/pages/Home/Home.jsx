@@ -16,7 +16,7 @@ function Home({ navigate, apiData }) {
   const [panel, setPanel] = useState(null)
   return (
     <div className={`app-shell${screen.plan === 'Free' ? ' is-free' : ''}`}>
-      <Sidebar plan={screen.plan} onNavigate={item => item.id === 'loans' ? navigate('/loans') : item.id === 'budget' ? navigate('/budget') : item.id === 'risk' ? navigate('/risk') : setPanel(item.id === 'home' ? null : item.label)} />
+      <Sidebar plan={screen.plan} onNavigate={item => item.id === 'loans' ? navigate('/loans') : item.id === 'budget' ? navigate('/budget') : item.id === 'risk' ? navigate('/risk') : item.id === 'reports' ? navigate('/reports') : setPanel(item.id === 'home' ? null : item.label)} />
       <main className="home-content" id="main-content">
         <h1>안녕하세요, 민준님.</h1>
         {bannerVisible && <div className="rate-banner" role="status">

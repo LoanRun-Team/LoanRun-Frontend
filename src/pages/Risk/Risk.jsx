@@ -37,6 +37,7 @@ export default function Risk({ navigate }) {
     if (item.id === 'loans' || item.parent === 'loans') navigate(item.href)
     else if (item.id === 'home') navigate('/')
     else if (item.id === 'budget') navigate('/budget')
+    else if (item.id === 'reports') navigate('/reports')
   }
 
   return <div className="risk-shell">
