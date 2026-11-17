@@ -16,11 +16,27 @@ const lastDayOf = ym => ymd(new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 
 export const isFreePlan = () => { try { return sessionStorage.getItem('loanrun-mock-plan') === 'FREE' } catch { return false } }
 export const hasProfile = () => getProfile() != null
 
-// 4개 점검 기준(명세 "처리 규칙")
+// 4개 점검 기준(명세 "처리 규칙")과 종합 위험도(추가 로직 결정: 안건 2·3)
 const surplusLevel = ratio => (ratio == null || ratio < 3 ? 'DANGER' : ratio < 8 ? 'CAUTION' : 'STABLE')
 const limitLevel = (ratio, limit, used) => (limit === 0 ? (used > 0 ? 'DANGER' : 'STABLE') : ratio < 90 ? 'STABLE' : ratio <= 100 ? 'CAUTION' : 'DANGER')
-const exposureLevel = ratio => (ratio < 50 ? 'STABLE' : ratio < 90 ? 'CAUTION' : 'DANGER')
 const serviceLevel = ratio => (ratio == null ? 'DANGER' : ratio < 30 ? 'STABLE' : ratio < 40 ? 'CAUTION' : 'DANGER')
+// 변동금리 위험: 변동금리 대출에만 +1%p 를 적용했을 때 기본 상환이 안 되면 위험, 추가 상환이 줄어야 하면 주의. 변동금리 대출이 없으면 안정.
+const rateRiskLevel = (variablePrincipal, cash, extra) => {
+  if (!variablePrincipal) return 'STABLE'
+  const after = cash - Math.round(variablePrincipal / 1200)
+  return after < 0 ? 'DANGER' : after < extra ? 'CAUTION' : 'STABLE'
+}
+// 종합: 안정 0 · 주의 50 · 위험 100 점을 가중평균(여유자금 40 · 기본 상환 30 · 선택 지출 15 · 변동금리 15)하고 25 미만 안정, 60 미만 주의, 그 이상 위험.
+// 우선 규칙: 기본 상환을 못 하면 위험, 추가 상환 유지가 안 되거나 +1%p 에 기본 상환이 무너지면 최소 주의.
+const POINTS = { STABLE: 0, CAUTION: 50, DANGER: 100 }
+const RANK = { STABLE: 0, CAUTION: 1, DANGER: 2 }
+function overallLevel({ surplus, service, limit, rate }, cash, extra, rateAfter) {
+  if (cash < 0) return 'DANGER'
+  const score = 0.4 * POINTS[surplus] + 0.3 * POINTS[service] + 0.15 * POINTS[limit] + 0.15 * POINTS[rate]
+  const base = score < 25 ? 'STABLE' : score < 60 ? 'CAUTION' : 'DANGER'
+  const atLeastCaution = cash < extra || rateAfter < 0
+  return atLeastCaution && RANK[base] < 1 ? 'CAUTION' : base
+}
 
 const EVENT_WINDOW_DAYS = 800
 
@@ -96,14 +112,19 @@ export function riskView({ month, loanId }) {
   const principal = loans.reduce((s, l) => s + balanceOf(l), 0)
   const variablePrincipal = loans.filter(l => l.rate_type === 'VARIABLE').reduce((s, l) => s + balanceOf(l), 0)
   const exposure = principal > 0 ? round((100 * variablePrincipal) / principal) : 0
+  const rateRise = Math.round(variablePrincipal / 1200)
   const serviceRatio = income > 0 ? round((100 * scheduled) / income) : null
   const extraPlanned = view.allocation.allocations.reduce((s, a) => s + a.amount, 0)
+  const levels = {
+    surplus: surplusLevel(surplusRatio), service: serviceLevel(serviceRatio),
+    limit: limitLevel(limitRatio, limitAmount, view.discretionary_expenses), rate: rateRiskLevel(variablePrincipal, surplus, extraPlanned),
+  }
   const changes = sixMonthChanges(ym)
   const delta = changes.reduce((s, c) => s + c.amount_delta, 0)
   const count = reason => changes.filter(c => c.reason === reason).length
 
   return {
-    level: surplusLevel(surplusRatio),
+    level: overallLevel(levels, surplus, extraPlanned, surplus - rateRise),
     indicators: {
       surplus_ratio_percent: surplusRatio,
       debt_service_ratio_percent: serviceRatio,
@@ -117,10 +138,10 @@ export function riskView({ month, loanId }) {
     history: changes.map(c => ({ event_date: c.event_date, type: 'BUDGET_CHANGE', level: c.direction === 'INCREASE' ? 'CAUTION' : 'STABLE', description: c.reason === 'EXPENSE' ? '월별 재정정보 변동으로 선택 지출이 달라졌습니다.' : '월별 재정정보 변동으로 소득이 달라졌습니다.' })),
     data_status: income > 0 && principal > 0 ? 'SUFFICIENT' : 'INSUFFICIENT',
     checks: [
-      { code: 'SURPLUS_RATIO', label: '여유자금 비율', ratio_pct: surplusRatio, level: surplusLevel(surplusRatio) },
-      { code: 'DISCRETIONARY_LIMIT', label: '선택 지출 한도', ratio_pct: limitRatio, level: limitLevel(limitRatio, limitAmount, view.discretionary_expenses) },
-      { code: 'VARIABLE_EXPOSURE', label: '변동금리 노출', ratio_pct: exposure, level: exposureLevel(exposure) },
-      { code: 'BASIC_DEBT_SERVICE', label: '소득 대비 기본 상환', ratio_pct: serviceRatio, level: serviceLevel(serviceRatio) },
+      { code: 'SURPLUS_RATIO', label: '여유자금 비율', ratio_pct: surplusRatio, level: levels.surplus },
+      { code: 'DISCRETIONARY_LIMIT', label: '선택 지출 한도', ratio_pct: limitRatio, level: levels.limit },
+      { code: 'VARIABLE_EXPOSURE', label: '변동금리 노출', ratio_pct: exposure, level: levels.rate },
+      { code: 'BASIC_DEBT_SERVICE', label: '소득 대비 기본 상환', ratio_pct: serviceRatio, level: levels.service },
     ],
     rate_thresholds: rateThresholds(surplus, extraPlanned, variablePrincipal),
     six_month_changes: changes,
@@ -170,12 +191,21 @@ export function simulateRisk(b) {
   const baselineCash = income - payment - fixedCost
   const scenarioCash = scenarioIncome - (payment + rateUp) - fixedCost
   const extra = view.allocation.allocations.reduce((s, a) => s + a.amount, 0)
-  const levelOf = (cash, inc) => surplusLevel(inc > 0 ? (100 * cash) / inc : null)
+  const variablePrincipal = variable.reduce((s, l) => s + (l.remaining_principal ?? 0), 0)
+  const limitOf = inc => Math.max(inc - view.essential_expenses - view.savings - payment - rateUp, 0)
+  // 시나리오 안에서도 같은 기준으로 4개 점검을 다시 계산해 종합 등급을 만든다.
+  const levelOf = (cash, inc, pay, bound) => {
+    const levels = {
+      surplus: surplusLevel(inc > 0 ? (100 * cash) / inc : null), service: serviceLevel(inc > 0 ? (100 * pay) / inc : null),
+      limit: limitLevel(bound > 0 ? (100 * view.discretionary_expenses) / bound : null, bound, view.discretionary_expenses), rate: rateRiskLevel(variablePrincipal, cash, extra),
+    }
+    return overallLevel(levels, cash, extra, cash - Math.round(variablePrincipal / 1200))
+  }
   const warnings = []
   if (pp > 0 && variable.length === 0) warnings.push('고정금리 대출에는 금리 상승폭이 적용되지 않습니다.')
   return {
-    baseline: { income, monthly_payment: payment, available_cash: baselineCash, level: levelOf(baselineCash, income) },
-    scenario: { income: scenarioIncome, monthly_payment: payment + rateUp, available_cash: scenarioCash, level: levelOf(scenarioCash, scenarioIncome), payoff_feasibility: scenarioCash >= extra ? 'HIGH' : scenarioCash >= 0 ? 'MEDIUM' : 'LOW' },
+    baseline: { income, monthly_payment: payment, available_cash: baselineCash, level: levelOf(baselineCash, income, payment, Math.max(income - view.essential_expenses - view.savings - payment, 0)) },
+    scenario: { income: scenarioIncome, monthly_payment: payment + rateUp, available_cash: scenarioCash, level: levelOf(scenarioCash, scenarioIncome, payment + rateUp, limitOf(scenarioIncome)), payoff_feasibility: scenarioCash >= extra ? 'HIGH' : scenarioCash >= 0 ? 'MEDIUM' : 'LOW' },
     delta: { income: scenarioIncome - income, monthly_payment: rateUp, available_cash: scenarioCash - baselineCash },
     warnings,
     rate_thresholds: riskView({ month: ym }).rate_thresholds,

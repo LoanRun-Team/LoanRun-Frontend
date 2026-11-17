@@ -31,12 +31,12 @@ export default function AllocationCard({ ym, available, loans, allocation, appli
     <div className="bd-alloc">
       {loans.map(l => <AmountStepper key={l.loan_id} label={`${loanName(l)} 추가 상환`} value={allocation.extras[l.loan_id]} disabled={disabled} onChange={v => setExtra(l.loan_id, v)} />)}
       <AmountStepper label="남겨두기" value={allocation.reserve} disabled={disabled} onChange={v => onChange({ ...allocation, reserve: v })} />
-      <div className="bd-alloc-row sum"><span>배분 합계</span><div><strong>{fmt(sum)} / {won(Math.max(available, 0))}</strong>{diff !== 0 && !disabled && <p className="bd-danger">{diff > 0 ? '남은' : '초과'} 금액 {won(Math.abs(diff))}</p>}</div></div>
+      <div className="bd-alloc-row sum"><span>배분 합계</span><div><strong>{fmt(sum)} / {won(Math.max(available, 0))}</strong>{diff < 0 && !disabled && <p className="bd-danger">초과 금액 {won(-diff)}</p>}{diff > 0 && !disabled && <p className="bd-sub">남은 금액 {won(diff)}은 다음 달로 이월돼요</p>}</div></div>
     </div>
     {withPlan && <p className="bd-banner"><img src={info} alt="" width="20" height="20" /><span>{without > withPlan ? `반영하면 예상 완납일 ${labelYM(withPlan)} 유지, 반영하지 않으면 ${labelYM(without)}` : `예상 완납일은 ${labelYM(withPlan)}이에요`}</span></p>}
     <div className="bd-actions">
       <button type="button" className="bd-button outline" onClick={onReset} disabled={disabled || busy}>처음으로</button>
-      <button type="button" className="bd-button primary" onClick={onApply} disabled={disabled || diff !== 0 || busy || applied}>{busy ? '반영 중…' : applied ? '반영 완료' : '반영하기'}</button>
+      <button type="button" className="bd-button primary" onClick={onApply} disabled={disabled || diff < 0 || busy || applied}>{busy ? '반영 중…' : applied ? '반영 완료' : '반영하기'}</button>
     </div>
     <span className="bd-sr-only" aria-live="polite">{ym}</span>
   </section>

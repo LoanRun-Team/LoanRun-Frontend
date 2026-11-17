@@ -13,6 +13,7 @@ export const SCENARIO_TABS = [
 
 const plannedExtra = budget => (budget.allocation?.allocations ?? []).reduce((s, a) => s + a.amount, 0)
 const emergencyOf = budget => budget.emergency_fund ?? 0
+export const hasEmergency = budget => budget.emergency_fund != null
 
 // 탭 하나의 세 칸(월 여유자금 / 추가 상환 / 기본 상환). sim 은 그 탭의 시뮬레이션 응답(현재·지출 탭은 null).
 export function scenarioStats(tabKey, data, budget, sim) {

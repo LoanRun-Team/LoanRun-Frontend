@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { riskApi } from '../../../api/index.js'
-import { EXPENSE_SHOCK, SCENARIO_TABS, emergencyRunway, limitGroups, lumpNeeds, scenarioStats } from '../scenarioModel.js'
+import { EXPENSE_SHOCK, SCENARIO_TABS, emergencyRunway, hasEmergency, limitGroups, lumpNeeds, scenarioStats } from '../scenarioModel.js'
 import { won } from '../../Budget/budgetModel.js'
 
 // Figma: E1 / E1-j / H11 — 위험 시나리오(4탭) · 어디까지 버틸 수 있나요 · 비상자금으로 버티는 기간 · 한 번에 필요한 돈
@@ -51,7 +51,7 @@ export default function ScenarioCards({ data, budget, loans }) {
           <h2 id="rk-runway-title" className="rk-title">비상자금으로 버티는 기간</h2>
           <p className="rk-row"><span>비상자금</span><strong>{won(runway.reserve)}</strong></p>
           <h3>매달 부족할 때</h3>
-          {runway.shortfall > 0
+          {!hasEmergency(budget) ? <p className="rk-row"><span>비상자금을 입력하면 버티는 기간을 알려드려요</span></p> : runway.shortfall > 0
             ? <p className="rk-row"><span>소득 −5% · 매달 {won(runway.shortfall)} 부족</span><strong>{runway.months >= 1 ? `약 ${runway.months}개월` : '1개월 미만'}</strong></p>
             : <p className="rk-row"><span>소득 −5%여도 매달 부족하지 않아요</span></p>}
         </section>

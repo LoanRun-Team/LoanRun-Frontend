@@ -33,7 +33,7 @@
   }
   .rk-reason { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--secondary); }
   .rk-checks { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 8px 0 0; list-style: none;
-    li { display: flex; align-items: center; gap: 8px; font-size: 16px; line-height: 24px; }
+    li { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; font-size: 16px; line-height: 24px; small { flex: 0 0 100%; font-size: 14px; line-height: 20px; color: var(--tertiary); } }
     span { flex: 1 0 0; min-width: 0; color: var(--secondary); }
     strong { font-weight: 500; color: var(--text); white-space: nowrap; }
   }

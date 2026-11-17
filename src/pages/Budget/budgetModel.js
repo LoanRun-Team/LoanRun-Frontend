@@ -115,7 +115,7 @@ export function suggestAllocation(available, loans) {
 export const allocationSum = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0) + (a.reserve || 0)
 export const extraTotal = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0)
 // 서버에 저장돼 있고 여유자금과 일치하면 "반영 완료"
-export const isApplied = m => m.allocation.total > 0 && !m.needsReview && m.allocation.total === m.capacity
+export const isApplied = m => m.allocation.total > 0 && !m.needsReview
 
 // 예상 완납 시점(YYYY-MM): 대출별로 월 상환액(+추가 상환)으로 갚는 데 걸리는 기간 중 가장 늦은 것
 const periods = (principal, rate, pmt) => {
@@ -149,6 +149,6 @@ export const settlementOf = m => {
   const used = m.actualDiscretionary
   return {
     available: m.capacity, extra, reserve: m.allocation.reserve, carry: m.unallocated ?? Math.max(0, m.capacity - m.allocation.total),
-    limit, used, saved: m.discretionarySavings ?? limit - used, carryIn: m.carryIn,
+    limit, used, saved: m.discretionarySavings ?? Math.max(limit - used, 0), over: Math.max(used - limit, 0), carryIn: m.carryIn,
   }
 }
