@@ -107,6 +107,9 @@ function buildResult(plans) {
   }
 }
 
+// 미리보기 버전: 같은 입력이면 같은 값. 저장할 때 다시 계산해 다르면 409 PLAN_PREVIEW_STALE.
+export const previewVersion = plans => `plan-v1-${JSON.stringify(plans).length}-${[...JSON.stringify(plans)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36)}`
+
 export function previewPlans(body) {
   const { proposed, current, totals, strip } = buildResult(body.plans)
   return {
@@ -117,7 +120,7 @@ export function previewPlans(body) {
     monthly_burden: totals.monthly_burden,
     delta: { payoff_months_saved: totals.payoff_months_saved, interest_saving: totals.interest_saving, monthly_burden_delta: totals.monthly_burden_delta },
     warnings: ['중도상환수수료·연체이자 미제공. 실제 계약상 부분상환 가능 여부와 수수료를 확인하세요.'],
-    preview_version: 'plan-v1-mock',
+    preview_version: previewVersion(body.plans),
     strategy_code: 'NONE', strategy_version: null, current_strategy_code: 'NONE',
     current_allocations: current.map(p => ({ loan_id: p.loan_id, amount: 0, priority: null })),
     proposed_allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: null })),
@@ -126,7 +129,7 @@ export function previewPlans(body) {
 
 export function savePlans(body) {
   const { proposed, totals, strip } = buildResult(body.plans)
-  const saved = { plans: proposed.map(strip), effective_date: proposed[0]?.effective_date, estimated_payoff_date: totals.estimated_payoff_date, estimated_total_interest: totals.estimated_total_interest, monthly_burden: totals.monthly_burden, plan_version: 'plan-v2-mock', strategy_code: 'NONE', overall_plan_exists: proposed.length > 1, allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: null })) }
+  const saved = { plans: proposed.map(strip), effective_date: proposed[0]?.effective_date, estimated_payoff_date: totals.estimated_payoff_date, estimated_total_interest: totals.estimated_total_interest, monthly_burden: totals.monthly_burden, plan_version: 'plan-v2-mock', data_revision: `rev-${Date.now().toString(36)}`, estimated_total_fee: null, strategy_code: 'NONE', overall_plan_exists: proposed.length > 1, allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: null })) }
   write({ plans: saved })
   return saved
 }

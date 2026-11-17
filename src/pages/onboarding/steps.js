@@ -37,10 +37,11 @@ const saveProfile = async ({ income, living }) => {
   })
 }
 
-// S-03 "이 계획으로 시작하기": 상환 계획 저장(PUT /api/repayment-plans/) → 온보딩 완료(POST /api/onboarding/complete/)
+// S-03 "이 계획으로 시작하기": 상환 계획 미리보기로 preview_version 을 받고 저장(PUT /api/repayment-plans/) → 온보딩 완료(POST /api/onboarding/complete/)
 const finishOnboarding = async form => {
   const plans = form.loans.map(l => planPayload(l, draftOf(form.goal, l.loan_id)))
-  await onboardingApi.saveRepaymentPlan({ plans })
+  const { preview_version } = await onboardingApi.previewRepaymentPlan({ plans })
+  await onboardingApi.saveRepaymentPlan({ plans, preview_version }, { idempotencyKey: crypto.randomUUID() })
   await onboardingApi.complete()
 }
 

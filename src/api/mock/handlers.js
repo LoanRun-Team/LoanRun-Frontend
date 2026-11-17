@@ -4,7 +4,7 @@ import { institutions, loanTypes, products } from './loanProducts.js'
 import { createLoan, deleteLoan, listLoans, previewLoan, validateLoanBody } from './loans.js'
 import { createIncomeEntry, isMonth, monthView, saveAllocation, saveMonth, validateAllocation, validateIncomeEntry, validateMonthBody } from './budgets.js'
 import { hasProfile, isFreePlan, loanExists, parseRiskQuery, riskView } from './risks.js'
-import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
+import { completeOnboarding, getProfile, onboardingState, previewPlans, previewVersion, saveProfile, savePlans, validatePlans, validateProfile } from './plans.js'
 
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
 const validationError = errors => ({ status: 400, body: { success: false, code: 'VALIDATION_ERROR', message: '입력값을 확인해 주세요.', errors } })
@@ -91,9 +91,13 @@ export const mockHandlers = [
   },
   {
     method: 'PUT', path: '/api/repayment-plans/',
-    respond: ({ body }) => {
+    respond: ({ body, headers }) => {
       const errors = validatePlans(body)
-      return Object.keys(errors).length ? validationError(errors) : ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', savePlans(body))
+      if (!headers.get('Idempotency-Key')) errors['header.Idempotency-Key'] = ['저장 요청에는 Idempotency-Key 헤더가 필요합니다.']
+      if (!body?.preview_version) errors.preview_version = ['미리보기의 preview_version 이 필요합니다.']
+      if (Object.keys(errors).length) return validationError(errors)
+      if (body.preview_version !== previewVersion(body.plans)) return { status: 409, body: { success: false, code: 'PLAN_PREVIEW_STALE', message: '미리보기 이후 정보가 바뀌었습니다. 다시 계산해 주세요.', errors: {} } }
+      return ok('REPAYMENT_PLAN_SAVE_SUCCESS', '상환 계획을 저장했습니다.', savePlans(body))
     },
   },
   {
