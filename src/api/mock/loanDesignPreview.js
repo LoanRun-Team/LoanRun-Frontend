@@ -6,6 +6,28 @@ export function designPreview(scenario) {
   if(scenario==='bullet-shortfall'){savings.shortfall=365218;savings.shortfallRows=[{month:'9월',amount:52174},{month:'10월',amount:104348},{month:'11월',amount:104348},{month:'12월',amount:104348}]}
   if(scenario==='bullet-first'){savings.prepared=0;savings.cumulativePercent=0;savings.records=[]}
   if(scenario==='bullet-recorded'){savings.monthlyActual=521740;savings.monthlyPercent=100}
+  savings.savedTotal=1043480;savings.savingGap=0
+  savings.savingMonths=[{month:'2026-09',target:521740,actual:521740,difference:0,balance:6521740},{month:'2026-10',target:521740,actual:521740,difference:0,balance:7043480},{month:'2026-11',target:521740,actual:null,difference:null,balance:7043480,ongoing:true}]
+  if(['bullet-shortfall','bullet-behind','bullet-stalled'].includes(scenario)){
+    savings.prepared=6600000;savings.remaining=23400000;savings.savedTotal=600000;savings.savingGap=-443480;savings.shortfall=443480;savings.monthlyTarget=965220
+    savings.savingMonths=[{month:'2026-09',target:521740,actual:300000,difference:-221740,balance:6300000},{month:'2026-10',target:743480,actual:300000,difference:-443480,balance:6600000},{month:'2026-11',target:965220,actual:null,difference:null,balance:6600000,ongoing:true}]
+    savings.forecast={message:'만기 2030.06까지 약 10,200,000원이 부족해요. 매달 231,819원씩 더 모으면 맞출 수 있어요',basis:'론런 등록 후 최근 2개월 평균 300,000원 기준'}
+  }
+  if(['bullet-shortfall','bullet-behind','bullet-stalled'].includes(scenario)){
+    savings.baseMonthlyTarget=521740;savings.compareAvailable=false;savings.cumulativePercent=22
+    savings.records=[{id:'s1',date:'2026-10-25',amount:300000},{id:'s2',date:'2026-09-25',amount:300000}]
+    savings.shortfallRows=[{month:'9월',amount:221740},{month:'10월',amount:221740}]
+  }
+  if(['bullet-catching-up','bullet-carried'].includes(scenario)){
+    const carried=scenario==='bullet-carried'
+    savings.prepared=carried?7721742:6886958;savings.remaining=30000000-savings.prepared;savings.savedTotal=carried?1721742:886958;savings.savingGap=carried?-365218:-156522;savings.shortfall=-savings.savingGap;savings.monthlyTarget=carried?886958:678262;savings.baseMonthlyTarget=521740;savings.cumulativePercent=carried?25.7:23;savings.compareAvailable=false;savings.monthsLeft=carried?42:44
+    const months=carried?['2026-09','2026-10','2026-11','2026-12','2027-01']:['2026-09','2026-10','2026-11']
+    const targets=[521740,573914,678262,782610,886958],actuals=[469566,417392,417392,417392],gaps=[-52174,-156522,-260870,-365218],balances=[6469566,6886958,7304350,7721742]
+    savings.savingMonths=months.map((month,i)=>({month,target:targets[i],actual:i===months.length-1?null:actuals[i],difference:i===months.length-1?null:gaps[i],balance:balances[Math.min(i,months.length-2)],ongoing:i===months.length-1}))
+    savings.records=savings.savingMonths.filter(r=>!r.ongoing).map((r,i)=>({id:'s'+i,date:r.month+'-25',amount:r.actual})).reverse()
+    savings.forecast={message:carried?'만기 2030.06까지 약 4,747,794원이 부족해요. 매달 113,043원씩 더 모으면 맞출 수 있어요':'만기 2030.06까지 약 3,599,966원이 부족해요. 매달 81,818원씩 더 모으면 맞출 수 있어요',basis:carried?'론런 등록 후 최근 3개월 평균 417,392원 기준':'론런 등록 후 최근 2개월 평균 443,479원 기준'}
+  }
+  if(scenario==='bullet-first'){savings.prepared=6000000;savings.remaining=24000000;savings.monthlyTarget=545455;savings.cumulativePercent=20;savings.savedTotal=0;savings.savingGap=null;savings.firstSaving=true;savings.compareAvailable=false;savings.savingMonths=[{month:'2026-11',target:545455,actual:null,difference:null,balance:6000000,ongoing:true}]}
   if(scenario==='bullet-fee-unknown')for(const value of Object.values(savings.comparisons)){value.fee=null;value.net=null}
   return {savings,warning:['plan-warning','plan-amount-warning'].includes(scenario)?{amount:120000,message:'현재 재정 상태로는 매달 120,000원이 부족해요. 그래도 이 목표로 저장할 수 있어요.'}:null}
 }
