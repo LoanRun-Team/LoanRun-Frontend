@@ -36,16 +36,16 @@ export default function Loans({location,navigate}) {
   const scenario=isMock?query.get('preview')||'':''
   const previewData=isMock?designPreview(scenario):{}
   const resource=useApiResource([page,selected,month,historyPage].join(':'),async signal=>{
-    const [list,paymentData,plans,schedule,monthly,options]=await Promise.all([
+    const [list,paymentData,plans,schedule,monthly,options,profile]=await Promise.all([
       services.loans(signal,'ALL'),services.payments({loan_id:loanId,page:page==='history'?historyPage:1,page_size:page==='history'?20:100},signal),services.plans(loanId,signal),
-      services.schedule({loan_id:loanId,month},signal),services.monthly({loan_id:loanId,from_month:'2026-06',to_month:month},signal),services.options(signal)])
+      services.schedule({loan_id:loanId,month},signal),services.monthly({loan_id:loanId,from_month:'2026-06',to_month:month},signal),services.options(signal),services.profile(signal)])
     const details=await Promise.all(list.loans.map(l=>services.loan(l.loan_id,signal)))
     const savingRows=await Promise.all(details.filter(l=>l.repayment_method==='BULLET').map(l=>services.savings(l.loan_id,signal)))
-    return {savings:Object.fromEntries(savingRows.map(s=>[s.loan_id,s])),list,loans:details.map(loanView),history:paymentData.results.map(paymentView),paymentData,plans,schedule,monthly,options}
+    return {profile,savings:Object.fromEntries(savingRows.map(s=>[s.loan_id,s])),list,loans:details.map(loanView),history:paymentData.results.map(paymentView),paymentData,plans,schedule,monthly,options}
   })
   const data=resource.data,loans=(data?.loans||[]).map(l=>decorateLoan(previewLoan(l,l.id===(selected==='all'?data.loans[0]?.id:selected)?scenario:''))),filter=selected
   const currentLoan=loans.find(l=>l.id===filter)||loans[0]
-  const savings=scenario?previewData.savings:savingsView(data?.savings[currentLoan?.id],currentLoan)
+  const savings=scenario?previewData.savings:savingsView(data?.savings[currentLoan?.id],currentLoan,data?.monthly)
   const title=loanTabs.find(t=>t.id===page)?.label||(page==='history'?'상환 내역':'계획 수정')
   function go(href){if(scenario)href+=(href.includes('?')?'&':'?')+'preview='+encodeURIComponent(scenario);navigate(href)}
   function onFilter(id){setHistoryPage(1);go(path+'?loan='+id)}
@@ -73,7 +73,7 @@ export default function Loans({location,navigate}) {
     if(paid){record({type:'regular',loanId:String(dialog.item.loan_id)});return}
     return mutate(()=>services.confirmDue(dialog.item.due_item_id,true,dialog.idempotencyKey),'이번 회차를 미납으로 표시했어요')
   }
-  return <div className="loans-shell loans-v2" data-page={page}><Sidebar active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} logoSrc={wordmark} onNavigate={item=>item.parent==='loans'||item.id==='loans'?go(item.href):navigate(item.href)}/>
+  return <div className="loans-shell loans-v2" data-page={page}><Sidebar plan={scenario==='overall-free'||data?.profile?.plan_type==='FREE'?'Free':'Pro'} active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} logoSrc={wordmark} onNavigate={item=>item.parent==='loans'||item.id==='loans'?go(item.href):navigate(item.href)}/>
     <main className="loans-content" id="main-content">
       {['history','edit'].includes(page)&&<button className="lm-text back-link" onClick={()=>go(page==='history'?'/loans':'/loans/plan?loan='+filter)}><img src={v2Icons.back} alt=""/>{page==='history'?'내 대출':'상환 계획'}</button>}
       <header className="loans-page-header"><h1>{title}</h1>{['segments','plan','history','edit'].includes(page)&&<LoanFilter loans={loans} value={filter} onChange={onFilter}/>}</header>

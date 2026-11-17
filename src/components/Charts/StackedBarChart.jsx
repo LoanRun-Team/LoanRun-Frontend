@@ -2,7 +2,7 @@ import { useId } from 'react'
 import { buildChartGeometry } from './chartGeometry.js'
 import './Charts.scss'
 
-export default function StackedBarChart({ rows = [], cumulative = false, maxValue, target, event, label = '상환 그래프' }) {
+export default function StackedBarChart({ rows = [], cumulative = false, accumulate = cumulative, maxValue, target, event, label = '상환 그래프' }) {
   const titleId = useId()
   const width = 1032
   const plotHeight = cumulative ? 160 : 200
@@ -10,7 +10,7 @@ export default function StackedBarChart({ rows = [], cumulative = false, maxValu
   const left = cumulative ? 56 : 44
   const chartHeight = cumulative ? 210 : 250
   const barWidth = cumulative ? 36 : 56
-  const chart = buildChartGeometry({ rows, cumulative, maxValue, target, width, height: plotHeight, left, top })
+  const chart = buildChartGeometry({ rows, cumulative: accumulate, maxValue, target, width, height: plotHeight, left, top })
   const ticks = cumulative ? [1, .5, 0] : [1, 2 / 3, 1 / 3, 0]
   const axisLabel = value => value === 0 ? '0' : value >= 10000 ? `${Number((value / 10000).toFixed(1)).toLocaleString('ko-KR')}만` : value.toLocaleString('ko-KR')
   const showPlan = rows.some(row => row.plan != null)

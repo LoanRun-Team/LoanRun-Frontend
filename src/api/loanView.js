@@ -18,10 +18,11 @@ export function segmentView(monthly) {
 }
 
 // Display geometry only; financial projections must be supplied by the backend.
-export function savingsView(dto,loan) {
+export function savingsView(dto,loan,monthly) {
   if(!dto||!loan)return undefined
   const plan=loan.dto.plan||{},target=plan.target_payoff_date||loan.dto.maturity_date
   const targetAmount=dto.planned_saving_amount,actual=dto.actual_saving_amount
   const prepared=dto.savings_balance
-  return {prepared,remaining:Math.max(0,dto.remaining_principal-prepared),monthlyTarget:targetAmount,monthlyActual:actual,cumulativePercent:dto.saving_progress_pct,monthlyPercent:targetAmount>0?actual/targetAmount*100:null,principalPercent:loan.percent,interest:loan.payment,targetDate:target,monthsLeft:null,shortfall:plan.saving_gap_amount==null?null:Math.max(0,-plan.saving_gap_amount),shortfallRows:[],records:dto.results.map(r=>({id:r.saving_id,date:r.saved_at,amount:r.amount,editable:r.editable})),comparisons:{all:{amount:prepared,interestSaving:null,fee:null,net:null},half:{amount:Math.floor(prepared/2),interestSaving:null,fee:null,net:null},custom:{amount:0,interestSaving:null,fee:null,net:null}}}
+  const savingMonths=(monthly?.months||[]).filter(r=>r.planned_saving_amount!=null||r.actual_saving_amount>0).map(r=>({month:r.year_month,target:r.planned_saving_amount,actual:r.actual_saving_amount,ongoing:r.observed===false,difference:r.observed===false||r.planned_saving_amount==null?null:r.actual_saving_amount-r.planned_saving_amount,balance:r.savings_balance??null}))
+  return {prepared,remaining:Math.max(0,dto.remaining_principal-prepared),monthlyTarget:targetAmount,monthlyActual:actual,cumulativePercent:dto.saving_progress_pct,monthlyPercent:targetAmount>0?actual/targetAmount*100:null,principalPercent:loan.percent,interest:loan.payment,targetDate:target,monthsLeft:null,shortfall:plan.saving_gap_amount==null?null:Math.max(0,-plan.saving_gap_amount),savingGap:plan.saving_gap_amount??null,savedTotal:plan.cumulative_actual_saving_amount??null,savingMonths,shortfallRows:[],records:dto.results.map(r=>({id:r.saving_id,date:r.saved_at,amount:r.amount,editable:r.editable})),comparisons:{all:{amount:prepared,interestSaving:null,fee:null,net:null},half:{amount:Math.floor(prepared/2),interestSaving:null,fee:null,net:null},custom:{amount:0,interestSaving:null,fee:null,net:null}}}
 }

@@ -1,4 +1,78 @@
 .loans-v2 {
+  .v3-savings-row { align-items: stretch; }
+  .v3-savings-pace > span.warning { background: #fff4e0; color: #9a5b00; }
+  .v3-savings-row .v2-key-values > div { padding: 8px 0; }
+  .v3-savings-row .v2-savings-meters { margin-top: 16px; p { line-height: 24px; } small { line-height: 21px; } }
+  .v3-savings-row .v2-savings-history > div { min-height: 44px; padding: 0; }
+  .v3-savings-row .v2-savings-history > div + div { margin-top: 16px; }
+  .v3-savings-row.compact-status .v2-savings-meters { grid-template-columns: 1fr; gap: 16px; strong { color: var(--primary-text); } }
+  .v3-savings-row .v2-savings-history { height: 100%; }
+  .v3-cumulative-savings {
+    .data-chart-principal { fill: var(--primary); }
+    h2 { margin-bottom: 16px; }
+    > p { margin-bottom: 16px; }
+    .cumulative-summary { margin-bottom: 24px; }
+    .chart-legend { margin-bottom: 12px; }
+    .data-chart-scroll { margin-bottom: 24px; }
+    .savings-plan-table { table-layout: fixed; }
+    .savings-plan-table th { width: 56px; font-size: 14px; }
+    .savings-plan-table td { text-align: center; }
+    .actual-payment-row { font-weight: 500; }
+    .cumulative-value { flex-wrap: wrap; }
+    .plan-difference-chip { font-size: 12px; line-height: 20px; }
+  }
+  .v3-savings-forecast { header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; } .lm-chip { color: #9a5b00; background: #fff4e0; border: 0; } small { display: block; color: var(--secondary); margin-top: 12px; } }
+  .v3-overall-plan { display: grid; gap: 24px; min-width: 0; }
+  .v3-overall-hero { background: var(--primary); color: white; min-height: 286px;
+    h2 { margin-bottom: 24px; }
+    small { display: block; margin-top: 4px; font-size: 14px; line-height: 22px; }
+  }
+  .v3-overall-title { display: flex; align-items: center; justify-content: space-between; gap: 24px; > div > p { color: #ffffffb3; margin-bottom: 4px; font-size: 14px; line-height: 22px; } > div > strong { font-size: 32px; line-height: 44px; } }
+  .v3-overall-facts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 32px; margin-top: 24px; dt { font-size: 14px; line-height: 22px; color: #ffffffb3; } dd { font-weight: 600; margin-top: 4px; } > div + div { border-left: 1px solid #ffffff33; padding-left: 24px; } }
+  .v3-allocation-card { > header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; } > p { margin-top: 16px; color: var(--secondary); } }
+  .v3-allocation-bar { height: 32px; display: flex; overflow: hidden; border-radius: 6px; margin-bottom: 16px; > span { flex-shrink: 0; } }
+  .v3-loan-dot { display: inline-block; flex: 0 0 12px; width: 12px; height: 12px; border-radius: 3px; }
+  .v3-loan-dot.bullet, .v3-allocation-bar > .bullet, .v3-roadmap-bar.bullet { background-color: #f5c451; }
+  .v3-loan-dot.mortgage, .v3-allocation-bar > .mortgage, .v3-roadmap-bar.mortgage { background-color: #229eb1; }
+  .v3-loan-dot.credit, .v3-allocation-bar > .credit, .v3-roadmap-bar.credit { background-color: #71d5e4; }
+  .v3-loan-dot.reserve, .v3-allocation-bar > .reserve { background-color: #ccd5dd; }
+  .v3-allocation-legend { display: grid; gap: 12px; > div { display: flex; align-items: center; gap: 12px; min-width: 0; } strong { margin-left: auto; } small { width: 64px; text-align: right; color: var(--secondary); } }
+  .v3-pay-order { > h2 { margin-bottom: 12px; } > p { color: var(--secondary); margin-top: 8px; } ol { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 20px; } li { display: flex; gap: 16px; position: relative; } li:not(:last-child)::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: -20px; border-left: 2px solid var(--card-border); } }
+  .v3-order-number { display: inline-flex; width: 32px; height: 32px; flex: 0 0 32px; align-items: center; justify-content: center; background: var(--divider); border-radius: 50%; color: var(--secondary); &.active { background: var(--primary); color: white; } }
+  .v3-order-content { flex: 1; min-width: 0; > p { font-size: 14px; line-height: 22px; color: var(--secondary); margin-top: 16px; } }
+  .v3-order-card { background: #f7f8fb; border-radius: 12px; padding: 20px 24px; header { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .lm-icon-button { margin-left: auto; } dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 20px; } dt { font-size: 14px; color: var(--secondary); } dd { margin-top: 8px; font-weight: 600; } }
+  .v3-roadmap { h2 { margin-bottom: 24px; } }
+  .v3-roadmap-chart { min-width: 800px; padding-bottom: 32px; position: relative; }
+  .v3-roadmap-row { display: grid; grid-template-columns: 142px 1fr; min-height: 76px; align-items: center; > div:first-child { display: grid; gap: 8px; } small { color: var(--tertiary); } }
+  .v3-roadmap-track { position: relative; margin-right: 160px; min-width: 0; > i { position: absolute; top: -24px; bottom: -24px; border-left: 1px solid var(--divider); } }
+  .v3-roadmap-bar { height: 24px; border-radius: 6px; min-width: 0; position: relative; b { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: white; right: 8px; top: 8px; } }
+  .v3-roadmap-bar .v3-handoff-dot { right: auto; transform: translateX(-50%); }
+  .v3-roadmap-bar em { position: absolute; top: -28px; transform: translateX(-50%); font-style: normal; font-size: 14px; line-height: 20px; color: var(--tertiary); white-space: nowrap; }
+  .v3-roadmap-end { position: absolute; top: 0; transform: translateX(8px); font-size: 14px; line-height: 24px; color: var(--primary-text); width: 158px; }
+  .v3-roadmap-axis { position: absolute; bottom: 0; left: 142px; right: 160px; height: 24px; span { position: absolute; left: 0; transform: translateX(-50%); font-size: 14px; line-height: 22px; color: var(--tertiary); } }
+  .v3-overall-empty { h2 { margin-bottom: 24px; } p { color: var(--secondary); } button { margin-top: 24px; } }
+  .v3-overall-locked { position: relative; min-height: 1200px; }
+  .v3-lock-preview { filter: blur(8px); pointer-events: none; user-select: none; display: grid; gap: 24px; }
+  .v3-lock-message { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); width: min(520px,calc(100% - 32px)); padding: 32px; border-radius: 16px; background: white; h2 { margin-bottom: 24px; } }
+  .v3-capacity-row { display: flex; align-items: center; gap: 24px; > span { width: 132px; color: var(--secondary); } > div { flex: 1; border-radius: 6px; height: 24px; > i { display: block; height: 100%; border-radius: inherit; background: var(--primary); } &.bullet > i { background: #f5c451; } } }
+  .v3-capacity-gap { text-align: center; color: #c23d3d !important; }
+  .v3-allocation-dialog { width: 640px;
+    &::backdrop { background: #021e2f66; }
+    .payment-amount-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    input:focus { outline: none; }
+    > header { margin-bottom: 8px; } > header h2 { font-size: 22px; line-height: 30px; }
+    .v3-allocation-heading { display: grid; gap: 8px; margin-bottom: 24px; p { color: var(--secondary); } strong { margin-left: 8px; color: var(--text); } .lm-chip { background: var(--primary-light); border: 0; color: var(--primary-text); } .lm-chip.manual { background: white; border: 1px solid var(--card-border); color: var(--secondary); } }
+    .v3-allocation-rows { display: grid; gap: 12px; }
+    .v3-allocation-row { display: flex; gap: 16px; align-items: center; padding: 12px 16px 12px 20px; background: #f7f8fb; border-radius: 12px; .lm-field { width: 200px; flex: 0 0 200px; margin: 0; } .lm-field > span:first-child { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; } input { text-align: right; } .field-error { font-size: 12px; } }
+    .v3-allocation-name { min-width: 0; flex: 1; strong { display: block; } small { display: block; color: var(--secondary); margin-top: 2px; } }
+    .v3-drag-handle, .v3-drag-spacer { flex: 0 0 24px; width: 24px; height: 24px; }
+    .v3-drag-handle { display: flex; flex-direction: column; gap: 3px; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; cursor: grab; span { width: 14px; height: 2px; border-radius: 1px; background: var(--tertiary); } }
+    .v3-allocation-sum { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid #e2e7ec; padding-top: 16px; margin-top: 24px; > span { color: var(--secondary); } }
+    .v3-allocation-warning { margin-top: 24px; span { color: #c23d3d; } }
+    footer { display: flex; align-items: center; gap: 12px; margin-top: 24px; > span { flex: 1; } .lm-text { font-size: 16px; line-height: 24px; padding: 0 12px; } .lm-text:disabled { opacity: .4; } }
+  }
+  @media(max-width:1000px) { .v3-savings-row { grid-template-columns: 1fr; } .v3-overall-title { flex-wrap: wrap; } .v3-overall-facts { gap: 16px; } .v3-overall-facts > div + div { padding-left: 16px; } }
+  @media(max-width:760px) { .v3-overall-facts, .v3-order-card dl { grid-template-columns: 1fr; } .v3-overall-facts > div + div { border: 0; padding-left: 0; } .v3-allocation-row { flex-wrap: wrap; } .v3-allocation-dialog .v3-allocation-row .lm-field { flex: 1 1 100%; width: 100%; } .v3-allocation-dialog footer { flex-wrap: wrap; } .v3-allocation-dialog .v3-allocation-sum { flex-wrap: wrap; } .v3-allocation-legend small { width: 46px; } .v3-allocation-legend > div { flex-wrap: wrap; gap: 8px; } .v3-capacity-row { flex-wrap: wrap; gap: 12px; } }
   .sidebar-item.active { font-family: inherit; }
   .lm-card { min-width: 0; }
   h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
