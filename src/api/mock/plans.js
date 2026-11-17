@@ -39,6 +39,9 @@ function planFor(loan, input) {
   const mode = input.mode ?? 'MATURITY'
   let monthly = base
   let months = remaining
+  // 만기일시: 목표일까지 상환자금을 적립한다. 필요 월 적립액 = ceil(max(잔액 − 적립 잔액, 0) / 남은 적립 회차)
+  const savingsBalance = lump ? (loan.initial_savings_balance ?? 0) : 0
+  const need = Math.max(principal - savingsBalance, 0)
 
   switch (mode) {
     case 'PREFERENCE': {
@@ -49,15 +52,19 @@ function planFor(loan, input) {
     }
     case 'TARGET_DATE': {
       months = Math.max(1, Math.min(remaining, monthsBetween(today(), input.target_date)))
-      monthly = Math.max(base, Math.round(annuity(principal, rate, months)))
+      monthly = lump ? interest + Math.ceil(need / months) : Math.max(base, Math.round(annuity(principal, rate, months)))
       break
     }
     case 'EXTRA_AMOUNT': monthly = base + (input.extra_monthly_payment ?? 0); months = Math.min(remaining, periods(principal, rate, monthly)); break
-    case 'MONTHLY_AMOUNT': monthly = input.monthly_amount ?? base; months = Math.min(remaining, periods(principal, rate, monthly)); break
+    case 'MONTHLY_AMOUNT':
+      monthly = input.monthly_amount ?? base
+      months = lump ? Math.min(remaining, Math.ceil(need / Math.max(1, monthly - interest))) : Math.min(remaining, periods(principal, rate, monthly))
+      break
     default: months = remaining
   }
   const payoff = mode === 'MATURITY' ? loan.maturity_date : mode === 'TARGET_DATE' ? input.target_date : addMonths(today(), Number.isFinite(months) ? months : remaining)
   const extra = lump ? Math.max(0, monthly - interest) : Math.max(0, monthly - base)
+  const saving = lump ? Math.max(0, monthly - interest) : 0
   return {
     loan_id: loan.loan_id, mode, preference: input.preference ?? null, target_date: input.target_date ?? null,
     extra_monthly_payment: extra, monthly_amount: monthly,
@@ -67,6 +74,7 @@ function planFor(loan, input) {
     planned_progress_pct: 0, actual_progress_pct: 0, planned_extra_amount: extra, actual_extra_amount: 0, extra_gap_amount: -extra,
     payoff_delay_months: 0, track: { status: 'ON_TRACK', data_status: 'SUFFICIENT' },
     cumulative_planned_extra_amount: 0, cumulative_actual_extra_amount: 0, cumulative_extra_gap_amount: 0, priority: null, d_day: null,
+    savings_balance: savingsBalance, required_monthly_saving: lump && mode === 'TARGET_DATE' ? saving : 0, planned_saving_amount: input.planned_saving_amount ?? saving, saving_target_amount: lump ? need : null,
     _base: base, _months_saved: Math.max(0, remaining - months),
   }
 }

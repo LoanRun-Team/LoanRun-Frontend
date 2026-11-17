@@ -13,7 +13,7 @@ export default function PlanFooter({ form, preview, nav }) {
   const payoff = results.map(r => r.estimated_payoff_date).sort().at(-1)
   const sum = key => results.reduce((s, r) => s + r[key], 0)
   const third = lumpSingle
-    ? { label: '월 필요 상환액', value: results[0] ? fmtWon(results[0].monthly_amount) : '—' }
+    ? { label: '월 필요 적립액', value: results[0] ? fmtWon(results[0].planned_saving_amount ?? results[0].extra_monthly_payment) : '—' }
     : { label: multi ? '월 추가 상환액 합계' : '월 추가 상환액', value: results.length ? fmtWon(sum('extra_monthly_payment')) : '—' }
   const items = [{ label: '상환 성향', value: mode }, { label: '희망 완납일', value: fmtYM(payoff) }, third]
 
