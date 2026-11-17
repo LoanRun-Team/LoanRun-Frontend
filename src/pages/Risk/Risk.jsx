@@ -45,6 +45,7 @@ export default function Risk({ navigate }) {
     if (item.id === 'loans' || item.parent === 'loans') navigate(item.href)
     else if (item.id === 'home') navigate('/')
     else if (item.id === 'budget') navigate('/budget')
+    else if (item.id === 'reports') navigate('/reports')
   }
 
   return <div className="risk-shell">
@@ -54,7 +55,7 @@ export default function Risk({ navigate }) {
       {state.status === 'loading' && <p className="rk-loading" role="status">불러오는 중…</p>}
       {state.status === 'error' && <p className="rk-banner danger" role="alert"><span>{state.error?.message || '위험 분석 정보를 불러오지 못했어요.'}</span><button type="button" className="rk-button outline small" onClick={reload}>다시 시도</button></p>}
       {state.status === 'ready' && <div className={`rk-columns${state.data.upcoming_events.length > 1 ? ' even' : ''}`}>
-        <LevelCard data={state.data} onStrategy={() => setNotice('상환 전략 화면은 준비 중이에요')} />
+        <LevelCard data={state.data} onStrategy={() => navigate('/reports')} />
         <UpcomingCard data={state.data} loans={loans} />
         <ChangesCard data={state.data} />
       </div>}

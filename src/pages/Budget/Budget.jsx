@@ -48,7 +48,7 @@ export default function Budget({ navigate }) {
 
   function onNavigate(item) {
     if (item.id === 'home') navigate('/')
-    else if (item.id === 'loans' || item.parent === 'loans' || item.id === 'risk') navigate(item.href)
+    else if (item.id === 'loans' || item.parent === 'loans' || item.id === 'risk' || item.id === 'reports') navigate(item.href)
   }
   const goMonth = next => { setState(s => ({ ...s, status: 'loading' })); setYm(next) }
 
