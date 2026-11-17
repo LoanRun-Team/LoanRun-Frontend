@@ -3,7 +3,7 @@ import plus from '../../../assets/onboarding/icon-plus.svg'
 import info from '../../../assets/onboarding/icon-info.svg'
 import { STEP, allocationSum, fmt, labelYM, loanName, payoffYM, won } from '../budgetModel.js'
 
-// Figma: 여유자금 분할하기 — 대출별 추가 상환과 남겨두기를 나누고, 합계가 여유자금과 같을 때만 반영할 수 있다.
+// Figma: 이번달 여유자금 배분 — 대출별 추가 상환과 남겨두기를 나누고, 합계가 여유자금과 같을 때만 반영할 수 있다.
 function AmountStepper({ label, value, onChange, disabled }) {
   const set = n => onChange(Math.max(0, n))
   return <div className="bd-alloc-row">
@@ -27,7 +27,7 @@ export default function AllocationCard({ ym, available, loans, allocation, appli
   const without = payoffYM(loans, {})
 
   return <section className="bd-card" aria-labelledby="bd-alloc-title">
-    <div><h2 id="bd-alloc-title">여유자금 분할하기</h2><p className="bd-alloc-total">{won(Math.max(available, 0))}</p></div>
+    <div><h2 id="bd-alloc-title">이번달 여유자금 배분</h2><p className="bd-alloc-total">{won(Math.max(available, 0))}</p></div>
     <div className="bd-alloc">
       {loans.map(l => <AmountStepper key={l.loan_id} label={`${loanName(l)} 추가 상환`} value={allocation.extras[l.loan_id]} disabled={disabled} onChange={v => setExtra(l.loan_id, v)} />)}
       <AmountStepper label="남겨두기" value={allocation.reserve} disabled={disabled} onChange={v => onChange({ ...allocation, reserve: v })} />

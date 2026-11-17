@@ -77,7 +77,7 @@ export default function Budget({ navigate }) {
       await budgetApi.applyAllocation(ym, toAllocationBody(allocation, loans))
       setDraft(null)
       reload()
-      setNotice('여유자금 분할을 반영했어요')
+      setNotice('이번달 여유자금 배분을 반영했어요')
     } catch (e) {
       setNotice(e?.message || '반영하지 못했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
