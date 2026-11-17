@@ -3,6 +3,9 @@ import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import { reportApi } from '../../api/index.js'
 import ReportHeader from './components/ReportHeader.jsx'
 import SummaryCard from './components/SummaryCard.jsx'
+import PaceCard from './components/PaceCard.jsx'
+import WaysCard from './components/WaysCard.jsx'
+import PayoffCard from './components/PayoffCard.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
 import './Reports.scss'
 
@@ -66,7 +69,14 @@ export default function Reports({ navigate }) {
       {status === 'generating' && <Generating />}
       {status === 'failed' && <Failed message={error?.message} onRetry={() => reload(true)} onHome={() => navigate('/')} />}
       {status === 'error' && <p className="rp-banner danger" role="alert"><span>{error?.message || '상환 리포트를 불러오지 못했어요.'}</span><button type="button" className="rp-button outline small" onClick={() => reload(false)}>다시 시도</button></p>}
-      {status === 'ready' && <SummaryCard report={report} />}
+      {status === 'ready' && <>
+        <SummaryCard report={report} />
+        <PaceCard report={report} onCompare={() => {}} />
+        <div className={`rp-pair${report.comparison?.status === 'DEMO' ? '' : ' single'}`}>
+          {report.comparison?.status === 'DEMO' && <WaysCard comparison={report.comparison} />}
+          <PayoffCard report={report} />
+        </div>
+      </>}
     </main>
   </div>
 }
