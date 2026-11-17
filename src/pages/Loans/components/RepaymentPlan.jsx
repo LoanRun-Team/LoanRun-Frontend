@@ -4,6 +4,7 @@ import { v2Icons } from '../v2Icons.js'
 import { icons } from '../icons.js'
 import CumulativeRepayment from './CumulativeRepayment.jsx'
 import SavingsPlan from './SavingsPlan.jsx'
+import OverallPlan from './OverallPlan.jsx'
 function ProgressCard({loan,plan,stage}) {
   const actual=plan?.actual_progress_pct,planned=plan?.planned_progress_pct
   const start=plan?.effective_date?.slice(0,7).replace('-','.')
@@ -20,6 +21,7 @@ function ExtraCard({plan,stage,early,onRecord,dueDate}) {
   return <section className="lm-card v2-extra-card"><h2>추가 상환 현황</h2>{stage==='grace'&&<p>거치 기간에는 추가 상환 목표를 만들지 않아요</p>}<dl className="v2-key-values"><div><dt>이번 달 추가 상환</dt><dd>{label}{stage==='active'&&<span className={'v2-status '+state}>{state==='achieved'?'달성':state==='short'?'부족 '+won(Math.abs(gap)):'진행 중'}</span>}</dd></div><div><dt>누적 추가 상환</dt><dd className={plan?.cumulative_extra_gap_amount<0?'warning':''}>계획 대비 {plan?.cumulative_extra_gap_amount==null?'—':(plan.cumulative_extra_gap_amount<0?'−':'')+won(Math.abs(plan.cumulative_extra_gap_amount))}</dd></div><div><dt>{stage==='paid'?'완납일':early?'계획대로면 완납 예상일':'현재 시점 완납 예상일'}</dt><dd><small>{stage==='active'?(early?'계획 기준 예상':'실제 상환 기록 기준'):''}</small>{monthLabel(plan?.projected_payoff_date)}</dd></div></dl>{early&&stage==='active'&&<p className="field-helper">상환 기록이 3개월 쌓이면 실제 기록으로 계산해요</p>}{stage==='grace'&&<div className="v2-actions"><button className="lm-button outline small" onClick={onRecord}>추가 상환 기록하기</button><small>기록하면 거치 후 월 납부액이 줄어요</small></div>}</section>
 }
 export default function RepaymentPlan({loans,filter,navigate,data,planData,onRecord,onSavings,savings,onSavingsEdit,onSavingsDelete,onShortfall,onFee,scenario}) {
+  if(filter==='all'&&(loans.length>1||scenario?.startsWith('overall-')))return <OverallPlan loans={loans} navigate={navigate} scenario={scenario}/>
   const aggregate=filter==='all'&&loans.length>1?planData?.aggregate:null
   const selected=aggregate?{id:'all',name:'전체',balance:aggregate.remaining_principal,stage:aggregate.remaining_principal===0?'paid':'active',dto:{loan_type:'OTHER',repayment_method:'EQUAL_PAYMENT',plan:{target_payoff_date:aggregate.target_payoff_date,projected_payoff_date:aggregate.projected_payoff_date,estimated_payoff_date:aggregate.estimated_payoff_date,planned_extra_amount:aggregate.monthly_extra_amount,actual_extra_amount:null,cumulative_extra_gap_amount:null,track:{data_status:'INSUFFICIENT'}}}}:loans.find(l=>l.id===filter)||loans[0]
   const plan=selected?.dto.plan
