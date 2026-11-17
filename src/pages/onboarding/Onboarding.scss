@@ -106,7 +106,7 @@
   .ob-group { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; legend { padding: 0; margin-bottom: 8px; } }
   .ob-choice-stack { display: flex; flex-direction: column; gap: 12px; .ob-choice { height: 48px; } }
   .ob-fee-box { display: flex; flex-direction: column; gap: 16px; padding: 20px 24px; border-radius: 12px; background: #f7f8fb; }
-  .ob-label-row { display: flex; align-items: center; gap: 8px; min-height: 22px; .ob-label { line-height: 22px; } }
+  .ob-label-row { display: flex; align-items: center; gap: 8px; height: 22px; .ob-label { line-height: 22px; } .ob-link-btn { height: 22px; padding: 0 4px; } }
   .ob-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   .ob-number, .ob-date { display: flex; align-items: center; gap: 8px; width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--ob-input-border); border-radius: 8px; background: var(--card);
