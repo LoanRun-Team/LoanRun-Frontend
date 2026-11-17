@@ -1,5 +1,5 @@
 // 상환 리포트 화면 모델. GET /api/reports/latest/ · /strategy/ 응답(REPORT_API.md)을 화면 문구·표시값으로 바꾼다.
-import { won } from '../Budget/budgetModel.js'
+import { loanName, won } from '../Budget/budgetModel.js'
 
 export const AGE_GROUPS = [
   { code: 'AGE_20S', label: '20대' },
@@ -52,3 +52,48 @@ export const payoffHeadline = report => {
   const current = (report.payoff_scenarios ?? []).find(s => s.type === 'CURRENT')
   return current?.estimated_payoff_date ? `지금 속도면 ${ymKo(current.estimated_payoff_date)}에 모두 갚을 수 있어요` : '완납일을 계산하지 못했어요'
 }
+
+// ── 상환 전략 ───────────────────────────────────────────────────────────
+// 대출 이름: 종류 이름이 겹치면 은행 이름을 붙인다.
+export function loanLabel(loans, id) {
+  const loan = loans.find(l => l.loan_id === id)
+  if (!loan) return '대출'
+  const name = loanName(loan)
+  return loans.filter(l => loanName(l) === name).length > 1 ? `${name} · ${loan.institution_name}` : name
+}
+
+// 배분 한 줄: "주택담보대출 113,000원 · 신용대출 0원" (적립이면 "월 적립 521,740원")
+export const allocationLine = (candidate, loans) => candidate.allocations
+  .map(a => (a.allocation_type === 'REPAYMENT_SAVING' ? `월 적립 ${won(a.amount)}` : `${loanLabel(loans, a.loan_id)} ${won(a.amount)}`))
+  .join(' · ')
+
+// 추가 상환 순서: 우선순위가 있으면 "1 주택담보대출 → 2 신용대출", 모두 같으면 병행, 대출이 하나면 그 이름.
+export function orderLine(allocations, loans) {
+  const rows = allocations.filter(a => a.allocation_type !== 'REPAYMENT_SAVING')
+  if (!rows.length) return '적립'
+  if (rows.length === 1) return loanLabel(loans, rows[0].loan_id)
+  const priorities = rows.map(a => a.priority)
+  if (priorities.some(p => p == null) || new Set(priorities).size === 1) return '남은 원금 비율로 동시에'
+  return [...rows].sort((a, b) => a.priority - b.priority).map(a => `${a.priority} ${loanLabel(loans, a.loan_id)}`).join(' → ')
+}
+
+// 실질 절감 칸: 수수료까지 알면 순절감, 아니면 이자 절감. 수수료를 모르면 "수수료 미반영".
+export const savingOf = c => ({
+  value: manWon(c.net_saving ?? c.interest_saving),
+  note: c.estimated_total_fee == null ? '수수료 미반영' : `수수료 ${won(c.estimated_total_fee)} 포함`,
+})
+
+// 지금 내 상황 3칸(소비 패턴 · 상환 패턴 · 위험 요인)
+export function situationCells(s) {
+  const risk = s.basic_at_risk_from
+  return [
+    { key: 'spend', title: '소비 패턴', lead: '선택 지출 한도의', big: s.discretionary_limit_usage_pct == null ? '-' : pct1(s.discretionary_limit_usage_pct), tail: '', sub: s.surplus_ratio_pct == null ? '' : `여유자금은 소득의 ${pct1(s.surplus_ratio_pct)}예요` },
+    s.consecutive_extra_on_track_months > 0
+      ? { key: 'repay', title: '상환 패턴', lead: '추가 상환', big: `${s.consecutive_extra_on_track_months}개월`, tail: '연속 계획대로', sub: `미납 ${s.missed_payment_count_6m ?? 0}회` }
+      : { key: 'repay', title: '상환 패턴', lead: '', big: '', tail: '연속 달성 기록이 아직 없어요', sub: `미납 ${s.missed_payment_count_6m ?? 0}회` },
+    { key: 'risk', title: '위험 요인', lead: '변동금리 노출', big: s.variable_rate_exposure_pct == null ? '-' : `${Number(Number(s.variable_rate_exposure_pct).toFixed(0))}%`, tail: '', sub: risk == null ? '금리가 올라도 기본 상환은 지킬 수 있어요' : risk === 0 ? '지금도 기본 상환이 빠듯해요' : `금리 +${risk}%p면 기본 상환이 위험해져요` },
+  ]
+}
+
+// 현재 적용 중인 전략 이름. 직접 정한 계획(MANUAL)·적용 전(NONE)은 "직접 정한 금액".
+export const currentStrategyName = (strategy, code) => strategy?.candidates?.find(c => c.strategy_code === (code ?? strategy.current_strategy?.strategy_code))?.label ?? '직접 정한 금액'

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
-import { reportApi } from '../../api/index.js'
+import { onboardingApi, reportApi } from '../../api/index.js'
 import ReportHeader from './components/ReportHeader.jsx'
 import SummaryCard from './components/SummaryCard.jsx'
 import PaceCard from './components/PaceCard.jsx'
 import WaysCard from './components/WaysCard.jsx'
 import PayoffCard from './components/PayoffCard.jsx'
+import StrategySection from './components/StrategySection.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
 import './Reports.scss'
 
@@ -22,6 +23,10 @@ export default function Reports({ navigate }) {
   const [state, setState] = useState({ status: 'loading', report: null, error: null })
   const [reloadKey, setReloadKey] = useState(0)
   const [force, setForce] = useState(false)
+  const [loans, setLoans] = useState([])
+  const [strategy, setStrategy] = useState({ key: null, data: null, error: null })
+  const [strategyReload, setStrategyReload] = useState(0)
+  const [selected, setSelected] = useState(null)
   const reload = useCallback((retry = false) => { setForce(retry); setState(s => ({ ...s, status: 'generating', error: null })); setReloadKey(k => k + 1) }, [])
 
   useEffect(() => {
@@ -51,6 +56,25 @@ export default function Reports({ navigate }) {
     run()
     return () => controller.abort()
   }, [reloadKey, force])
+  useEffect(() => {
+    const controller = new AbortController()
+    onboardingApi.listLoans({ signal: controller.signal }).then(data => setLoans(data.loans), () => {})
+    return () => controller.abort()
+  }, [])
+
+  // 전략 후보·현재 전략은 리포트가 준비된 뒤에 조회한다. 결과에 조회 키를 붙여 두고, 키가 다르면 불러오는 중으로 본다.
+  const reportId = state.status === 'ready' ? state.report.report_id : null
+  const strategyKey = `${reportId}:${strategyReload}`
+  useEffect(() => {
+    if (reportId == null) return
+    const controller = new AbortController()
+    reportApi.getStrategy({ reportId }, { signal: controller.signal }).then(
+      data => setStrategy({ key: strategyKey, data, error: null }),
+      error => { if (!controller.signal.aborted) setStrategy({ key: strategyKey, data: null, error }) },
+    )
+    return () => controller.abort()
+  }, [reportId, strategyKey])
+  const strategyView = strategy.key !== strategyKey ? { status: 'loading', data: null, error: null } : strategy.error ? { status: 'error', data: null, error: strategy.error } : { status: 'ready', data: strategy.data, error: null }
   useEffect(() => { document.title = '론런 | 상환 리포트' }, [])
 
   function onNavigate(item) {
@@ -76,6 +100,7 @@ export default function Reports({ navigate }) {
           {report.comparison?.status === 'DEMO' && <WaysCard comparison={report.comparison} />}
           <PayoffCard report={report} />
         </div>
+        <StrategySection strategy={strategyView} loans={loans} selected={selected} onSelect={code => setSelected(prev => (prev === code ? null : code))} onReload={() => setStrategyReload(k => k + 1)} navigate={navigate} />
       </>}
     </main>
   </div>
