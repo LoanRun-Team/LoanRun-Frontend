@@ -29,6 +29,21 @@ const periods = (principal, rate, pmt) => {
 }
 const round1000 = n => Math.round(n / 1000) * 1000
 
+// 성향 금액 = 가계 반복 월 배분 가능액(여유자금 B, 음수면 0)의 80/50/0%. 원 단위 반올림.
+const PREFERENCE_PCT = { FAST: 80, BALANCED: 50, STABLE: 0 }
+function householdCap() {
+  const p = read().profile
+  if (!p) return 0
+  const scheduled = listLoans().reduce((sum, l) => sum + l.estimated_monthly_payment, 0)
+  return Math.max(0, (p.monthly_income ?? 0) - scheduled - (p.fixed_essential_expenses ?? 0) - (p.variable_essential_expenses ?? 0) - (p.discretionary_expenses ?? 0) - (p.savings ?? 0))
+}
+// 우선순위: 변동금리 중 잔액이 큰 순 → 고정금리 중 금리가 높은 순. 성향 금액은 1순위부터 잔액 한도까지 채운다.
+function allocatePreference(loans, preference) {
+  let left = Math.round(householdCap() * (PREFERENCE_PCT[preference] ?? 0) / 100)
+  const order = loans.filter(l => l.repayment_category !== 'LUMP_SUM').sort((a, b) => (a.rate_type === b.rate_type ? (a.rate_type === 'VARIABLE' ? b.remaining_principal - a.remaining_principal : b.annual_rate - a.annual_rate) : (a.rate_type === 'VARIABLE' ? -1 : 1)))
+  return new Map(order.map((l, i) => { const amount = Math.min(left, l.remaining_principal); left -= amount; return [l.loan_id, { amount, priority: i + 1 }] }))
+}
+
 function planFor(loan, input) {
   const principal = loan.remaining_principal
   const rate = loan.annual_rate / 1200
@@ -45,6 +60,7 @@ function planFor(loan, input) {
 
   switch (mode) {
     case 'PREFERENCE': {
+      if (!lump && input._allocation) { monthly = base + input._allocation.amount; months = Math.min(remaining, periods(principal, rate, monthly)); break }
       const share = { FAST: lump ? 24 : 0.5, BALANCED: lump ? 48 : 0.25, STABLE: lump ? 96 : 0 }[input.preference] ?? 0
       monthly = lump ? interest + Math.round(principal / share / 1000) * 1000 : base + round1000(base * share)
       months = Math.min(remaining, periods(principal, rate, monthly))
@@ -66,14 +82,14 @@ function planFor(loan, input) {
   const extra = lump ? Math.max(0, monthly - interest) : Math.max(0, monthly - base)
   const saving = lump ? Math.max(0, monthly - interest) : 0
   return {
-    loan_id: loan.loan_id, mode, preference: input.preference ?? null, target_date: input.target_date ?? null,
+    loan_id: loan.loan_id, mode, preference: input.preference ?? null, target_date: input.target_date ?? null, priority: input._allocation?.priority ?? null,
     extra_monthly_payment: extra, monthly_amount: monthly,
     estimated_payoff_date: payoff, estimated_total_interest: Math.round(principal * rate * (months / 2)),
     effective_date: addMonths(today(), 1), target_payoff_date: payoff, projected_payoff_date: payoff,
     repayment_category: loan.repayment_category,
     planned_progress_pct: 0, actual_progress_pct: 0, planned_extra_amount: extra, actual_extra_amount: 0, extra_gap_amount: -extra,
     payoff_delay_months: 0, track: { status: 'ON_TRACK', data_status: 'SUFFICIENT' },
-    cumulative_planned_extra_amount: 0, cumulative_actual_extra_amount: 0, cumulative_extra_gap_amount: 0, priority: null, d_day: null,
+    cumulative_planned_extra_amount: 0, cumulative_actual_extra_amount: 0, cumulative_extra_gap_amount: 0, d_day: null,
     savings_balance: savingsBalance, required_monthly_saving: lump && mode === 'TARGET_DATE' ? saving : 0, planned_saving_amount: input.planned_saving_amount ?? saving, saving_target_amount: lump ? need : null,
     _base: base, _months_saved: Math.max(0, remaining - months),
   }
@@ -98,7 +114,13 @@ export function validatePlans(body) {
 
 function buildResult(plans) {
   const loans = listLoans()
-  const proposed = plans.map(p => planFor(loans.find(l => l.loan_id === p.loan_id), p))
+  const byPref = {}
+  const proposed = plans.map(p => {
+    const loan = loans.find(l => l.loan_id === p.loan_id)
+    if (p.mode !== 'PREFERENCE') return planFor(loan, p)
+    byPref[p.preference] ??= allocatePreference(loans.filter(l => plans.some(q => q.loan_id === l.loan_id && q.mode === 'PREFERENCE' && q.preference === p.preference)), p.preference)
+    return planFor(loan, { ...p, _allocation: byPref[p.preference].get(loan.loan_id) })
+  })
   const current = proposed.map(p => ({ ...planFor(loans.find(l => l.loan_id === p.loan_id), { mode: 'MATURITY' }) }))
   const strip = ({ _base, _months_saved, ...rest }) => rest
   return {
@@ -131,13 +153,13 @@ export function previewPlans(body) {
     preview_version: previewVersion(body.plans),
     strategy_code: 'NONE', strategy_version: null, current_strategy_code: 'NONE',
     current_allocations: current.map(p => ({ loan_id: p.loan_id, amount: 0, priority: null })),
-    proposed_allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: null })),
+    proposed_allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: p.priority })),
   }
 }
 
 export function savePlans(body) {
   const { proposed, totals, strip } = buildResult(body.plans)
-  const saved = { plans: proposed.map(strip), effective_date: proposed[0]?.effective_date, estimated_payoff_date: totals.estimated_payoff_date, estimated_total_interest: totals.estimated_total_interest, monthly_burden: totals.monthly_burden, plan_version: 'plan-v2-mock', data_revision: `rev-${Date.now().toString(36)}`, estimated_total_fee: null, strategy_code: 'NONE', overall_plan_exists: proposed.length > 1, allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: null })) }
+  const saved = { plans: proposed.map(strip), effective_date: proposed[0]?.effective_date, estimated_payoff_date: totals.estimated_payoff_date, estimated_total_interest: totals.estimated_total_interest, monthly_burden: totals.monthly_burden, plan_version: 'plan-v2-mock', data_revision: `rev-${Date.now().toString(36)}`, estimated_total_fee: null, strategy_code: 'NONE', overall_plan_exists: proposed.length > 1, allocations: proposed.map(p => ({ loan_id: p.loan_id, amount: p.extra_monthly_payment, priority: p.priority, allocation_type: p.repayment_category === 'LUMP_SUM' ? 'REPAYMENT_SAVING' : 'EXTRA_PAYMENT', actual_amount: 0 })) }
   write({ plans: saved })
   return saved
 }

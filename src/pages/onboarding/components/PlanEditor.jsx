@@ -3,30 +3,23 @@ import NumberField from './NumberField.jsx'
 import PlanOptionCard from './PlanOptionCard.jsx'
 import SegmentTabs from './SegmentTabs.jsx'
 import PlanResult from './PlanResult.jsx'
-import target from '../../../assets/onboarding/icon-target.svg'
-import swap from '../../../assets/onboarding/icon-swap.svg'
-import shield from '../../../assets/onboarding/icon-shield-check.svg'
+import { PREFERENCES, preferenceText } from '../preferences.js'
 import { fmtNumber } from '../format.js'
 import { fmtYM, isLump, savingChips, tabsFor } from '../planModel.js'
 
 // Figma: S-03b / S-03c 조기 상환 설정 — 세그먼트 탭 + 왼쪽(입력) / 오른쪽(계산 결과) 카드
-const PREFERENCES = [
-  { value: 'FAST', title: '빠른 상환', description: '매달 더 갚아서 이자를 가장 많이 줄여요', icon: target },
-  { value: 'BALANCED', title: '균형 있는 상환', description: '상환과 생활비를 적당히 나눠요', icon: swap },
-  { value: 'STABLE', title: '생활 안정 우선', description: '기본 상환만 하고 생활비 여유를 지켜요', icon: shield },
-]
 const EXTRA_CHIPS = [50000, 100000, 200000]
 const thisYear = new Date().getFullYear()
 const MONTHS = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: String(i + 1) }))
 
-export default function PlanEditor({ loan, draft, onDraft, res, pending }) {
+export default function PlanEditor({ loan, draft, onDraft, res, pending, surplus = null }) {
   const lump = isLump(loan)
   const maturityYear = Number(loan.maturity_date.slice(0, 4))
   const years = Array.from({ length: Math.max(1, maturityYear - thisYear + 1) }, (_, i) => ({ value: thisYear + i, label: String(thisYear + i) }))
 
   const left = {
     preference: { title: '상환 성향', body: <div className="ob-plan-options" role="radiogroup" aria-label="상환 성향">
-      {PREFERENCES.map(p => <PlanOptionCard key={p.value} name={`pref-${loan.loan_id}`} icon={p.icon} title={p.title} description={p.description}
+      {PREFERENCES.map(p => <PlanOptionCard key={p.value} name={`pref-${loan.loan_id}`} icon={p.icon} title={p.title} description={preferenceText(p, lump ? null : surplus)}
         selected={draft.preference === p.value && draft.extra_override == null && draft.monthly_override == null}
         onSelect={() => onDraft({ preference: p.value, extra_override: null, monthly_override: null })} />)}
     </div> },

@@ -210,6 +210,15 @@
   .ob-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
     button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: #e6edf3; font-size: 14px; line-height: 20px; color: var(--secondary); &.selected { background: var(--primary); color: #fff; } }
   }
+  .ob-overview-card { min-height: 0; margin-top: 24px; }
+  .ob-alloc { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 12px; background: #f7f8fb;
+    h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
+    ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 20px; }
+    .ob-alloc-rank { display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); font-size: 12px; font-weight: 600; color: var(--primary-text); }
+    .ob-alloc-name { flex: 1 0 0; min-width: 0; color: var(--secondary); }
+    .ob-alloc-total { display: flex; justify-content: space-between; margin: 0; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 14px; color: var(--secondary); strong { color: var(--text); } }
+  }
   .ob-overview { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none;
     li { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--divider); }
     strong { flex-shrink: 0; width: 200px; font-size: 16px; }
