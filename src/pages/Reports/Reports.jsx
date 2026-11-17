@@ -7,6 +7,7 @@ import PaceCard from './components/PaceCard.jsx'
 import WaysCard from './components/WaysCard.jsx'
 import PayoffCard from './components/PayoffCard.jsx'
 import StrategySection from './components/StrategySection.jsx'
+import Suggestions from './components/Suggestions.jsx'
 import PreviewCard from './components/PreviewCard.jsx'
 import { ConfirmDialog, RecalcDialog } from './components/Dialogs.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
@@ -148,6 +149,8 @@ export default function Reports({ navigate }) {
         </div>
         <StrategySection strategy={strategyView} loans={loans} selected={selected} onSelect={code => setSelected(prev => (prev === code ? null : code))} onReload={() => setStrategyReload(k => k + 1)} onRefresh={() => reload(false)} navigate={navigate} />
         {picked && <PreviewCard candidate={picked} preview={previewView} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} onApply={() => { setApplyError(null); setDialog('confirm') }} applying={applying} />}
+        <Suggestions suggestions={report.suggestions} navigate={navigate} />
+        <p className="rp-footnote">{report.comparison?.status === 'DEMO' ? '또래 비교 기준은 예시 데이터예요 · ' : ''}투자·대출 권유가 아니에요</p>
       </>}
     </main>
     {dialog === 'confirm' && picked && previewView.status === 'ready' && <ConfirmDialog candidate={picked} preview={previewView.data} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} busy={applying} error={applyError} onCancel={() => setDialog(null)} onConfirm={apply} />}

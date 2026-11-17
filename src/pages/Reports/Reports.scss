@@ -88,6 +88,17 @@
   .rp-dialog-text { margin: 0; color: var(--secondary); }
   .rp-dialog-actions { display: flex; justify-content: flex-end; gap: 12px; }
   .rp-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border: 1px solid var(--primary); border-radius: 12px; background: var(--primary-light); color: var(--primary-text); box-shadow: 0 8px 24px #021e2f1f; }
+  .rp-suggestions { display: flex; flex-direction: column; gap: 16px; }
+  .rp-suggest-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .rp-suggest { gap: 12px; h3 { font-size: 18px; line-height: 26px; font-weight: 600; } .rp-button { align-self: flex-start; margin-top: auto; } }
+  .rp-eyebrow { margin: 0; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--secondary); }
+  .rp-suggest-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .rp-suggest-text { margin: 0; color: var(--secondary); }
+  .rp-footnote { margin: 0; font-size: 14px; line-height: 22px; color: var(--secondary); }
+  .rp-age-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rp-choice { height: 40px; padding: 0 16px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card); font-size: 16px; color: var(--secondary); cursor: pointer; &.on { border-color: var(--primary); background: var(--primary-light); color: var(--primary-text); font-weight: 600; } }
+  .rp-field-label { margin: 0 0 8px; font-size: 14px; line-height: 22px; font-weight: 600; }
+  .rp-locked { filter: blur(6px); pointer-events: none; user-select: none; }
   .rp-button.primary-s { background: var(--primary); color: #fff; font-weight: 600; }
   .rp-button.soft { border-color: var(--card-border); background: var(--rp-inset); color: var(--secondary); }
 
@@ -103,7 +114,7 @@
     &:disabled { opacity: 0.4; cursor: default; }
   }
 
-  @media (max-width: 1100px) { .rp-pair, .rp-bars-pair, .rp-candidates { grid-template-columns: minmax(0, 1fr); } .rp-situation { flex-direction: column; } .rp-situation-cell + .rp-situation-cell { border-left: 0; border-top: 1px solid var(--divider); } }
+  @media (max-width: 1100px) { .rp-pair, .rp-bars-pair, .rp-candidates, .rp-suggest-grid { grid-template-columns: minmax(0, 1fr); } .rp-situation { flex-direction: column; } .rp-situation-cell + .rp-situation-cell { border-left: 0; border-top: 1px solid var(--divider); } }
   @media (max-width: 760px) { & { flex-direction: column; } .rp-content { padding: 24px 16px 48px; } .rp-card { padding: 24px; } }
   @media print { .sidebar { display: none; } .rp-content { padding: 0; } .rp-button { display: none; } }
 }
