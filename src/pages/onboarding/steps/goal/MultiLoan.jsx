@@ -20,7 +20,7 @@ export default function MultiLoan({ form, setForm, preview }) {
   return <>
     <div className="ob-pills" role="tablist" aria-label="대출 선택">
       <button type="button" role="tab" aria-selected={!active} className={!active ? 'selected' : ''} onClick={() => pick('all')}>전체</button>
-      {loans.map(l => <button key={l.loan_id} type="button" role="tab" aria-selected={active?.loan_id === l.loan_id} className={active?.loan_id === l.loan_id ? 'selected' : ''} onClick={() => pick(l.loan_id)}>{pillLabel(l)}</button>)}
+      {loans.toSorted((a, b) => a.loan_id - b.loan_id).map(l => <button key={l.loan_id} type="button" role="tab" aria-selected={active?.loan_id === l.loan_id} className={active?.loan_id === l.loan_id ? 'selected' : ''} onClick={() => pick(l.loan_id)}>{pillLabel(l)}</button>)}
     </div>
     {active ? <>
       {isLump(active) ? <LoanInfoCard key={active.loan_id} loan={active} onSavings={v => savings.change(active, v)} busy={savings.busy} error={savings.error} /> : <LoanContext loan={active} />}

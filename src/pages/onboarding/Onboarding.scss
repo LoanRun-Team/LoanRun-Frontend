@@ -151,7 +151,7 @@
     .ob-loan-detail { display: flex; flex-direction: column; flex: 1 0 0; min-width: 1px; font-size: 16px; line-height: 24px; color: var(--secondary); }
   }
   .ob-danger-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #fdecec; font-size: 14px; line-height: 22px; font-weight: 500; color: #c0392b; &:disabled { opacity: .4; } }
-  .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: transparent; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--text); }
+  .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: transparent; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--primary-text); }
 
   // S-02 선택 칩 / 안내 배너
   .ob-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; &.two { grid-template-columns: repeat(2, 1fr); } }

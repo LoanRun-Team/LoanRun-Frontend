@@ -1,7 +1,7 @@
 import { previewRows } from '../reportModel.js'
 
 // Figma F4: 반영 미리보기 — 고른 전략을 반영했을 때 현재 계획과 달라지는 값. 저장은 하지 않는다(POST preview).
-export default function PreviewCard({ candidate, preview, loans, currentCode, onApply, applying }) {
+export default function PreviewCard({ candidate, preview, loans, currentCode, onApply, onPlan, applying }) {
   return <section className="rp-card" aria-labelledby="rp-preview-title" aria-live="polite">
     <div className="rp-card-head">
       <h2 id="rp-preview-title">반영 미리보기</h2>
@@ -21,6 +21,7 @@ export default function PreviewCard({ candidate, preview, loans, currentCode, on
         </tbody>
       </table>
       <div className="rp-cta">
+        <button type="button" className="rp-button outline" onClick={onPlan}>전체 상환 계획 보기 →</button>
         <p>반영하기 전까지 지금 계획은 바뀌지 않아요</p>
         <button type="button" className="rp-button primary" onClick={onApply} disabled={applying}>이 전략으로 계획에 반영하기</button>
       </div>

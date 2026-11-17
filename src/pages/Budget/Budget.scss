@@ -49,7 +49,18 @@
     dd { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; &.brand { color: var(--primary-text); } }
   }
 
-  // 여유자금 분할하기
+  // 이번달 여유자금 배분 — 요약(막대 + 목록)
+  .bd-alloc-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .bd-bar { display: flex; gap: 2px; height: 24px; overflow: hidden; border-radius: 4px; span { min-width: 4px; } }
+  .bd-legend { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none;
+    li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 22px; }
+    i { flex-shrink: 0; width: 12px; height: 12px; border-radius: 2px; }
+    span { flex: 1 0 0; min-width: 1px; }
+    strong { font-weight: 600; }
+    em { width: 48px; font-style: normal; text-align: right; color: var(--secondary); }
+  }
+
+  // 여유자금 배분 편집
   .bd-alloc-total { margin: 8px 0 0; font-size: 20px; line-height: 28px; font-weight: 600; }
   .bd-alloc { display: flex; flex-direction: column; margin-top: -8px; }
   .bd-alloc-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); font-size: 16px; line-height: 24px;

@@ -2,6 +2,9 @@ import StatusChip from './StatusChip.jsx'
 import { LEVELS, levelLabel, pct, reasonText } from '../riskModel.js'
 import { won } from '../../Budget/budgetModel.js'
 
+// 점검 행 이름은 Figma E1 기준(선택 지출 한도 사용률 · 변동금리 위험)으로 보여 준다. 변동금리 대출이 없으면 값은 '없음'.
+const CHECK_LABEL = { DISCRETIONARY_LIMIT: '선택 지출 한도 사용률', VARIABLE_EXPOSURE: '변동금리 위험' }
+
 // Figma: Card / 재정 위험도 — 등급, 3단계 게이지, 설명 문구, 점검 4행, 상환 전략 링크.
 export default function LevelCard({ data, loans = [], onStrategy }) {
   const level = data.level
@@ -18,7 +21,7 @@ export default function LevelCard({ data, loans = [], onStrategy }) {
       </ol>
       <p className="rk-reason">{reasonText(data)}</p>
       <ul className="rk-checks">
-        {data.checks.map(check => <li key={check.code}><span>{check.label}</span><strong>{pct(check.ratio_pct)}</strong><StatusChip level={check.level} />{check.code === 'VARIABLE_EXPOSURE' && rise > 0 && <small>잔액 비중 · 금리 +1%p면 월 +{won(rise)}</small>}</li>)}
+        {data.checks.map(check => <li key={check.code}><span>{CHECK_LABEL[check.code] ?? check.label}</span><strong>{check.code === 'VARIABLE_EXPOSURE' && !check.ratio_pct ? '없음' : pct(check.ratio_pct)}</strong><StatusChip level={check.level} />{check.code === 'VARIABLE_EXPOSURE' && rise > 0 && <small>잔액 비중 · 금리 +1%p면 월 +{won(rise)}</small>}</li>)}
       </ul>
     </div>
     {data.strategy_link_available && <button type="button" className="rk-link" onClick={onStrategy}>내게 맞는 상환 전략 보러가기 →</button>}

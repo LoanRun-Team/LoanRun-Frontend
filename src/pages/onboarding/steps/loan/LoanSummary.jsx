@@ -66,7 +66,7 @@ export default function LoanSummary({ form, setForm, jump }) {
   return <section className="ob-registered" aria-labelledby="ob-registered-title">
     <h2 id="ob-registered-title">등록한 대출 {loans.length}개</h2>
     <ul>
-      {loans.map(l => <li key={l.loan_id} className="ob-loan-row">
+      {loans.toSorted((a, b) => a.loan_id - b.loan_id).map(l => <li key={l.loan_id} className="ob-loan-row">
         <strong>{loanTypeLabels[l.loan_type] ?? l.loan_type}</strong>
         <span className="ob-loan-detail">{describe(l)}</span>
         <button type="button" className="ob-link-btn" onClick={() => edit(l)} disabled={busyId === l.loan_id}>수정</button>

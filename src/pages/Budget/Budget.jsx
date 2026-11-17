@@ -78,8 +78,10 @@ export default function Budget({ navigate }) {
       setDraft(null)
       reload()
       setNotice('이번달 여유자금 배분을 반영했어요')
+      return true
     } catch (e) {
       setNotice(e?.message || '반영하지 못했어요. 잠시 후 다시 시도해 주세요.')
+      return false
     } finally {
       setBusy(false)
     }

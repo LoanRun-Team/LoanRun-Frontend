@@ -34,7 +34,7 @@ export default function Reports({ navigate }) {
   const [dialog, setDialog] = useState(null) // 'confirm' | 'recalc' | 'compare' | null
   const [applying, setApplying] = useState(false)
   const [applyError, setApplyError] = useState(null)
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(null) // { text, action? }
   const reload = useCallback((retry = false) => { setForce(retry); setState(s => ({ ...s, status: 'generating', error: null })); setReloadKey(k => k + 1) }, [])
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function Reports({ navigate }) {
   }, [previewKey, reportId, strategyCode, strategyVersion])
   const previewView = preview.key !== previewKey ? { status: 'loading', data: null, error: null } : preview.error ? { status: 'error', data: null, error: preview.error } : { status: 'ready', data: preview.data, error: null }
   useEffect(() => { document.title = '론런 | 상환 리포트' }, [])
-  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 3000); return () => clearTimeout(t) }, [notice])
+  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(null), 4000); return () => clearTimeout(t) }, [notice])
 
   // 전략 반영(PUT). 미리보기의 preview_version·data_revision 을 그대로 보낸다. 409 STRATEGY_STALE 이면 다시 계산하게 한다.
   async function apply() {
@@ -115,7 +115,7 @@ export default function Reports({ navigate }) {
       await reportApi.applyStrategy({ reportId, strategyCode: data.strategy_code, strategyVersion: data.strategy_version, previewVersion: data.preview_version, dataRevision: data.data_revision })
       setDialog(null)
       setSelected(null)
-      setNotice('상환 계획에 전략을 반영했어요')
+      setNotice({ text: '전체 상환 계획에 반영했어요', action: { label: '보기', onClick: () => navigate('/loans/plan') } })
       reload(false) // 계획이 바뀌면 리포트도 stale 이 되므로 새 리포트를 받는다.
     } catch (error) {
       if (error?.code === 'STRATEGY_STALE') setDialog('recalc')
@@ -146,15 +146,24 @@ export default function Reports({ navigate }) {
           <PayoffCard report={report} />
         </div>
         <StrategySection strategy={strategyView} loans={loans} selected={selected} onSelect={code => setSelected(prev => (prev === code ? null : code))} onReload={() => setStrategyReload(k => k + 1)} onRefresh={() => reload(false)} navigate={navigate} />
-        {picked && <PreviewCard candidate={picked} preview={previewView} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} onApply={() => { setApplyError(null); setDialog('confirm') }} applying={applying} />}
+        {picked && picked.strategy_code === strategyView.data.current_strategy.strategy_code
+          ? <div className="rp-cta keep">
+            <button type="button" className="rp-button outline" onClick={() => navigate('/loans/plan')}>전체 상환 계획 보기 →</button>
+            <button type="button" className="rp-button primary" onClick={() => { setSelected(null); setNotice({ text: '현재 전략을 유지해요' }) }}>유지하기</button>
+          </div>
+          : picked && <PreviewCard candidate={picked} preview={previewView} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} onApply={() => { setApplyError(null); setDialog('confirm') }} onPlan={() => navigate('/loans/plan')} applying={applying} />}
         <Suggestions suggestions={report.suggestions} navigate={navigate} />
         <p className="rp-footnote">{report.comparison?.status === 'DEMO' ? '또래 비교 기준은 예시 데이터예요 · ' : ''}투자·대출 권유가 아니에요</p>
       </>}
     </main>
     {dialog === 'confirm' && picked && previewView.status === 'ready' && <ConfirmDialog candidate={picked} preview={previewView.data} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} busy={applying} error={applyError} onCancel={() => setDialog(null)} onConfirm={apply} />}
     {dialog === 'recalc' && <RecalcDialog onRecalc={recalc} onClose={() => setDialog(null)} />}
-    {dialog === 'compare' && <CompareDialog onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setSelected(null); setNotice('비교 기준을 바꿨어요'); reload(false) }} />}
-    {status === 'locked' && <LockedDialog onStart={() => setNotice('PRO 시작하기는 준비 중이에요')} onLater={() => navigate('/')} />}
-    {notice && <div className="rp-toast" role="status">{notice}</div>}
+    {dialog === 'compare' && <CompareDialog onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setSelected(null); setNotice({ text: '비교 기준을 바꿨어요' }); reload(false) }} />}
+    {status === 'locked' && <LockedDialog onStart={() => setNotice({ text: 'PRO 시작하기는 준비 중이에요' })} onLater={() => navigate('/')} />}
+    {notice && <div className="rp-toast" role="status">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <span>{notice.text}</span>
+      {notice.action && <button type="button" onClick={notice.action.onClick}>{notice.action.label}</button>}
+    </div>}
   </div>
 }

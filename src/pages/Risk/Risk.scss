@@ -78,7 +78,7 @@
   .rk-side { display: flex; flex-direction: column; gap: 24px; }
   .rk-scenario .rk-title, .rk-bottom .rk-title { font-size: 20px; line-height: 28px; }
   .rk-scenario, .rk-bottom .rk-card { gap: 24px; }
-  .rk-limit { display: flex; flex-direction: column; gap: 16px; p { margin: 0; font-size: 16px; line-height: 24px; strong { font-weight: 600; } } }
+  .rk-limit { display: flex; flex-direction: column; gap: 16px; p { margin: 0; font-size: 16px; line-height: 24px; strong { font-weight: 600; } &.muted { color: var(--secondary); } } }
   .rk-card h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--secondary); }
   .rk-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; font-size: 16px; line-height: 24px; span { color: var(--secondary); } strong { font-weight: 600; white-space: nowrap; } }
   .rk-lump { display: flex; flex-direction: column; gap: 4px; }
