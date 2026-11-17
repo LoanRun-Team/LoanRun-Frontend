@@ -8,10 +8,19 @@ import { diffMonths, fmtNumber } from '../../format.js'
 const ym = iso => `${Number(iso.slice(0, 4))}년 ${Number(iso.slice(5, 7))}월`
 const rateWord = { FIXED: '고정', VARIABLE: '변동' }
 
+// 2줄 요약: 잔액·금리·만기 / 다음 납부액·납부일
 function describe(l) {
-  const rate = `${rateWord[l.rate_type]} ${l.annual_rate}%`
-  const tail = `매월 ${l.payment_day}일 · 만기 ${ym(l.maturity_date)}`
-  return `잔액 ${fmtNumber(l.remaining_principal)}원 · ${rate} · 월 ${fmtNumber(l.estimated_monthly_payment)}원 · ${tail}`
+  return <>
+    <span>잔액 {fmtNumber(l.remaining_principal)}원 · {rateWord[l.rate_type]} {l.annual_rate}% · 만기 {ym(l.maturity_date)}</span>
+    <span>다음 납부 {fmtNumber(l.contractual_monthly_payment ?? l.estimated_monthly_payment)}원 · 매월 {l.payment_day}일</span>
+  </>
+}
+
+// 등록된 대출의 중도상환수수료 값을 화면 선택(있음·면제·잘 모르겠어요, 적용 기간)으로 되돌린다.
+function feeSelection(l) {
+  if (l.prepayment_fee_method === 'NONE') return { feeChoice: 'EXEMPT', feeYears: null }
+  if (l.prepayment_fee_method === 'FIXED' || l.prepayment_fee_method === 'LINEAR') return { feeChoice: 'HAS', feeYears: l.fee_end_date && l.fee_start_date ? Math.round(diffMonths(l.fee_start_date, l.fee_end_date) / 12) : null }
+  return { feeChoice: l.prepayment_fee_method === 'UNKNOWN' ? 'UNKNOWN' : null, feeYears: null }
 }
 
 // 등록된 대출을 S-01c 입력 상태로 되돌린다. "다음"을 누를 때 기존 대출을 지우고 새로 등록한다.
@@ -24,8 +33,10 @@ function toDraft(l) {
       annual_rate: l.annual_rate, rate_type: l.rate_type, rate_reset_months: l.rate_reset_months,
       start_date: l.start_date, maturity_date: l.maturity_date, payment_day: l.payment_day,
       grace_months: l.grace_months > 0 ? l.grace_months : null, post_grace_method: l.post_grace_method,
+      prepayment_policy: l.prepayment_policy ?? null, contractual_monthly_payment: l.contractual_monthly_payment ?? null,
+      prepayment_fee_method: l.prepayment_fee_method === 'FIXED' || l.prepayment_fee_method === 'LINEAR' ? l.prepayment_fee_method : null, prepayment_fee_rate: l.prepayment_fee_rate ?? null,
     },
-    selection: { ...initialForm.selection, manual: l.product_id == null, loan_type_label: loanTypeLabels[l.loan_type] ?? null, term: { years: Math.floor(months / 12), months: months % 12 }, editingLoanId: l.loan_id },
+    selection: { ...initialForm.selection, manual: l.product_id == null, loan_type_label: loanTypeLabels[l.loan_type] ?? null, term: { years: Math.floor(months / 12), months: months % 12 }, editingLoanId: l.loan_id, ...feeSelection(l) },
   }
 }
 

@@ -61,7 +61,7 @@ export const STEPS = {
       : loan.product_id != null),
   },
   'repayment-info': {
-    group: 'loan', inputStep: 2, title: '상환 방식', heading: '상환 방식을 확인해 주세요.', next: () => 'loan-summary',
+    group: 'loan', inputStep: 2, title: '상환 방식', heading: '상환 방식을 확인해 주세요.', nextLabel: '대출 추가하기', next: () => 'loan-summary',
     valid: form => buildLoanBody(form) !== null,
     // "다음"을 누르면 대출을 등록하고(POST /api/loans/), 다음 대출을 입력할 수 있게 입력 중이던 값을 비운다.
     // 등록된 대출을 수정하던 중이면 기존 대출을 지우고 새로 등록한다.

@@ -1,6 +1,7 @@
 // S-01c 대출 입력 폼의 기본값 규칙·검증·요청 본문 생성. 화면과 "다음" 활성 조건이 같은 규칙을 쓰도록 한 곳에 둔다.
 // 요청 필드는 Notion 명세(POST /api/loans/preview/, POST /api/loans/)와 동일하다.
-import { diffMonths, isValidISO, todayISO } from './format.js'
+import { addMonths, diffMonths, isValidISO, todayISO } from './format.js'
+import { feeLoanTypes } from './data.js'
 
 export const RESET_MONTHS = [3, 6, 12]
 
@@ -23,6 +24,7 @@ export const totalMonths = (loan, selection) => {
 }
 
 const positive = n => Number.isInteger(n) && n > 0
+const isPlain = n => Number.isInteger(n) && n >= 0
 
 // 필수값이 모두 유효하면 요청 본문을, 아니면 null 을 돌려준다.
 export function buildLoanBody({ loan: rawLoan, selection }) {
@@ -55,17 +57,35 @@ export function buildLoanBody({ loan: rawLoan, selection }) {
     contractual_monthly_payment: null,
   }
 
-  if (!positive(loan.remaining_principal)) return null
-  // TODO: Figma 에는 "최초 원금" 입력이 없어서 현재 잔액과 같게 보낸다(진행률 계산은 서버 기준). 입력 필드가 확정되면 교체.
-  const original = loan.original_principal ?? loan.remaining_principal
-  if (!positive(original) || loan.remaining_principal > original) return null
-  const result = { ...body, original_principal: original, remaining_principal: loan.remaining_principal }
+  if (!positive(loan.original_principal) || !isPlain(loan.remaining_principal) || loan.remaining_principal > loan.original_principal || loan.remaining_principal === 0) return null
+  if (loan.contractual_monthly_payment != null && !isPlain(loan.contractual_monthly_payment)) return null
+  const result = { ...body, original_principal: loan.original_principal, remaining_principal: loan.remaining_principal, contractual_monthly_payment: loan.contractual_monthly_payment ?? null }
+
+  // 추가 상환 후 약정 변경 방식: 분할형은 필수, 만기일시는 null
+  if (loan.repayment_method === 'BULLET') result.prepayment_policy = null
+  else if (['KEEP_PAYMENT', 'KEEP_MATURITY'].includes(loan.prepayment_policy)) result.prepayment_policy = loan.prepayment_policy
+  else return null
 
   if (loan.repayment_method === 'GRACE_INSTALLMENT') {
     const months = totalMonths(rawLoan, selection)
     if (!Number.isInteger(loan.grace_months) || loan.grace_months < 1 || loan.grace_months >= months) return null
     if (!['EQUAL_PAYMENT', 'EQUAL_PRINCIPAL'].includes(loan.post_grace_method)) return null
-    return { ...result, grace_months: loan.grace_months, post_grace_method: loan.post_grace_method }
+    result.grace_months = loan.grace_months
+    result.post_grace_method = loan.post_grace_method
+  }
+
+  // 중도상환수수료(주택담보·전세자금만): 있음 → 계산 방식·수수료율·적용 기간, 면제, 잘 모르겠어요
+  if (feeLoanTypes.includes(loan.loan_type)) {
+    const { feeChoice, feeYears } = selection
+    if (!feeChoice) return null
+    if (feeChoice === 'EXEMPT') Object.assign(result, { prepayment_fee_method: 'NONE', prepayment_fee_rate: null, fee_exempt: true })
+    else if (feeChoice === 'UNKNOWN') Object.assign(result, { prepayment_fee_method: 'UNKNOWN', prepayment_fee_rate: null, fee_exempt: null })
+    else {
+      if (!['FIXED', 'LINEAR'].includes(loan.prepayment_fee_method)) return null
+      const feeRate = loan.prepayment_fee_rate
+      if (typeof feeRate !== 'number' || !(feeRate > 0 && feeRate < 30) || !positive(feeYears)) return null
+      Object.assign(result, { prepayment_fee_method: loan.prepayment_fee_method, prepayment_fee_rate: feeRate, fee_start_date: loan.start_date, fee_end_date: addMonths(loan.start_date, feeYears * 12), fee_exempt: false })
+    }
   }
   return result
 }

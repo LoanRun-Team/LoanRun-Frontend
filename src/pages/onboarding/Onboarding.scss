@@ -98,7 +98,18 @@
   .ob-summary { padding: 14px 20px; border-radius: 12px; background: #f7f8fb; font-size: 14px; line-height: 22px; font-weight: 500; color: var(--secondary); }
   .ob-divider { width: 100%; height: 1px; margin: 0; border: 0; background: var(--divider); }
   .ob-row { display: flex; gap: 16px; align-items: flex-end; width: 100%; > * { flex: 1 0 0; min-width: 1px; } }
+  .ob-row.top { align-items: flex-start; }
   .ob-row-spacer { height: 10px; }
+  .ob-product-info { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 20px 24px; border-radius: 12px; background: #f7f8fb; font-size: 14px; line-height: 22px;
+    div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    dt { color: var(--secondary); }
+    dd { margin: 0; font-weight: 600; color: var(--text); text-align: right; }
+    .ob-product-title { margin-bottom: 4px; font-weight: 500; color: var(--secondary); }
+  }
+  .ob-section-head { display: flex; flex-direction: column; gap: 2px; h2 { margin: 0; font-size: 14px; line-height: 22px; font-weight: 600; } p { margin: 0; font-size: 14px; line-height: 22px; color: var(--secondary); } }
+  .ob-group { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; legend { padding: 0; margin-bottom: 8px; } }
+  .ob-choice-stack { display: flex; flex-direction: column; gap: 12px; .ob-choice { height: 48px; } }
+  .ob-fee-box { display: flex; flex-direction: column; gap: 16px; padding: 20px 24px; border-radius: 12px; background: #f7f8fb; }
   .ob-label-row { display: flex; align-items: center; gap: 8px; min-height: 22px; .ob-label { line-height: 22px; } }
   .ob-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -140,8 +151,8 @@
     ul { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
   }
   .ob-loan-row { display: flex; align-items: center; gap: 16px; padding: 32px; border-radius: 16px; background: var(--card);
-    strong { flex-shrink: 0; width: 110px; font-size: 16px; line-height: 24px; font-weight: 600; }
-    .ob-loan-detail { flex: 1 0 0; min-width: 1px; font-size: 14px; line-height: 22px; color: var(--secondary); }
+    strong { flex-shrink: 0; width: 110px; font-size: 20px; line-height: 28px; font-weight: 600; }
+    .ob-loan-detail { display: flex; flex-direction: column; flex: 1 0 0; min-width: 1px; font-size: 16px; line-height: 24px; color: var(--secondary); }
   }
   .ob-danger-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #fdecec; font-size: 14px; line-height: 22px; font-weight: 500; color: #c0392b; &:disabled { opacity: .4; } }
   .ob-add-loan { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed var(--primary); border-radius: 8px; background: var(--card); font-size: 16px; line-height: 24px; font-weight: 600; color: var(--primary-text); }

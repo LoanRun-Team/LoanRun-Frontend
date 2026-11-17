@@ -31,6 +31,12 @@ export function validateLoanBody(b) {
   if (!b.product_id) { need('institution_name', Boolean(b.institution_name), '직접 입력 시 은행명이 필요합니다.'); need('product_name', Boolean(b.product_name), '직접 입력 시 상품명이 필요합니다.') }
   need('original_principal', Number.isInteger(b.original_principal) && b.original_principal > 0, '최초 원금은 양수여야 합니다.')
   need('remaining_principal', Number.isInteger(b.remaining_principal) && b.remaining_principal >= 0 && b.remaining_principal <= (b.original_principal ?? 0), '현재 잔액은 0 이상 최초 원금 이하여야 합니다.')
+  if (b.repayment_method === 'BULLET') need('prepayment_policy', b.prepayment_policy == null, '만기일시상환은 prepayment_policy 가 null 이어야 합니다.')
+  else need('prepayment_policy', ['KEEP_PAYMENT', 'KEEP_MATURITY'].includes(b.prepayment_policy), 'KEEP_PAYMENT 또는 KEEP_MATURITY 가 필요합니다.')
+  if (b.prepayment_fee_method != null) need('prepayment_fee_method', ['FIXED', 'LINEAR', 'NONE', 'UNKNOWN'].includes(b.prepayment_fee_method), '지원하지 않는 수수료 방식입니다.')
+  if (['FIXED', 'LINEAR'].includes(b.prepayment_fee_method)) need('prepayment_fee_rate', typeof b.prepayment_fee_rate === 'number' && b.prepayment_fee_rate > 0, '수수료율이 필요합니다.')
+  if (b.prepayment_fee_method === 'LINEAR') need('fee_start_date', Boolean(b.fee_start_date), '부과 시작일이 필요합니다.')
+  if (b.initial_savings_balance != null) need('initial_savings_balance', Number.isInteger(b.initial_savings_balance) && b.initial_savings_balance >= 0, '적립금은 0 이상이어야 합니다.')
   if (b.repayment_method === 'GRACE_INSTALLMENT') need('grace_months', Number.isInteger(b.grace_months) && b.grace_months >= 1, '거치 기간은 1개월 이상이어야 합니다.')
   return errors
 }
@@ -89,6 +95,13 @@ export function createLoan(b) {
     grace_months: b.grace_months ?? 0,
     post_grace_method: b.post_grace_method ?? null,
     contractual_monthly_payment: b.contractual_monthly_payment ?? null,
+    prepayment_policy: b.prepayment_policy ?? null,
+    prepayment_fee_method: b.prepayment_fee_method ?? 'UNKNOWN',
+    prepayment_fee_rate: b.prepayment_fee_rate ?? null,
+    fee_start_date: b.fee_start_date ?? null,
+    fee_end_date: b.fee_end_date ?? null,
+    fee_exempt: b.fee_exempt ?? null,
+    initial_savings_balance: b.initial_savings_balance ?? 0,
     estimated_monthly_payment: p.estimated_monthly_payment,
     paid_principal: paid,
     progress_percent: original ? Math.round((paid / original) * 10000) / 100 : null,
