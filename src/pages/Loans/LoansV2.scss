@@ -1,0 +1,253 @@
+.loans-v2 {
+  .sidebar-item.active { font-family: inherit; }
+  .lm-card { min-width: 0; }
+  h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; }
+  .lm-caption, .summary-band p, .loan-facts dt, .product-name { font-size: 16px; line-height: 24px; }
+  .recent-payment, .recent-payment time { font-size: 16px; line-height: 24px; }
+  .recent-payment time { overflow-wrap: normal; }
+  .recent-payment > span { min-width: 0; overflow-wrap: anywhere; }
+  .recent-payment > div { min-width: 0; }
+  .recent-payment p { font-size: 14px; line-height: 20px; }
+  .loan-delete-link { margin-left: auto; }
+  .owned-loan footer { flex-wrap: wrap; }
+  .complete-chip { background: var(--primary-text); color: white; border-color: transparent; }
+  .loan-facts dd { min-width: 0; }
+  .loan-filter-scroll { min-width: 0; position: relative; max-width: 100%; }
+  .loan-filter-scroll.can-scroll::after { content: ''; position: absolute; top: 0; right: 0; width: 24px; height: 36px; pointer-events: none; background: linear-gradient(90deg,transparent,var(--page)); }
+  .loan-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 0; max-width: 100%;
+    button { padding: 7px 14px; line-height: 22px; font-size: 14px; flex-shrink: 0; }
+  }
+  .v2-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .lm-button.small { font-size: 16px; line-height: 24px; height: 32px; border-radius: 8px; }
+  .lm-text { font-size: 16px; line-height: 24px; }
+  .v2-empty { padding: 24px 0; color: var(--secondary); }
+  .field-helper { color: var(--tertiary); font-size: 14px; line-height: 20px; font-weight: 400; }
+  .field-error, .danger { color: #b54848; }
+  .field-error { font-size: 14px; line-height: 22px; }
+  .has-error input, .has-error select { border-color: #d35f5f; }
+  .v2-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .v2-inset { background: #f7f8fb; border-radius: 12px; padding: 20px; }
+  .v2-key-values { width: 100%;
+    > div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; }
+    dt { color: var(--secondary); font-size: 16px; line-height: 24px; display: flex; align-items: center; gap: 6px; }
+    dd { font-weight: 500; text-align: right; min-width: 0; }
+    dd small { display: inline; color: var(--tertiary); margin-right: 8px; }
+  }
+  .v2-status { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; font-size: 14px; line-height: 20px; font-weight: 500; background: #f7f8fb; color: var(--secondary);
+    &.paid, &.achieved { background: var(--primary-light); color: var(--primary-text); }
+    &.upcoming { background: #e7ecf1; }
+    &.partial, &.short, &.unachieved { background: #fff4e0; color: #9a5b00; }
+    &.unrecorded { background: var(--secondary); color: white; }
+    &.unpaid { background: #fceded; color: #b54848; }
+    img { display: block; }
+  }
+  .question-mark { display: grid; place-items: center; width: 16px; height: 16px; border: 1.5px solid white; border-radius: 50%; font-weight: 600; }
+  .monthly-layout { grid-template-columns: minmax(0,2fr) minmax(0,2.7fr); align-items: stretch; }
+  .repayment-calendar { padding: 24px; width: 100%; max-width: none; align-self: start; min-height: 629px;
+    > h2 { margin-bottom: 24px; font-size: 20px; }
+  }
+  .calendar-heading { margin: 24px 0 12px; }
+  .calendar-days img { flex-shrink: 0; }
+  .calendar-legend { flex-wrap: wrap; margin-top: 16px; }
+  .day-details small { font-size: 14px; line-height: 20px; }
+  .monthly-progress { padding: 24px; > p { font-size: 16px; line-height: 24px; } }
+  .monthly-schedule-heading { margin-bottom: -8px; min-height: 32px; flex-wrap: wrap; }
+  .schedule-card { padding: 24px; min-height: 421px; overflow: hidden; > header > strong { font-size: 16px; line-height: 24px; } }
+  .v2-schedule-row { display: grid; grid-template-columns: 72px minmax(40px,1fr) max-content; align-items: center; gap: 16px; position: relative; min-height: 60px; padding: 3px 0; border-bottom: 1px solid var(--divider);
+    time { color: var(--secondary); font-size: 16px; line-height: 24px; }
+  }
+  .v2-schedule-name { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500; }
+  .v2-payment-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+    > div { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .lm-text { z-index: 2; position: relative; font-weight: 600; }
+  }
+  .v2-extra-line { color: var(--secondary); font-size: 16px; line-height: 24px; }
+  .row-hit-target { position: absolute; inset: 0; opacity: 0; border: 0; background: transparent; }
+  .scheduled-payment { font-size: 16px; line-height: 24px; }
+  .plan-top-row { gap: 16px; align-items: stretch; }
+  .v2-goal-card { background: var(--primary); color: white; min-height: 346px;
+    > header { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+    > header .lm-chip { background: white; border-color: transparent; }
+  }
+  .v2-goal-main { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px;
+    p { color: #ffffffb3; margin-bottom: 8px; font-size: 16px; line-height: 24px; }
+    strong { font-size: 32px; line-height: 40px; }
+    .lm-button { border-color: white; background: white; flex-shrink: 0; }
+  }
+  .v2-goal-caption { margin-top: 8px; color: #ffffffb3; }
+  .v2-goal-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 16px; margin-top: 24px;
+    > div:nth-child(even) { border-left: 1px solid #ffffff33; padding-left: 16px; }
+    dt { color: #ffffffb3; font-size: 16px; line-height: 24px; margin-bottom: 6px; }
+    dd { font-size: 20px; line-height: 28px; font-weight: 600; }
+  }
+  .plan-finish { min-height: 346px;
+    .d-day { font-size: 32px; line-height: 40px; margin: 24px 0 8px; }
+    > p { font-size: 16px; line-height: 24px; color: var(--secondary); }
+    > p strong { color: var(--text); }
+    > p small { color: var(--tertiary); }
+    .pace-status { gap: 8px; font-size: 16px; line-height: 24px; }
+  }
+  .v2-plan-status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .v2-progress-card, .v2-extra-card { padding: 24px; min-height: 228px; h2 { font-size: 20px; line-height: 28px; margin-bottom: 16px; } }
+  .v2-progress-card h2 small { font-size: 14px; line-height: 20px; font-weight: 400; color: var(--tertiary); }
+  .v2-progress-card > p { color: var(--secondary); }
+  .v2-pace-track { display: flex; align-items: center; gap: 16px; min-height: 88px; font-size: 14px; line-height: 20px;
+    > span { color: var(--tertiary); }
+    > strong { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; white-space: nowrap; }
+  }
+  .v2-pace-rail { position: relative; height: 4px; flex: 1; min-width: 40px; background: var(--card-border);
+    > div { height: 4px; background: var(--primary); }
+  }
+  .v2-pace-runner, .v2-pace-pacer { position: absolute; top: -22px; transform: translateX(-50%); display: block;
+    img { display: block; }
+  }
+  .v2-pace-runner { z-index: 1;
+    b { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--primary-text); white-space: nowrap; }
+  }
+  .v2-planned-label { position: absolute; top: 24px; transform: translateX(-50%); white-space: nowrap; color: var(--secondary); }
+  .v2-progress-card .goal-principal-message { margin-top: 12px; }
+  .v2-extra-card .v2-key-values > div { padding: 10px 0; }
+  .v2-extra-card dd { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  .v2-extra-card .field-helper { margin-top: 4px; }
+  .v2-extra-card .v2-actions { margin-top: 16px; }
+  .v2-grace-guide { > h2 { margin-bottom: 24px; } > div { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; } section p { color: var(--secondary); } section strong { display: block; font-size: 24px; line-height: 32px; margin: 12px 0; } }
+  .v2-cumulative { min-height: 0; }
+  .v2-cumulative > h2 { font-size: 20px; line-height: 28px; }
+  .v2-cumulative .cumulative-summary .plan-difference-chip.behind { background: #fff4e0; }
+  .v2-cumulative .data-chart-scroll { margin-top: 24px; }
+  .v2-cumulative .plan-table { table-layout: auto; }
+  .plan-edit-grid { align-items: start; }
+  .plan-input { > h2 { margin-bottom: 24px; } > label { font-size: 16px; line-height: 24px; } }
+  .plan-input .field-helper, .plan-input .field-error { margin-top: 8px; }
+  .edit-tabs { flex-shrink: 0; button { font-size: 14px; line-height: 22px; } }
+  .edit-preview { margin-top: 40px; padding: 20px; gap: 16px; p { font-size: 16px; line-height: 24px; } strong { font-size: 20px; line-height: 28px; white-space: normal; } }
+  .plan-comparison { min-height: 597px;
+    .lm-table { margin-top: 24px; font-size: 16px; line-height: 24px; table-layout: fixed; }
+    .lm-table th { width: 32%; font-size: 16px; line-height: 24px; }
+    .lm-table thead th { padding-bottom: 20px; font-size: 14px; line-height: 20px; }
+    .lm-table td { padding: 14px 12px; }
+    .lm-table small { line-height: 20px; margin-top: 2px; }
+    > .field-helper { margin-top: 0; }
+    footer { margin-top: 24px; }
+  }
+  .v2-extra-stepper { display: flex; gap: 8px; align-items: flex-end;
+    .lm-field { flex: 1; margin-bottom: 16px; }
+    > button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid #b0cae0; border-radius: 6px; background: white; flex-shrink: 0; margin-bottom: 20px; }
+  }
+  .v2-plan-warning { padding: 16px 20px; border-radius: 12px; background: #fff4e0; margin-top: 40px;
+    strong { display: flex; align-items: center; gap: 8px; color: #9a5b00; font-size: 16px; line-height: 24px; }
+    p { margin-top: 8px; font-size: 16px; line-height: 24px; }
+  }
+  .v2-savings-columns { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 16px; }
+  .v2-savings-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .v2-savings-status h2, .v2-savings-history h2, .v2-pay-compare h2 { margin-bottom: 24px; }
+  .v2-savings-meters { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;
+    p { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 20px; color: var(--secondary); }
+    p strong { margin-left: auto; color: var(--text); }
+    i { width: 8px; height: 8px; background: var(--text); border-radius: 50%; flex-shrink: 0; }
+    i.extra { background: var(--primary); }
+    small { display: block; margin-top: 8px; color: var(--tertiary); }
+  }
+  .v2-meter { height: 8px; border-radius: 999px; background: var(--divider); overflow: hidden; margin-top: 8px; > span { display: block; height: 100%; background: var(--primary); } }
+  .v2-shortfall-link { display: flex; justify-content: space-between; align-items: center; gap: 16px; width: 100%; padding: 12px 0; border: 0; background: transparent; color: #9a5b00; font-size: 16px; line-height: 24px; > span { color: var(--primary-text); } }
+  .v2-pay-compare {
+    > .loan-filter { margin-bottom: 16px; }
+    > p { margin: 16px 0; font-size: 16px; line-height: 24px; }
+    > .field-helper { font-size: 14px; line-height: 20px; }
+    .compare-result > p { color: var(--secondary); font-size: 14px; line-height: 20px; margin-bottom: 8px; }
+    .compare-net { border-top: 1px solid var(--divider); margin-top: 8px; padding-top: 16px; }
+    .compare-net dt { color: var(--text); font-weight: 600; }
+    .compare-net dd { font-size: 24px; line-height: 32px; font-weight: 600; }
+  }
+  .v2-savings-history > div { display: flex; align-items: center; gap: 16px; padding: 16px 0; time { color: var(--secondary); } strong { margin-left: auto; } }
+  .v2-savings-history .lm-text { font-size: 14px; line-height: 20px; }
+  .savings-page-actions { margin-top: -8px; }
+  .loan-dialog { max-height: calc(100svh - 40px); > header h2 { font-size: 22px; line-height: 30px; } }
+  .lm-field > span { font-size: 16px; line-height: 24px; }
+  .lm-field > small { margin-top: 0; font-size: 14px; line-height: 20px; }
+  .loan-dialog select { background-image: url('../../assets/loans/form-select-chevron.svg'); }
+  select { background-image: url('../../assets/loans/form-select-chevron.svg'); }
+  .v2-add-dialog:not(.manual) select { background-image: url('../../assets/loans/catalog-select-chevron.svg'); }
+  .loan-dialog .lm-field > .lm-chip { display: inline-flex; width: fit-content; font-weight: 500; font-size: 14px; line-height: 20px; }
+  .v2-confirm-dialog { width: min(520px,calc(100vw - 32px)); > p { color: var(--secondary); } footer { margin-top: 24px; } }
+  .danger-solid { color: white; background: #d35f5f; border-color: #d35f5f; }
+  .v2-shortfall-dialog { .v2-key-values { margin: 24px 0; } .v2-key-values > div { border-bottom: 1px solid var(--divider); padding: 20px 0; } > p { color: var(--secondary); } }
+  .v2-add-dialog .wizard-progress { order: 0; gap: 12px; margin: 0 0 12px; > span:first-child { display: inline; } }
+  .v2-add-dialog .loan-type-options { grid-template-columns: 1fr; button { min-height: 112px; padding: 24px; } }
+  .v2-add-dialog .wizard-fields > .lm-field { margin-bottom: 20px; }
+  .v2-add-dialog .manual-link { margin: 0 auto; min-height: 44px; display: flex; align-items: center; }
+  .v2-add-dialog .loan-form-grid { gap: 20px 16px; }
+  .v2-add-dialog .lm-field > small { line-height: 22px; }
+  .v2-add-dialog .inline-chip { display: inline-flex; margin-left: 8px; font-weight: 500; }
+  .v2-add-dialog .lm-field .edit-tabs { width: 100%; margin: 0; min-height: 48px; button { flex: 1; } }
+  .v2-add-dialog .product-reference { color: var(--secondary); margin-bottom: 24px;
+    h3 { margin-bottom: 12px; }
+    dl > div { display: flex; align-items: start; justify-content: space-between; gap: 16px; padding: 8px 0; }
+    dd { text-align: right; color: var(--text); }
+  }
+  .v2-contract-heading { margin-bottom: 24px; p { color: var(--secondary); margin-top: 4px; } }
+  .v2-contract-change { margin-top: 24px; h3 { margin-bottom: 8px; } .field-helper { margin-top: 8px; } }
+  .v2-radio-cards { display: flex; flex-direction: column; gap: 8px;
+    > button { width: 100%; min-height: 48px; text-align: left; padding: 12px 16px; border: 1px solid #b0cae0; border-radius: 8px; background: white; color: var(--text); font-size: 16px; line-height: 24px; }
+    > button.selected { border-color: var(--primary); background: var(--primary-light); }
+    &.three { flex-direction: row; > button { flex: 1; } }
+  }
+  .v2-optional-fields { margin-top: 24px; }
+  .v2-add-dialog .form-notice { margin-top: 24px; }
+  .form-notice { font-size: 16px; line-height: 24px; }
+  .v2-add-dialog.manual .v2-contract-change { margin-top: 20px; }
+  .v2-record-dialog .edit-tabs { margin-bottom: 24px; }
+  .payment-breakdown { margin: 24px 0;
+    > p { color: var(--secondary); font-size: 14px; line-height: 22px; margin: 8px 0 24px; }
+    .loan-form-grid { gap: 20px 16px; }
+    .lm-field > span { color: var(--secondary); font-weight: 400; }
+    .breakdown-summary { margin-top: 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+    .breakdown-summary > span { color: var(--secondary); }
+    .field-error { color: #b54848; }
+  }
+  .payment-result { margin-top: 24px; p { color: var(--secondary); margin-bottom: 12px; } > strong { display: block; margin-top: 12px; font-size: 16px; line-height: 24px; font-weight: 500; } }
+  .v2-checkbox { display: flex; gap: 8px; align-items: center; font-size: 14px; line-height: 20px; margin-top: 16px; input { width: 16px; height: 16px; } }
+  @media (max-width: 1350px) {
+    .monthly-layout { grid-template-columns: 1fr; }
+    .repayment-calendar { min-height: 0; max-width: 640px; }
+    .v2-schedule-row { grid-template-columns: 72px minmax(60px,1fr) max-content; }
+    .v2-key-values > div { flex-wrap: wrap; }
+  }
+  @media (max-width: 1000px) {
+    .plan-top-row, .v2-plan-status-row, .v2-savings-columns { grid-template-columns: 1fr; }
+    .v2-goal-card, .plan-finish { min-height: 300px; }
+    .v2-grace-guide > div { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .v2-goal-facts { gap: 20px 16px; }
+    .v2-goal-facts dd { font-size: 18px; }
+    .v2-goal-main strong { font-size: 26px; line-height: 34px; }
+    .v2-goal-main { flex-wrap: wrap; }
+    .v2-goal-card, .plan-finish { min-height: 0; }
+    .pace-status { margin-top: 32px; }
+    .v2-progress-card, .v2-extra-card { min-height: 0; }
+    .v2-progress-card h2 { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+    .v2-pace-track { gap: 8px; > strong { font-size: 12px; gap: 4px; } }
+    .v2-pace-runner b { font-size: 12px; }
+    .v2-plan-warning { margin-top: 24px; padding: 16px; }
+    .plan-comparison { min-height: 0; .lm-table th, .lm-table td { padding: 12px 4px; } }
+    .v2-schedule-row { grid-template-columns: 72px minmax(0,1fr); gap: 8px; padding: 12px 0; }
+    .v2-payment-right { grid-column: 1 / -1; align-items: stretch; > div { justify-content: flex-start; flex-wrap: wrap; } }
+    .schedule-card .extra-heading { align-items: start; }
+    .v2-schedule-name { flex-wrap: wrap; white-space: normal; }
+    .v2-savings-history > div { flex-wrap: wrap; gap: 8px; }
+    .v2-savings-meters { grid-template-columns: 1fr; }
+    .v2-key-values > div { gap: 8px; }
+    .v2-key-values dd { overflow-wrap: anywhere; }
+    .v2-radio-cards.three { flex-wrap: wrap; > button { min-width: 88px; } }
+    .v2-add-dialog .loan-form-grid, .v2-record-dialog .loan-form-grid { grid-template-columns: 1fr 1fr; }
+    .loan-dialog > header h2 { font-size: 20px; line-height: 28px; }
+    .loan-dialog footer { flex-wrap: wrap; }
+    .loan-dialog footer .lm-button { padding-inline: 14px; }
+    .payment-breakdown { padding: 16px; }
+    .payment-breakdown .breakdown-summary { flex-wrap: wrap; gap: 4px; font-size: 14px; line-height: 22px; }
+    .payment-breakdown .loan-form-grid { grid-template-columns: 1fr; }
+    .v2-extra-stepper > button { width: 32px; }
+    .v2-confirm-dialog footer .lm-button { height: auto; min-height: 44px; white-space: normal; }
+  }
+}

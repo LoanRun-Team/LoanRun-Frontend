@@ -1,0 +1,5 @@
+.api-state { padding: 40px 24px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; color: var(--secondary); text-align: center; }
+.api-state button { padding: 10px 20px; border: 1px solid var(--primary); border-radius: 8px; background: white; color: var(--primary-text); }
+.inline-api-error { color: #b3261e; font-size: 14px; line-height: 22px; padding: 12px 0; }
+button:disabled { cursor: not-allowed; }
+

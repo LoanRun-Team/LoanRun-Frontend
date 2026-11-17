@@ -1,0 +1,41 @@
+.settings-shell { display: flex; min-height: 100vh; background: var(--card); }
+.settings-nav { flex: 0 0 232px; width: 232px; padding: 40px 16px; background: var(--page); border-right: 1px solid var(--divider); }
+.settings-nav h1 { padding-left: 12px; margin-bottom: 20px; }
+.settings-nav nav { display: flex; flex-direction: column; gap: 4px; }
+.settings-nav a { padding: 10px 12px; min-height: 44px; border-radius: 8px; text-decoration: none; color: var(--secondary); }
+.settings-nav a.active { background: var(--card); color: var(--text); font-weight: 600; }
+.settings-shell .sidebar-item.active { font-family: inherit; }
+.settings-content { flex: 1; min-width: 0; padding: 40px 48px; }
+.settings-person { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.settings-person img { display: block; flex-shrink: 0; }
+.settings-person span { font-size: 14px; line-height: 22px; color: var(--secondary); }
+.settings-profile .settings-person { margin-bottom: 32px; }
+.settings-section { width: 100%; max-width: 640px; }
+.settings-section h2 { font-size: 16px; line-height: 24px; margin-bottom: 16px; }
+.settings-row { display: flex; gap: 16px; align-items: center; min-height: 56px; border-bottom: 1px solid var(--divider); }
+.settings-row:last-child { border-bottom: 0; }
+.settings-label { flex: 0 0 112px; color: var(--secondary); font-size: 14px; line-height: 22px; word-break: break-word; }
+.settings-value { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.settings-button { flex-shrink: 0; height: 32px; padding: 0 12px; border: 1px solid var(--card-border); border-radius: 8px; background: #f7f8fb; color: var(--text); font-size: 14px; line-height: 22px; font-weight: 500; }
+.settings-button.primary { background: var(--primary); border-color: var(--primary); color: white; }
+.settings-button.text { border-color: transparent; background: transparent; color: var(--primary-text); padding: 0 8px; }
+.settings-toggle { flex: 0 0 44px; width: 44px; height: 24px; border: 0; padding: 0; border-radius: 999px; background: transparent; display: flex; align-items: center; }
+.settings-toggle img { display: block; flex-shrink: 0; }
+.settings-toggle:disabled { cursor: not-allowed; }
+.settings-edit { flex: 1; display: flex; gap: 8px; min-width: 0; }
+.settings-edit input, .settings-edit select { width: 100%; min-width: 0; font: inherit; color: var(--text); border: 1px solid var(--primary); border-radius: 8px; padding: 4px 8px; background: var(--card); }
+.settings-expenses-dialog { position: fixed; inset: 0; margin: auto; width: 480px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 48px); overflow: auto; padding: 32px; border: 0; border-radius: 16px; color: var(--text); background: var(--card); box-shadow: 0 8px 24px #021e2f1f; font: inherit;
+  &::backdrop { background: #021e2f66; }
+  header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  h2 { flex: 1; font-size: 16px; line-height: 24px; }
+  header button { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; }
+  img { display: block; }
+  fieldset { display: grid; gap: 16px; margin: 0; padding: 0; border: 0; min-width: 0; }
+  label { display: grid; gap: 8px; }
+  label > div { display: flex; align-items: center; gap: 8px; border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px; }
+  input { min-width: 0; width: 100%; border: 0; color: inherit; font: inherit; }
+  footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+  [role=alert] { color: #a52d35; margin-top: 16px; }
+}
+@media (max-width: 1000px) { .settings-content { padding: 40px 24px; } .settings-nav { flex-basis: 190px; width: 190px; } }
+@media (max-width: 760px) { .settings-shell { flex-direction: column; } .settings-nav { width: 100%; flex-basis: auto; padding: 20px 16px; } .settings-nav nav { flex-direction: row; flex-wrap: wrap; } .settings-nav h1 { margin-bottom: 12px; } .settings-content { padding: 24px 20px; } .settings-row { gap: 12px; } .settings-label { flex-basis: 100px; } .settings-edit { flex-wrap: wrap; padding: 8px 0; } }
