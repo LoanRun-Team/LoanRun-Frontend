@@ -107,7 +107,7 @@ export default function RepaymentInfo({ form, setForm }) {
       </div>}
     </fieldset>}
 
-    <NumberField label="다음 회차 납부 예정액 (선택)" value={loan.contractual_monthly_payment ?? null} unit="원" placeholder={!bullet && estimated ? fmtNumber(estimated) : '0'}
-      helper={bullet ? '비워 두면 론런이 이자를 계산해요' : '비워 두면 론런이 계산해요'} onChange={v => update({ contractual_monthly_payment: v })} />
+    {!bullet && <NumberField label="다음 회차 납부 예정액 (선택)" value={loan.contractual_monthly_payment ?? null} unit="원" placeholder={estimated ? fmtNumber(estimated) : '0'}
+      helper="비워 두면 론런이 계산해요" onChange={v => update({ contractual_monthly_payment: v })} />}
   </StepCard>
 }

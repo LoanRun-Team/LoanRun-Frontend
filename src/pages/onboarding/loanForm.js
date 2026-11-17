@@ -58,8 +58,10 @@ export function buildLoanBody({ loan: rawLoan, selection }) {
   }
 
   if (!positive(loan.original_principal) || !isPlain(loan.remaining_principal) || loan.remaining_principal > loan.original_principal || loan.remaining_principal === 0) return null
-  if (loan.contractual_monthly_payment != null && !isPlain(loan.contractual_monthly_payment)) return null
-  const result = { ...body, original_principal: loan.original_principal, remaining_principal: loan.remaining_principal, contractual_monthly_payment: loan.contractual_monthly_payment ?? null }
+  // 다음 회차 납부 예정액은 분할상환에서만 받는다(만기일시는 이자를 론런이 계산).
+  const scheduled = loan.repayment_method === 'BULLET' ? null : loan.contractual_monthly_payment ?? null
+  if (scheduled != null && !isPlain(scheduled)) return null
+  const result = { ...body, original_principal: loan.original_principal, remaining_principal: loan.remaining_principal, contractual_monthly_payment: scheduled }
 
   // 추가 상환 후 약정 변경 방식: 분할형은 필수, 만기일시는 null
   if (loan.repayment_method === 'BULLET') result.prepayment_policy = null
