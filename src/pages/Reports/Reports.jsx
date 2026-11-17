@@ -9,7 +9,7 @@ import PayoffCard from './components/PayoffCard.jsx'
 import StrategySection from './components/StrategySection.jsx'
 import Suggestions from './components/Suggestions.jsx'
 import PreviewCard from './components/PreviewCard.jsx'
-import { CompareDialog, ConfirmDialog, RecalcDialog } from './components/Dialogs.jsx'
+import { CompareDialog, ConfirmDialog, LockedDialog, RecalcDialog } from './components/Dialogs.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
 import './Reports.scss'
 
@@ -136,6 +136,7 @@ export default function Reports({ navigate }) {
     <Sidebar active="reports" plan={status === 'locked' ? 'Free' : 'Pro'} onNavigate={onNavigate} />
     <main className="rp-content" id="main-content">
       <ReportHeader report={status === 'ready' ? report : null} onCompare={() => setDialog('compare')} />
+      {status === 'locked' && <section className="rp-card rp-locked" aria-hidden="true"><h2>상환 리포트</h2><p>이번 달 상환 속도와 완납 가능성을 분석해 드려요.</p><p>나에게 맞는 상환 전략 후보와 반영 미리보기를 보여 드려요.</p></section>}
       {status === 'loading' && <p className="rp-loading" role="status">불러오는 중…</p>}
       {status === 'generating' && <Generating />}
       {status === 'failed' && <Failed message={error?.message} onRetry={() => reload(true)} onHome={() => navigate('/')} />}
@@ -156,6 +157,7 @@ export default function Reports({ navigate }) {
     {dialog === 'confirm' && picked && previewView.status === 'ready' && <ConfirmDialog candidate={picked} preview={previewView.data} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} busy={applying} error={applyError} onCancel={() => setDialog(null)} onConfirm={apply} />}
     {dialog === 'recalc' && <RecalcDialog onRecalc={recalc} onClose={() => setDialog(null)} />}
     {dialog === 'compare' && <CompareDialog onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setSelected(null); setNotice('비교 기준을 바꿨어요'); reload(false) }} />}
+    {status === 'locked' && <LockedDialog onStart={() => setNotice('PRO 시작하기는 준비 중이에요')} onLater={() => navigate('/')} />}
     {notice && <div className="rp-toast" role="status">{notice}</div>}
   </div>
 }

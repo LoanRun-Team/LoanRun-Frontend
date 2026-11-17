@@ -94,3 +94,14 @@ export function CompareDialog({ onClose, onSaved }) {
     </div>
   </Dialog>
 }
+
+// Figma F4-free: PRO 가 아니면(403 PRO_REQUIRED) 리포트 위에 안내를 띄운다. PRO 결제 화면은 아직 없어 "시작하기"는 안내만 한다.
+export function LockedDialog({ onStart, onLater }) {
+  return <Dialog title="상환 리포트는 PRO에서 볼 수 있어요" onClose={onLater}>
+    <p className="rp-dialog-text">내 상환 속도와 완납 가능성, 나에게 맞는 상환 전략을 한 번에 확인해 보세요.</p>
+    <div className="rp-dialog-actions">
+      <button type="button" className="rp-button outline" onClick={onLater}>나중에</button>
+      <button type="button" className="rp-button primary-s" onClick={onStart}>PRO 시작하기</button>
+    </div>
+  </Dialog>
+}
