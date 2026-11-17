@@ -9,11 +9,11 @@ export function createMockServer({ storage, delay = 120 } = {}) {
   const seed = {
     profile: example('GET /api/users/me/'), finance: example('GET /api/budgets/profile/'),
     notifications: example('GET /api/settings/notifications/'), loans: [seedLoan],
-    payments: [], plans: example('GET /api/repayment-plans/').plans, savings:[], confirmations:{},
+    payments: [], plans: example('GET /api/repayment-plans/').plans, savings:[], confirmations:{}, allocations:{},
   }
   let state = seed
   try { const saved = JSON.parse(storage?.getItem('loanrun.mock-api.v2') || 'null'); if(saved?.version===2)state=saved.data } catch { /* Storage is optional. */ }
-  state.savings??=[];state.confirmations??={}
+  state.savings??=[];state.confirmations??={};state.allocations??={}
   let revision=0
   const persist = () => { revision++;try { storage?.setItem('loanrun.mock-api.v2', JSON.stringify({version:2,data:state})) } catch { /* Session still works. */ } }
   const sum = (rows,key) => rows.reduce((a,r)=>a+(r[key]||0),0)
@@ -36,7 +36,7 @@ export function createMockServer({ storage, delay = 120 } = {}) {
     const saving=loan.repayment_method==='BULLET'?savingsFor(loan):{}
     const {results,...savingFields}=saving
     void results
-    return {...plan,...savingFields,actual_extra_amount:extra,extra_gap_amount:extra-(plan.planned_extra_amount||0)}
+    return {...plan,...savingFields,...(loan.repayment_method==='BULLET'?{cumulative_actual_saving_amount:sum(state.savings.filter(s=>s.loan_id===loan.loan_id),'amount')}:{}),actual_extra_amount:extra,extra_gap_amount:extra-(plan.planned_extra_amount||0)}
   }
   function schedule(month,loanId) {
     const loans=state.loans.filter(l=>l.status!=='PAID'&&l.remaining_principal>0&&(!loanId || l.loan_id===loanId))
@@ -73,6 +73,30 @@ export function createMockServer({ storage, delay = 120 } = {}) {
     if(!headers.get('Authorization')?.startsWith('Bearer '))return failure('AUTH_REQUIRED','로그인이 필요합니다.',{},401)
     let body={};try{if(init.body)body=JSON.parse(init.body)}catch{return failure('VALIDATION_ERROR','JSON 형식을 확인해 주세요.')}
     const loanId=Number(query.get('loan_id')) || null
+    if(key==='GET /api/plans/overall/'){
+      if(state.profile.plan_type==='FREE')return response(key,{state:'LOCKED'})
+      const base=example(key),active=state.loans.filter(l=>l.status!=='PAID'&&l.remaining_principal>0)
+      const allocations=active.map((l,i)=>({loan_id:l.loan_id,product_name:l.product_name,amount:l.repayment_method==='BULLET'?planFor(l)?.planned_saving_amount||0:planFor(l)?.planned_extra_amount||0,priority:i+1,allocation_type:l.repayment_method==='BULLET'?'REPAYMENT_SAVING':'EXTRA_PAYMENT',projected_payoff_date:planFor(l)?.projected_payoff_date||null,target_payoff_date:planFor(l)?.target_payoff_date||null,actual_amount:0}))
+      const current=state.allocations['2026-11']?.allocations
+      const recommended=[...allocations.filter(a=>a.allocation_type==='REPAYMENT_SAVING'),...allocations.filter(a=>a.allocation_type!=='REPAYMENT_SAVING')]
+      const changed=current&&JSON.stringify(current.map(a=>[a.loan_id,a.amount]))!==JSON.stringify(recommended.map(a=>[a.loan_id,a.amount]))
+      return response(key,{...base,allocations,strategy_code:changed?'MANUAL':base.strategy_code,projected_payoff_date:allocations.map(a=>a.projected_payoff_date).filter(Boolean).sort().at(-1)||null})
+    }
+    // Final Figma permits over-budget saves. This demo deliberately differs from
+    // the supplied contract's balanced-total rule; the real API remains authoritative.
+    const budgetPath=path.match(/^\/api\/budgets\/(\d{4}-\d{2})\/(allocation\/)?$/)
+    if(budgetPath){
+      const ym=budgetPath[1],base=example('GET /api/budgets/{year_month}/')
+      const planned=state.loans.filter(l=>l.status!=='PAID'&&l.remaining_principal>0).map(l=>({loan_id:l.loan_id,amount:l.repayment_method==='BULLET'?planFor(l)?.planned_saving_amount||0:planFor(l)?.planned_extra_amount||0,allocation_type:l.repayment_method==='BULLET'?'REPAYMENT_SAVING':'EXTRA_PAYMENT'}))
+      if(method==='GET')return response('GET /api/budgets/{year_month}/',{...base,year_month:ym,allocation:state.allocations[ym]||{allocations:planned,reserve_amount:Math.max(0,base.available_cash-sum(planned,'amount')),total_allocated:sum(planned,'amount')}})
+      if(method==='PUT'&&budgetPath[2]){
+        const rows=body.allocations
+        if(!headers.get('Idempotency-Key')||!Array.isArray(rows)||new Set(rows.map(r=>r.loan_id)).size!==rows.length||!Number.isSafeInteger(body.reserve_amount)||body.reserve_amount<0)return failure('VALIDATION_ERROR','배분 정보를 확인해 주세요.')
+        if(rows.some(r=>{const l=state.loans.find(l=>l.loan_id===r.loan_id);return !l||l.status==='PAID'||!Number.isSafeInteger(r.amount)||r.amount<0||!['EXTRA_PAYMENT','REPAYMENT_SAVING'].includes(r.allocation_type)||((r.allocation_type==='REPAYMENT_SAVING')!==(l.repayment_method==='BULLET'))||(r.allocation_type==='EXTRA_PAYMENT'&&r.amount>l.remaining_principal)}))return failure('VALIDATION_ERROR','배분 금액과 대출을 확인해 주세요.')
+        state.allocations[ym]={allocations:rows,reserve_amount:body.reserve_amount,total_allocated:sum(rows,'amount')+body.reserve_amount};persist()
+        return response('PUT /api/budgets/{year_month}/allocation/',{...example('PUT /api/budgets/{year_month}/allocation/'),year_month:ym,available_cash:base.available_cash,allocation:state.allocations[ym],strategy_code:'MANUAL'})
+      }
+    }
     const savingPath=path.match(/^\/api\/repayment-savings\/(?:(\d+)\/)?$/)
     if(savingPath){
       const existing=state.savings.find(s=>s.saving_id===Number(savingPath[1]))
@@ -180,7 +204,7 @@ export function createMockServer({ storage, delay = 120 } = {}) {
     if(key==='GET /api/payments/monthly-summary/'){
       const start=query.get('from_month')||'2026-06',end=query.get('to_month')||'2026-11',months=[]
       let cursor=start;while(cursor<=end&&months.length<120){const rows=payments.filter(p=>p.paid_at.startsWith(cursor));const target=schedule(cursor,loanId).due_items.reduce((a,d)=>a+d.total_planned_amount,0);months.push({year_month:cursor,target_amount:target,actual_amount:rows.length?sum(rows,'amount'):null,principal_amount:rows.length?sum(rows,'principal_amount'):null,interest_amount:rows.length?sum(rows,'interest_amount'):null,extra_amount:rows.length?sum(rows,'extra_amount'):null,difference:rows.length?sum(rows,'amount')-target:null,payment_count:rows.length,data_status:rows.length?'RECORDED':'INSUFFICIENT'});const d=new Date(cursor+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);cursor=d.toISOString().slice(0,7)}
-      return response(key,{months})
+      for(const row of months){const loans=state.loans.filter(l=>l.repayment_method==='BULLET'&&(!loanId||l.loan_id===loanId));const saved=state.savings.filter(r=>(!loanId||r.loan_id===loanId)&&r.saved_at.startsWith(row.year_month));const targets=loans.map(l=>{const p=planFor(l);return p?.effective_date?.slice(0,7)<=row.year_month?p.planned_saving_amount:null});row.planned_saving_amount=targets.length&&targets.every(t=>t!=null)?targets.reduce((n,t)=>n+t,0):null;row.actual_saving_amount=saved.length?sum(saved,'amount'):null;row.observed=row.year_month<'2026-11'&&saved.length>0;}return response(key,{months})
     }
     if(key==='GET /api/repayment-plans/'){
       const loans=state.loans.filter(l=>!loanId||l.loan_id===loanId),plans=loans.map(planFor).filter(Boolean),base=example(key)

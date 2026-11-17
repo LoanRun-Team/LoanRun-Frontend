@@ -23,6 +23,8 @@ export function createServices(client) {
     products: (query,signal)=>get('/api/loan-products/',query,signal),
     plans: (loan_id,signal)=>get('/api/repayment-plans/',{loan_id},signal),
     overallPlan: signal=>get('/api/plans/overall/',undefined,signal),
+    budgetMonth: (month,signal)=>get('/api/budgets/'+month+'/',undefined,signal),
+    saveAllocation: (month,body,key)=>client.request('/api/budgets/'+month+'/allocation/',{method:'PUT',body,headers:{'Idempotency-Key':key}}),
     previewPlan: (body,signal)=>client.request('/api/repayment-plans/preview/',{method:'POST',body,signal}),
     savePlan: (body,idempotencyKey=crypto.randomUUID())=>client.request('/api/repayment-plans/',{method:'PUT',body,headers:{'Idempotency-Key':idempotencyKey}}),
     savings: (loan_id,signal)=>get('/api/repayment-savings/',{loan_id},signal),
