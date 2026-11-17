@@ -52,7 +52,7 @@ function Unrecommended({ situation, onPlan, onBudget }) {
   </div>
 }
 
-export default function StrategySection({ strategy, loans, selected, onSelect, onReload, navigate }) {
+export default function StrategySection({ strategy, loans, selected, onSelect, onReload, onRefresh, navigate }) {
   if (strategy.status === 'loading') return <p className="rp-loading" role="status">상환 전략을 계산하는 중…</p>
   if (strategy.status === 'error') return <p className="rp-banner danger" role="alert"><span>{strategy.error?.message || '상환 전략을 불러오지 못했어요.'}</span><button type="button" className="rp-button outline small" onClick={onReload}>다시 시도</button></p>
   const data = strategy.data
@@ -62,7 +62,7 @@ export default function StrategySection({ strategy, loans, selected, onSelect, o
   return <section className="rp-strategy" id="strategy" aria-labelledby="rp-strategy-title">
     <h2 id="rp-strategy-title" className="rp-section-title">상환 전략</h2>
     {data.unavailable_reason === 'STALE' || data.unavailable_reason === 'REPORT_NOT_READY'
-      ? <p className="rp-banner" role="status"><span>데이터가 바뀌어 전략을 다시 계산해야 해요.</span><button type="button" className="rp-button outline small" onClick={onReload}>다시 계산</button></p>
+      ? <p className="rp-banner" role="status"><span>데이터가 바뀌어 전략을 다시 계산해야 해요.</span><button type="button" className="rp-button outline small" onClick={onRefresh}>다시 계산</button></p>
       : <>
         <Situation situation={data.situation} />
         {data.candidates.length === 0

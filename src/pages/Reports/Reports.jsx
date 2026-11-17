@@ -7,6 +7,8 @@ import PaceCard from './components/PaceCard.jsx'
 import WaysCard from './components/WaysCard.jsx'
 import PayoffCard from './components/PayoffCard.jsx'
 import StrategySection from './components/StrategySection.jsx'
+import PreviewCard from './components/PreviewCard.jsx'
+import { ConfirmDialog, RecalcDialog } from './components/Dialogs.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
 import './Reports.scss'
 
@@ -27,6 +29,11 @@ export default function Reports({ navigate }) {
   const [strategy, setStrategy] = useState({ key: null, data: null, error: null })
   const [strategyReload, setStrategyReload] = useState(0)
   const [selected, setSelected] = useState(null)
+  const [preview, setPreview] = useState({ key: null, data: null, error: null })
+  const [dialog, setDialog] = useState(null) // 'confirm' | 'recalc' | null
+  const [applying, setApplying] = useState(false)
+  const [applyError, setApplyError] = useState(null)
+  const [notice, setNotice] = useState('')
   const reload = useCallback((retry = false) => { setForce(retry); setState(s => ({ ...s, status: 'generating', error: null })); setReloadKey(k => k + 1) }, [])
 
   useEffect(() => {
@@ -75,7 +82,46 @@ export default function Reports({ navigate }) {
     return () => controller.abort()
   }, [reportId, strategyKey])
   const strategyView = strategy.key !== strategyKey ? { status: 'loading', data: null, error: null } : strategy.error ? { status: 'error', data: null, error: strategy.error } : { status: 'ready', data: strategy.data, error: null }
+
+  // 후보를 고르면 반영 미리보기를 계산한다(저장 없음). 전략 버전이 바뀌면 다시 계산한다.
+  const picked = strategyView.data?.candidates.find(c => c.strategy_code === selected) ?? null
+  const strategyCode = picked?.strategy_code ?? null
+  const strategyVersion = strategyView.data?.strategy_version ?? null
+  const previewKey = strategyCode ? `${strategyCode}:${strategyVersion}` : null
+  useEffect(() => {
+    if (!previewKey) return
+    const controller = new AbortController()
+    reportApi.previewStrategy({ reportId, strategyCode, strategyVersion }, { signal: controller.signal }).then(
+      data => setPreview({ key: previewKey, data, error: null }),
+      error => {
+        if (controller.signal.aborted) return
+        setPreview({ key: previewKey, data: null, error })
+        if (error?.code === 'STRATEGY_STALE') setDialog('recalc')
+      },
+    )
+    return () => controller.abort()
+  }, [previewKey, reportId, strategyCode, strategyVersion])
+  const previewView = preview.key !== previewKey ? { status: 'loading', data: null, error: null } : preview.error ? { status: 'error', data: null, error: preview.error } : { status: 'ready', data: preview.data, error: null }
   useEffect(() => { document.title = '론런 | 상환 리포트' }, [])
+  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 3000); return () => clearTimeout(t) }, [notice])
+
+  // 전략 반영(PUT). 미리보기의 preview_version·data_revision 을 그대로 보낸다. 409 STRATEGY_STALE 이면 다시 계산하게 한다.
+  async function apply() {
+    const data = previewView.data
+    setApplying(true)
+    setApplyError(null)
+    try {
+      await reportApi.applyStrategy({ reportId, strategyCode: data.strategy_code, strategyVersion: data.strategy_version, previewVersion: data.preview_version, dataRevision: data.data_revision })
+      setDialog(null)
+      setSelected(null)
+      setNotice('상환 계획에 전략을 반영했어요')
+      reload(false) // 계획이 바뀌면 리포트도 stale 이 되므로 새 리포트를 받는다.
+    } catch (error) {
+      if (error?.code === 'STRATEGY_STALE') setDialog('recalc')
+      else setApplyError(error)
+    } finally { setApplying(false) }
+  }
+  function recalc() { setDialog(null); setApplyError(null); reload(false) }
 
   function onNavigate(item) {
     if (item.id === 'loans' || item.parent === 'loans') navigate(item.href)
@@ -100,8 +146,12 @@ export default function Reports({ navigate }) {
           {report.comparison?.status === 'DEMO' && <WaysCard comparison={report.comparison} />}
           <PayoffCard report={report} />
         </div>
-        <StrategySection strategy={strategyView} loans={loans} selected={selected} onSelect={code => setSelected(prev => (prev === code ? null : code))} onReload={() => setStrategyReload(k => k + 1)} navigate={navigate} />
+        <StrategySection strategy={strategyView} loans={loans} selected={selected} onSelect={code => setSelected(prev => (prev === code ? null : code))} onReload={() => setStrategyReload(k => k + 1)} onRefresh={() => reload(false)} navigate={navigate} />
+        {picked && <PreviewCard candidate={picked} preview={previewView} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} onApply={() => { setApplyError(null); setDialog('confirm') }} applying={applying} />}
       </>}
     </main>
+    {dialog === 'confirm' && picked && previewView.status === 'ready' && <ConfirmDialog candidate={picked} preview={previewView.data} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} busy={applying} error={applyError} onCancel={() => setDialog(null)} onConfirm={apply} />}
+    {dialog === 'recalc' && <RecalcDialog onRecalc={recalc} onClose={() => setDialog(null)} />}
+    {notice && <div className="rp-toast" role="status">{notice}</div>}
   </div>
 }

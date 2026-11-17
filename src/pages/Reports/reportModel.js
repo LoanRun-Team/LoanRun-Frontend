@@ -97,3 +97,31 @@ export function situationCells(s) {
 
 // 현재 적용 중인 전략 이름. 직접 정한 계획(MANUAL)·적용 전(NONE)은 "직접 정한 금액".
 export const currentStrategyName = (strategy, code) => strategy?.candidates?.find(c => c.strategy_code === (code ?? strategy.current_strategy?.strategy_code))?.label ?? '직접 정한 금액'
+
+// ── 반영 미리보기 ───────────────────────────────────────────────────────
+const monthsBetween = (from, to) => (Number(to.slice(0, 4)) - Number(from.slice(0, 4))) * 12 + Number(to.slice(5, 7)) - Number(from.slice(5, 7))
+const latestDate = plans => plans.map(p => p.estimated_payoff_date).filter(Boolean).sort().at(-1) ?? null
+const sumOf = (plans, key) => plans.reduce((s, p) => s + (p[key] ?? 0), 0)
+
+// 미리보기 표 행. { key, label, before, after, note } — note 는 변경 폭("2개월 늦어요", "+100,000원").
+export function previewRows(preview, loans, currentCode) {
+  const manual = !currentCode || currentCode === 'NONE' || currentCode === 'MANUAL'
+  const rows = [{
+    key: 'order', label: '추가 상환 순서',
+    before: manual ? '직접 정한 금액' : orderLine(preview.current_allocations, loans),
+    after: orderLine(preview.proposed_allocations, loans), note: '',
+  }]
+  const before = latestDate(preview.current_plans)
+  const after = preview.estimated_payoff_date
+  if (before && after) {
+    const diff = monthsBetween(before, after)
+    rows.push({ key: 'payoff', label: '완납 예상일', before: ymDot(before), after: ymDot(after), note: diff === 0 ? '변화 없어요' : `${Math.abs(diff)}개월 ${diff > 0 ? '늦어요' : '빨라요'}` })
+  }
+  const interestGap = preview.estimated_total_interest - sumOf(preview.current_plans, 'estimated_total_interest')
+  rows.push({ key: 'interest', label: '총 이자', before: `약 ${manWon(sumOf(preview.current_plans, 'estimated_total_interest'))}`, after: `약 ${manWon(preview.estimated_total_interest)}`, note: interestGap === 0 ? '' : `${signedMan(interestGap).replace('+', '+약 ').replace('−', '−약 ')}` })
+  for (const plan of preview.proposed_plans) {
+    const prev = preview.current_plans.find(p => p.loan_id === plan.loan_id)?.extra_monthly_payment ?? 0
+    rows.push({ key: `loan-${plan.loan_id}`, label: `${loanLabel(loans, plan.loan_id)} 월 추가 상환`, before: won(prev), after: won(plan.extra_monthly_payment), note: plan.extra_monthly_payment === prev ? '' : signedWon(plan.extra_monthly_payment - prev) })
+  }
+  return rows
+}
