@@ -9,14 +9,12 @@ import { completeOnboarding, getProfile, onboardingState, previewPlans, saveProf
 const ok = (code, message, data, status = 200) => ({ status, body: { success: true, code, message, data } })
 const validationError = errors => ({ status: 400, body: { success: false, code: 'VALIDATION_ERROR', message: '입력값을 확인해 주세요.', errors } })
 
-const LOAN_FORMS = ['GENERAL', 'CREDIT_LINE']
-
 function validateFilters(query) {
   const errors = {}
   const loanType = query.get('loan_type')
   const loanForm = query.get('loan_form')
   if (loanType && !loanTypes.some(t => t.code === loanType)) errors.loan_type = ['지원하지 않는 유형입니다.']
-  if (loanForm && !LOAN_FORMS.includes(loanForm)) errors.loan_form = ['GENERAL 또는 CREDIT_LINE 만 가능합니다.']
+  if (loanForm && loanForm !== 'GENERAL') errors.loan_form = ['GENERAL 만 가능합니다.']
   return errors
 }
 
@@ -121,7 +119,7 @@ export const mockHandlers = [
       const loans = listLoans()
       return ok('LOAN_LIST_SUCCESS', '보유 대출 목록 정보를 조회했습니다.', {
         loans,
-        total_remaining_principal: loans.reduce((s, l) => s + (l.remaining_principal ?? l.used_amount ?? 0), 0),
+        total_remaining_principal: loans.reduce((s, l) => s + l.remaining_principal, 0),
         total_monthly_due: loans.reduce((s, l) => s + l.estimated_monthly_payment, 0),
         estimated_payoff_date: loans.map(l => l.maturity_date).sort().at(-1) ?? null,
         count: loans.length,

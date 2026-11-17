@@ -30,7 +30,7 @@ const periods = (principal, rate, pmt) => {
 const round1000 = n => Math.round(n / 1000) * 1000
 
 function planFor(loan, input) {
-  const principal = loan.loan_form === 'CREDIT_LINE' ? loan.used_amount : loan.remaining_principal
+  const principal = loan.remaining_principal
   const rate = loan.annual_rate / 1200
   const lump = loan.repayment_category === 'LUMP_SUM'
   const interest = Math.round(principal * rate)

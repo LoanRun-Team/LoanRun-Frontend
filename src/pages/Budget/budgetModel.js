@@ -92,7 +92,7 @@ export const pieSlices = (m, repayment) => [
 // ── 여유자금 분할 ──────────────────────────────────────────────────────
 export const STEP = 10000
 const TYPE_LABEL = { CREDIT: '신용대출', MORTGAGE: '주택담보대출', JEONSE: '전세자금대출', STUDENT: '학자금대출', AUTO: '자동차대출', OTHER: '기타' }
-export const loanName = loan => (loan.loan_form === 'CREDIT_LINE' ? '마이너스통장' : (TYPE_LABEL[loan.loan_type] ?? loan.loan_type))
+export const loanName = loan => TYPE_LABEL[loan.loan_type] ?? loan.loan_type
 
 // 제안: 예비비 20,000원만 남기고, 나머지는 금리가 가장 높은 대출의 추가 상환에 배분한다.
 export function suggestAllocation(available, loans) {
@@ -115,7 +115,7 @@ const periods = (principal, rate, pmt) => {
 export function payoffYM(loans, extras = {}) {
   const now = currentYM()
   const months = loans.map(loan => {
-    const principal = loan.loan_form === 'CREDIT_LINE' ? loan.used_amount : loan.remaining_principal
+    const principal = loan.remaining_principal
     const toMaturity = Math.max(1, (Number(loan.maturity_date.slice(0, 4)) - Number(now.slice(0, 4))) * 12 + Number(loan.maturity_date.slice(5, 7)) - Number(now.slice(5, 7)))
     if (loan.repayment_category === 'LUMP_SUM') return toMaturity
     return Math.min(toMaturity, periods(principal, loan.annual_rate / 1200, loan.estimated_monthly_payment + (extras[loan.loan_id] || 0)))

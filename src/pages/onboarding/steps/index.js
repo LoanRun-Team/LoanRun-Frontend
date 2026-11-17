@@ -1,5 +1,4 @@
 // 스텝 id → 화면 컴포넌트. id 목록은 ../steps.js 의 STEPS 와 맞춘다.
-import LoanType from './loan/LoanType.jsx'
 import LoanProduct from './loan/LoanProduct.jsx'
 import RepaymentInfo from './loan/RepaymentInfo.jsx'
 import LoanSummary from './loan/LoanSummary.jsx'
@@ -11,7 +10,6 @@ import TargetDate from './goal/TargetDate.jsx'
 import MultiLoan from './goal/MultiLoan.jsx'
 
 export const stepComponents = {
-  'loan-type': LoanType,
   'loan-product': LoanProduct,
   'repayment-info': RepaymentInfo,
   'loan-summary': LoanSummary,

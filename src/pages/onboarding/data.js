@@ -1,13 +1,5 @@
 // 온보딩 옵션/초기값. 코드값은 Notion API 상세 페이지(대출 종류·은행 목록, 대출 등록 전 월 상환액 계산 등) 기준.
 // 대출 종류·은행·상품명 목록은 API(/api/loan-products/options/, /api/loan-products/)에서 받는다.
-import shieldCheck from '../../assets/onboarding/icon-shield-check.svg'
-import minus from '../../assets/onboarding/icon-minus.svg'
-
-// S-01a 대출 형태 → loan_form
-export const loanFormOptions = [
-  { value: 'GENERAL', label: '일반 대출', icon: shieldCheck },
-  { value: 'CREDIT_LINE', label: '마이너스통장', icon: minus },
-]
 
 // 대출 종류 표시명(loan_type). 선택 목록은 API 가 주지만, 이미 등록한 대출을 표시할 때는 코드만 있어서 여기서 변환한다.
 export const loanTypeLabels = { CREDIT: '신용대출', MORTGAGE: '주택담보대출', JEONSE: '전세자금대출', STUDENT: '학자금대출', AUTO: '자동차대출', OTHER: '기타' }
@@ -18,7 +10,6 @@ export const repaymentMethods = [
   { value: 'EQUAL_PRINCIPAL', label: '원금균등분할상환' },
   { value: 'GRACE_INSTALLMENT', label: '거치 후 분할상환' },
   { value: 'BULLET', label: '만기일시상환' },
-  { value: 'CREDIT_LINE', label: '한도약정' },
 ]
 export const methodLabel = value => repaymentMethods.find(m => m.value === value)?.label ?? value
 
@@ -42,7 +33,7 @@ export const incomeTypeOptions = [
 // loan 의 키는 API 요청 본문(snake_case)과 같게 둔다. 그대로 /api/loans/preview/, /api/loans/ 에 보낼 수 있다.
 export const initialForm = {
   loans: [], // 등록 완료된 대출 목록 (S-01d) — POST /api/loans/ 응답 그대로
-  loan: { loan_form: null, loan_type: null, product_id: null, institution_name: null, product_name: null }, // 지금 입력 중인 대출 (S-01a~c)
+  loan: { loan_type: null, product_id: null, institution_name: null, product_name: null }, // 지금 입력 중인 대출 (S-01b~c)
   // 요청 본문에 넣지 않는 화면 전용 값: 은행 ID, 선택한 카탈로그 상품, 직접 입력 여부, 대출 종류 표시명, 대출 기간(년·개월), 만기일 직접 수정 여부, 수정 중인 대출 ID
   selection: { institution_id: null, product: null, manual: false, loan_type_label: null, term: { years: null, months: null }, maturityManual: false, editingLoanId: null },
   income: { occupation: null, income_type: 'REGULAR', monthly_income: null, payday: null }, // S-02A (income_type·monthly_income·payday 는 프로필 API 필드)

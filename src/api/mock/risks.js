@@ -92,7 +92,7 @@ export function riskView({ month, loanId }) {
   const surplusRatio = income > 0 ? round((100 * surplus) / income) : null
   const limitAmount = Math.max(income - view.essential_expenses - view.savings - scheduled, 0)
   const limitRatio = limitAmount > 0 ? round((100 * view.discretionary_expenses) / limitAmount) : (view.discretionary_expenses > 0 ? null : 0)
-  const balanceOf = l => (l.loan_form === 'CREDIT_LINE' ? l.used_amount : l.remaining_principal) ?? 0
+  const balanceOf = l => l.remaining_principal ?? 0
   const principal = loans.reduce((s, l) => s + balanceOf(l), 0)
   const variablePrincipal = loans.filter(l => l.rate_type === 'VARIABLE').reduce((s, l) => s + balanceOf(l), 0)
   const exposure = principal > 0 ? round((100 * variablePrincipal) / principal) : 0

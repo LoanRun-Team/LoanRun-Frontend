@@ -42,7 +42,3 @@ export const products = institutions.flatMap(inst => loanTypes.flatMap(type => n
   repayment_methods: methods[type.code],
   source: 'CATALOG',
 }))))
-// 한도대출(마이너스통장) 상품
-for (const inst of institutions) {
-  products.push({ product_id: nextId++, institution_id: inst.institution_id, name: `${inst.name.slice(0, 2)} 마이너스통장(예시)`, loan_type: 'CREDIT', loan_form: 'CREDIT_LINE', repayment_methods: ['CREDIT_LINE'], source: 'CATALOG' })
-}

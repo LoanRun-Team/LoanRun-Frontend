@@ -6,12 +6,11 @@ export const RESET_MONTHS = [3, 6, 12]
 
 // 사용자가 아직 고르지 않은 값은 대출 형태·상품에 따라 기본값을 정한다(저장하지 않고 읽을 때 계산).
 export function withDefaults(loan, selection) {
-  const creditLine = loan.loan_form === 'CREDIT_LINE'
   const catalogMethods = selection.product?.repayment_methods
-  const rate_type = loan.rate_type ?? (creditLine ? 'VARIABLE' : 'FIXED')
+  const rate_type = loan.rate_type ?? 'FIXED'
   return {
     ...loan,
-    repayment_method: creditLine ? 'CREDIT_LINE' : (loan.repayment_method ?? catalogMethods?.[0] ?? 'EQUAL_PAYMENT'),
+    repayment_method: loan.repayment_method ?? catalogMethods?.[0] ?? 'EQUAL_PAYMENT',
     rate_type,
     rate_reset_months: rate_type === 'VARIABLE' ? (loan.rate_reset_months ?? 6) : null,
   }
@@ -24,12 +23,10 @@ export const totalMonths = (loan, selection) => {
 }
 
 const positive = n => Number.isInteger(n) && n > 0
-const nonNegative = n => Number.isInteger(n) && n >= 0
 
 // 필수값이 모두 유효하면 요청 본문을, 아니면 null 을 돌려준다.
 export function buildLoanBody({ loan: rawLoan, selection }) {
   const loan = withDefaults(rawLoan, selection)
-  const creditLine = loan.loan_form === 'CREDIT_LINE'
   const manual = selection.manual
   if (!loan.loan_type || !loan.repayment_method) return null
   if (manual ? !(loan.institution_name?.trim() && loan.product_name?.trim()) : loan.product_id == null) return null
@@ -42,7 +39,7 @@ export function buildLoanBody({ loan: rawLoan, selection }) {
   if (!Number.isInteger(loan.payment_day) || loan.payment_day < 1 || loan.payment_day > 31) return null
 
   const body = {
-    loan_form: loan.loan_form,
+    loan_form: 'GENERAL', // 최종 명세: GENERAL 고정(한도대출 제외)
     loan_type: loan.loan_type,
     product_id: loan.product_id ?? null,
     institution_name: loan.institution_name ?? null,
@@ -56,11 +53,6 @@ export function buildLoanBody({ loan: rawLoan, selection }) {
     maturity_date: loan.maturity_date,
     payment_day: loan.payment_day,
     contractual_monthly_payment: null,
-  }
-
-  if (creditLine) {
-    if (!positive(loan.credit_limit) || !nonNegative(loan.used_amount) || loan.used_amount > loan.credit_limit) return null
-    return { ...body, original_principal: null, remaining_principal: null, credit_limit: loan.credit_limit, used_amount: loan.used_amount }
   }
 
   if (!positive(loan.remaining_principal)) return null

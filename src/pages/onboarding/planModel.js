@@ -4,7 +4,6 @@ import { fmtNumber, toISO, todayISO } from './format.js'
 import { loanTypeLabels } from './data.js'
 
 export const isLump = loan => loan.repayment_category === 'LUMP_SUM'
-export const isCreditLine = loan => loan.loan_form === 'CREDIT_LINE'
 
 export const PREFERENCE_LABEL = { FAST: '빠른 상환', BALANCED: '균형 있는 상환', STABLE: '생활 안정 우선' }
 
@@ -63,12 +62,11 @@ export function fmtGap(months) {
   const m = months % 12
   return [y ? `${y}년` : '', m ? `${m}개월` : ''].filter(Boolean).join(' ') || '0개월'
 }
-export const loanChipLabel = loan => (isCreditLine(loan) ? '마이너스통장' : (loanTypeLabels[loan.loan_type] ?? loan.loan_type))
+export const loanChipLabel = loan => loanTypeLabels[loan.loan_type] ?? loan.loan_type
 const METHOD_SHORT = { EQUAL_PAYMENT: '원리금균등', EQUAL_PRINCIPAL: '원금균등', GRACE_INSTALLMENT: '거치 후 분할', BULLET: '만기일시상환' }
 export function loanContext(loan) {
   const n = fmtNumber
   const rate = Number(loan.annual_rate).toFixed(1)
-  if (isCreditLine(loan)) return `약정 한도 ${n(loan.credit_limit)}원 · 사용액 ${n(loan.used_amount)}원 · 연 ${rate}% · 이자만 월 ${n(loan.estimated_monthly_payment)}원`
   if (isLump(loan)) return `만기일시상환 · 잔액 ${n(loan.remaining_principal)}원 · 연 ${rate}% · 만기 ${fmtYM(loan.maturity_date)} · 이자만 월 ${n(loan.estimated_monthly_payment)}원`
   return `${METHOD_SHORT[loan.repayment_method] ?? ''} · 기본 월 ${n(loan.estimated_monthly_payment)}원 · 만기 ${fmtYM(loan.maturity_date)}`
 }

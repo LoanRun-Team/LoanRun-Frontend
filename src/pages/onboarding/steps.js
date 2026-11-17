@@ -13,7 +13,7 @@ export const STEP_GROUPS = [
   { id: 'goal', label: '상환 목표' },
 ]
 
-export const FIRST_STEP = 'loan-type'
+export const FIRST_STEP = 'loan-product'
 
 const isNumber = n => typeof n === 'number' && Number.isFinite(n)
 
@@ -49,20 +49,19 @@ const goalStep = (eyebrow, heading, title) => ({
   next: () => null, valid: allPlansReady, submit: finishOnboarding,
 })
 
-// title: 탭 제목 / heading: 화면 제목(없으면 title) / eyebrow: 제목 위 작은 글씨 / inputStep: "n / 3" 대출 입력 단계(S-01a~c만)
+// title: 탭 제목 / heading: 화면 제목(없으면 title) / eyebrow: 제목 위 작은 글씨 / inputStep: "n / 2" 대출 입력 단계(S-01b~c만)
 // sub: 재정 정보 하위 단계 / bar: 하단 고정 이동 바 / hidePrev: 이전 버튼 숨김 / wide·footer: S-03 레이아웃
 // valid(form): 다음 버튼 활성 조건(없으면 항상 가능)
 export const STEPS = {
-  'loan-type': { group: 'loan', inputStep: 1, title: '대출 형태', heading: '대출 형태를 선택해 주세요.', next: () => 'loan-product', valid: form => Boolean(form.loan.loan_form) },
   'loan-product': {
-    group: 'loan', inputStep: 2, title: '대출 종류와 상품', heading: '대출 종류와 상품을 선택해 주세요.', next: () => 'repayment-info',
+    group: 'loan', inputStep: 1, title: '대출 종류와 상품', heading: '대출 종류와 상품을 선택해 주세요.', next: () => 'repayment-info',
     // 카탈로그 상품을 골랐거나, 직접 입력 모드에서 은행명·상품명을 모두 적어야 다음으로 갈 수 있다.
     valid: ({ loan, selection }) => Boolean(loan.loan_type) && (selection.manual
       ? Boolean(loan.institution_name?.trim() && loan.product_name?.trim())
       : loan.product_id != null),
   },
   'repayment-info': {
-    group: 'loan', inputStep: 3, title: '상환 정보', heading: '상환 정보를 입력해 주세요.', next: () => 'loan-summary',
+    group: 'loan', inputStep: 2, title: '상환 방식', heading: '상환 방식을 확인해 주세요.', next: () => 'loan-summary',
     valid: form => buildLoanBody(form) !== null,
     // "다음"을 누르면 대출을 등록하고(POST /api/loans/), 다음 대출을 입력할 수 있게 입력 중이던 값을 비운다.
     // 등록된 대출을 수정하던 중이면 기존 대출을 지우고 새로 등록한다.

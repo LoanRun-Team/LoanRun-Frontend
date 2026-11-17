@@ -11,7 +11,6 @@ const rateWord = { FIXED: '고정', VARIABLE: '변동' }
 function describe(l) {
   const rate = `${rateWord[l.rate_type]} ${l.annual_rate}%`
   const tail = `매월 ${l.payment_day}일 · 만기 ${ym(l.maturity_date)}`
-  if (l.loan_form === 'CREDIT_LINE') return `한도 ${fmtNumber(l.credit_limit)}원 · 사용 ${fmtNumber(l.used_amount)}원 · ${rate} · 이자만 월 ${fmtNumber(l.estimated_monthly_payment)}원 · ${tail}`
   return `잔액 ${fmtNumber(l.remaining_principal)}원 · ${rate} · 월 ${fmtNumber(l.estimated_monthly_payment)}원 · ${tail}`
 }
 
@@ -20,12 +19,11 @@ function toDraft(l) {
   const months = diffMonths(l.start_date, l.maturity_date)
   return {
     loan: {
-      loan_form: l.loan_form, loan_type: l.loan_type, product_id: l.product_id, institution_name: l.institution_name, product_name: l.product_name,
+      loan_type: l.loan_type, product_id: l.product_id, institution_name: l.institution_name, product_name: l.product_name,
       repayment_method: l.repayment_method, original_principal: l.original_principal, remaining_principal: l.remaining_principal,
       annual_rate: l.annual_rate, rate_type: l.rate_type, rate_reset_months: l.rate_reset_months,
       start_date: l.start_date, maturity_date: l.maturity_date, payment_day: l.payment_day,
       grace_months: l.grace_months > 0 ? l.grace_months : null, post_grace_method: l.post_grace_method,
-      credit_limit: l.credit_limit, used_amount: l.used_amount,
     },
     selection: { ...initialForm.selection, manual: l.product_id == null, loan_type_label: loanTypeLabels[l.loan_type] ?? null, term: { years: Math.floor(months / 12), months: months % 12 }, editingLoanId: l.loan_id },
   }
@@ -65,6 +63,6 @@ export default function LoanSummary({ form, setForm, jump }) {
       </li>)}
     </ul>
     {error && <p className="ob-error" role="alert">{error}</p>}
-    <button type="button" className="ob-add-loan" onClick={() => jump('loan-type')}><img src={plus} alt="" width="20" height="20" />대출 추가</button>
+    <button type="button" className="ob-add-loan" onClick={() => jump('loan-product')}><img src={plus} alt="" width="20" height="20" />대출 추가</button>
   </section>
 }
