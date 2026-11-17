@@ -26,13 +26,9 @@
     .ob-step-sub { display: flex; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--tertiary);
       .active { font-weight: 500; color: var(--primary-text); }
     }
-    .ob-stepper-finish { display: flex; align-items: flex-start; gap: 4px; flex-shrink: 0;
-      .ob-stepper-line { flex: none; width: 32px; }
-      img { margin-top: 10px; }
-    }
   }
 
-  // 입력 단계 "1 / 3"
+  // 입력 단계 "1 / 2"
   .ob-input-stepper { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 22px;
     strong { color: var(--primary-text); }
     .ob-input-count span { font-weight: 500; color: var(--tertiary); }
