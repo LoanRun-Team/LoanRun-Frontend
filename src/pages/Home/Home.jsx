@@ -43,7 +43,7 @@ export default function Home({navigate}) {
           <MonthlyRepayment summary={dashboard.monthly_summary} checklist={dashboard.monthly_checklist} onNavigate={()=>navigate('/loans/monthly')} onBudget={()=>setPanel('예산·지출')} onRecord={openRecord}/>
           <RiskCard plan={plan} riskLabel={riskLabels[dashboard.risk_summary.level]||'자료 부족'} markerPercent={{STABLE:16,CAUTION:50,WARNING:50,DANGER:84}[dashboard.risk_summary.level]??0} risk={risk} onNavigate={setPanel}/>
         </div>
-        <ReportEntry report={dashboard.report_status} onOpen={()=>setPanel(dashboard.report_status.locked?'PRO 시작하기':'상환 리포트')}/>
+        <ReportEntry report={dashboard.report_status} onOpen={()=>dashboard.report_status.locked?setPanel('PRO 시작하기'):navigate('/reports')}/>
       </>}
     </main>
     {recording&&<div className="loans-shell home-payment-dialog"><RecordPaymentDialog loans={loans.map(loanView)} initial={{type:'regular',loanId:String(recording.item.loan_id)}} pending={pending} error={error} onClose={()=>!pending&&setRecording(null)} onSave={savePayment}/></div>}
