@@ -47,6 +47,16 @@ export const fromApi = d => ({
   repayment: d.scheduled_repayment,
   repaid: d.actual_repayment,
   available: d.available_cash,
+  // 배분 가능 금액 = 이번 달 정기 여유자금 + 지난달 이월(carry_in). 필드가 없으면 여유자금 그대로.
+  carryIn: d.carry_in ?? 0,
+  capacity: d.allocation_capacity ?? Math.max(d.available_cash, 0),
+  recurringCapacity: d.recurring_capacity ?? Math.max(d.available_cash, 0),
+  deficit: d.deficit_amount ?? Math.max(-d.available_cash, 0),
+  remaining: d.remaining_allocation_capacity ?? null,
+  unallocated: d.unallocated_amount ?? null,
+  discretionaryLimit: d.discretionary_limit_amount ?? null,
+  actualDiscretionary: d.actual_discretionary_expenses ?? d.discretionary_expenses,
+  discretionarySavings: d.discretionary_savings_amount ?? null,
   allocation: { extras: Object.fromEntries(d.allocation.allocations.map(a => [a.loan_id, a.amount])), reserve: d.allocation.reserve_amount, total: d.allocation.total_allocated },
   needsReview: d.allocation_needs_review,
 })
@@ -105,7 +115,7 @@ export function suggestAllocation(available, loans) {
 export const allocationSum = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0) + (a.reserve || 0)
 export const extraTotal = a => Object.values(a.extras).reduce((s, v) => s + (v || 0), 0)
 // 서버에 저장돼 있고 여유자금과 일치하면 "반영 완료"
-export const isApplied = m => m.allocation.total > 0 && !m.needsReview && m.allocation.total === m.available
+export const isApplied = m => m.allocation.total > 0 && !m.needsReview && m.allocation.total === m.capacity
 
 // 예상 완납 시점(YYYY-MM): 대출별로 월 상환액(+추가 상환)으로 갚는 데 걸리는 기간 중 가장 늦은 것
 const periods = (principal, rate, pmt) => {
@@ -132,10 +142,13 @@ export const pastSlices = m => [
   { key: 'discretionary', label: '선택 지출', value: m.discretionary || 0, color: SLICE_COLORS.discretionary },
   { key: 'leftover', label: '남은 돈', value: Math.max(0, m.available), color: SLICE_COLORS.surplus },
 ]
-// 여유자금 사용 내역: 총 추가 상환, 예비비, 배분하지 않은 금액(이월)
+// 여유자금 사용 내역: 총 추가 상환, 예비비, 배분하지 않은 금액(이월). 한도·절약·이월은 API 값을 쓰고, 없을 때만 계산한다.
 export const settlementOf = m => {
   const extra = extraTotal(m.allocation)
-  // 선택 지출 한도 = 소득 − 정기 상환 − 필수 − 저축 = 여유자금 + 선택 지출(API 에 한도 필드가 없어 계산한다). 절약 = 한도 − 사용.
-  const limit = m.available + m.discretionary
-  return { available: Math.max(0, m.available), extra, reserve: m.allocation.reserve, carry: Math.max(0, m.available - m.allocation.total), limit, used: m.discretionary, saved: limit - m.discretionary }
+  const limit = m.discretionaryLimit ?? m.available + m.discretionary
+  const used = m.actualDiscretionary
+  return {
+    available: m.capacity, extra, reserve: m.allocation.reserve, carry: m.unallocated ?? Math.max(0, m.capacity - m.allocation.total),
+    limit, used, saved: m.discretionarySavings ?? limit - used, carryIn: m.carryIn,
+  }
 }

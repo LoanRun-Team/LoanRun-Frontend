@@ -58,7 +58,7 @@ export default function Budget({ navigate }) {
   const schedule = baseSchedule(loans, ym)
 
   // 여유자금과 분할: 서버에 반영된 분할이 있으면 그것을, 없으면 제안값을 보여주고, 편집 중이면 편집 값을 쓴다.
-  const available = month?.available ?? 0
+  const available = month?.capacity ?? 0
   const applied = month ? isApplied(month) : false
   const baseAllocation = month && (applied ? month.allocation : suggestAllocation(available, loans))
   const allocation = draft?.ym === ym ? draft.value : baseAllocation

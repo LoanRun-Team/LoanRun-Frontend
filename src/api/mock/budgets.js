@@ -13,7 +13,9 @@ export const isMonth = ym => /^\d{4}-(0[1-9]|1[0-2])$/.test(ym ?? '')
 const sum = rows => rows.reduce((s, r) => s + r.amount, 0)
 
 // 응답 본문(조회·저장 공통)
-export function monthView(ym) {
+const prevMonth = ym => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 2, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}` }
+
+export function monthView(ym, withCarry = true) {
   const state = read()
   const saved = state.months[ym]
   const profile = getProfile() ?? {}
@@ -27,6 +29,12 @@ export function monthView(ym) {
   const income = base + sum(input.entries)
   const available = income - scheduled - input.fixed - input.variable - input.discretionary - input.savings
   const allocation = input.allocation ?? { allocations: [], reserve_amount: 0, total_allocated: 0 }
+  // 지난달에 배분하고 남은 돈(배분을 저장한 달만)이 이번 달로 이월된다.
+  const prev = withCarry ? monthView(prevMonth(ym), false) : null
+  const carryIn = prev && prev.allocation.total_allocated > 0 ? Math.max(0, prev.available_cash - prev.allocation.total_allocated) : 0
+  const capacity = Math.max(available, 0) + carryIn
+  const essential = input.fixed + input.variable
+  const limit = Math.max(0, income - scheduled - essential - input.savings)
   return {
     year_month: ym,
     monthly_income: income,
@@ -39,7 +47,16 @@ export function monthView(ym) {
     scheduled_repayment: scheduled,
     actual_repayment: actual,
     available_cash: available,
-    allocation,
+    allocation: { ...allocation, allocations: allocation.allocations.map(a => ({ allocation_type: 'EXTRA_PAYMENT', actual_amount: 0, ...a })) },
+    carry_in: carryIn,
+    recurring_capacity: Math.max(available, 0),
+    allocation_capacity: capacity,
+    remaining_allocation_capacity: capacity - allocation.total_allocated,
+    unallocated_amount: Math.max(0, capacity - allocation.total_allocated),
+    deficit_amount: Math.max(-available, 0),
+    discretionary_limit_amount: limit,
+    actual_discretionary_expenses: input.discretionary,
+    discretionary_savings_amount: limit - input.discretionary,
     data_status: saved ? 'ENTERED' : 'NOT_ENTERED',
     updated_at: saved?.updated_at ?? null,
     fixed_essential_expenses: input.fixed,
@@ -49,7 +66,7 @@ export function monthView(ym) {
     actual_available_cash: available,
     base_income: base,
     income_entries: input.entries.map(e => ({ income_entry_id: e.income_entry_id, entry_type: e.entry_type, received_date: e.received_date, amount: e.amount })),
-    allocation_needs_review: Boolean(input.allocation) && allocation.total_allocated !== available,
+    allocation_needs_review: Boolean(input.allocation) && allocation.total_allocated !== capacity,
   }
 }
 
@@ -107,7 +124,7 @@ export function validateAllocation(ym, b) {
   if (!(isInt(b?.reserve_amount) && b.reserve_amount >= 0)) errors.reserve_amount = ['0 이상의 정수여야 합니다.']
   if (!Object.keys(errors).length) {
     const total = sum(b.allocations) + b.reserve_amount
-    if (total !== view.available_cash) errors.allocations = [`배분 합계(${total})가 여유자금(${view.available_cash})과 같아야 합니다.`]
+    if (total !== view.allocation_capacity) errors.allocations = [`배분 합계(${total})가 배분 가능 금액(${view.allocation_capacity})과 같아야 합니다.`]
   }
   return errors
 }
