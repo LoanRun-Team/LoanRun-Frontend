@@ -9,7 +9,7 @@ import PayoffCard from './components/PayoffCard.jsx'
 import StrategySection from './components/StrategySection.jsx'
 import Suggestions from './components/Suggestions.jsx'
 import PreviewCard from './components/PreviewCard.jsx'
-import { ConfirmDialog, RecalcDialog } from './components/Dialogs.jsx'
+import { CompareDialog, ConfirmDialog, RecalcDialog } from './components/Dialogs.jsx'
 import { Failed, Generating } from './components/ReportStates.jsx'
 import './Reports.scss'
 
@@ -31,7 +31,7 @@ export default function Reports({ navigate }) {
   const [strategyReload, setStrategyReload] = useState(0)
   const [selected, setSelected] = useState(null)
   const [preview, setPreview] = useState({ key: null, data: null, error: null })
-  const [dialog, setDialog] = useState(null) // 'confirm' | 'recalc' | null
+  const [dialog, setDialog] = useState(null) // 'confirm' | 'recalc' | 'compare' | null
   const [applying, setApplying] = useState(false)
   const [applyError, setApplyError] = useState(null)
   const [notice, setNotice] = useState('')
@@ -135,14 +135,14 @@ export default function Reports({ navigate }) {
   return <div className="report-shell">
     <Sidebar active="reports" plan={status === 'locked' ? 'Free' : 'Pro'} onNavigate={onNavigate} />
     <main className="rp-content" id="main-content">
-      <ReportHeader report={status === 'ready' ? report : null} />
+      <ReportHeader report={status === 'ready' ? report : null} onCompare={() => setDialog('compare')} />
       {status === 'loading' && <p className="rp-loading" role="status">불러오는 중…</p>}
       {status === 'generating' && <Generating />}
       {status === 'failed' && <Failed message={error?.message} onRetry={() => reload(true)} onHome={() => navigate('/')} />}
       {status === 'error' && <p className="rp-banner danger" role="alert"><span>{error?.message || '상환 리포트를 불러오지 못했어요.'}</span><button type="button" className="rp-button outline small" onClick={() => reload(false)}>다시 시도</button></p>}
       {status === 'ready' && <>
         <SummaryCard report={report} />
-        <PaceCard report={report} onCompare={() => {}} />
+        <PaceCard report={report} onCompare={() => setDialog('compare')} />
         <div className={`rp-pair${report.comparison?.status === 'DEMO' ? '' : ' single'}`}>
           {report.comparison?.status === 'DEMO' && <WaysCard comparison={report.comparison} />}
           <PayoffCard report={report} />
@@ -155,6 +155,7 @@ export default function Reports({ navigate }) {
     </main>
     {dialog === 'confirm' && picked && previewView.status === 'ready' && <ConfirmDialog candidate={picked} preview={previewView.data} loans={loans} currentCode={strategyView.data.current_strategy.strategy_code} busy={applying} error={applyError} onCancel={() => setDialog(null)} onConfirm={apply} />}
     {dialog === 'recalc' && <RecalcDialog onRecalc={recalc} onClose={() => setDialog(null)} />}
+    {dialog === 'compare' && <CompareDialog onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setSelected(null); setNotice('비교 기준을 바꿨어요'); reload(false) }} />}
     {notice && <div className="rp-toast" role="status">{notice}</div>}
   </div>
 }

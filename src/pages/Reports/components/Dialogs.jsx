@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { won } from '../../Budget/budgetModel.js'
-import { previewRows } from '../reportModel.js'
+import { reportApi } from '../../../api/index.js'
+import { AGE_GROUPS, DECILES, previewRows } from '../reportModel.js'
 
 // 공용 모달: Esc 로 닫고, 열릴 때 첫 버튼에 초점을 둔다. 배경을 누르면 닫힌다.
 function Dialog({ title, onClose, wide, children }) {
@@ -47,5 +48,49 @@ export function RecalcDialog({ onRecalc, onClose }) {
   return <Dialog title="정보가 변경되어 다시 확인이 필요해요" onClose={onClose}>
     <p className="rp-dialog-text">미리보기 이후 대출·재정 정보가 바뀌었어요. 최신 정보로 다시 계산한 뒤 반영할 수 있어요.</p>
     <div className="rp-dialog-actions"><button type="button" className="rp-button primary-s" onClick={onRecalc}>최신 정보로 다시 계산</button></div>
+  </Dialog>
+}
+
+// Figma F4-d: 비교 기준 변경. 연령대·소득 분위를 고르고 적용하면 PATCH 후 리포트를 다시 만든다(비교 기준이 바뀌면 stale).
+export function CompareDialog({ onClose, onSaved }) {
+  const [form, setForm] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    reportApi.getComparisonSettings({ signal: controller.signal }).then(
+      data => setForm({ age_group: data.age_group, income_decile: data.income_decile }),
+      err => { if (!controller.signal.aborted) setError(err) },
+    )
+    return () => controller.abort()
+  }, [])
+  async function submit() {
+    setBusy(true)
+    setError(null)
+    try {
+      await reportApi.updateComparisonSettings({ consented: true, age_group: form.age_group, income_decile: form.income_decile, source_type: 'DEMO' })
+      onSaved()
+    } catch (err) { setError(err); setBusy(false) }
+  }
+  return <Dialog title="비교 기준 변경" onClose={busy ? undefined : onClose}>
+    {!form && !error && <p className="rp-loading" role="status">불러오는 중…</p>}
+    {form && <>
+      <div><p className="rp-field-label">연령대</p>
+        <div className="rp-age-grid" role="group" aria-label="연령대">
+          {AGE_GROUPS.map(a => <button key={a.code} type="button" className={`rp-choice${form.age_group === a.code ? ' on' : ''}`} aria-pressed={form.age_group === a.code} onClick={() => setForm(f => ({ ...f, age_group: a.code }))}>{a.label}</button>)}
+        </div>
+      </div>
+      <div><p className="rp-field-label">소득 분위</p>
+        <div className="rp-age-grid" role="group" aria-label="소득 분위">
+          {DECILES.map(d => <button key={d} type="button" className={`rp-choice${form.income_decile === d ? ' on' : ''}`} aria-pressed={form.income_decile === d} onClick={() => setForm(f => ({ ...f, income_decile: d }))}>{d}분위</button>)}
+        </div>
+      </div>
+      <p className="rp-dialog-text">또래 비교는 예시 데이터를 기준으로 해요.</p>
+    </>}
+    {error && <p className="rp-banner danger" role="alert"><span>{error.message || '비교 기준을 저장하지 못했어요.'}</span></p>}
+    <div className="rp-dialog-actions">
+      <button type="button" className="rp-button outline" onClick={onClose} disabled={busy}>취소</button>
+      <button type="button" className="rp-button primary-s" onClick={submit} disabled={busy || !form}>적용하기</button>
+    </div>
   </Dialog>
 }
