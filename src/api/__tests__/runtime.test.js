@@ -83,3 +83,32 @@ test('mock mode never contacts the server',async()=>{
   const profile=await services.profile()
   assert.equal(typeof profile.name,'string')
 })
+
+test('subscription updates send only plan_type with cookies and preserve demo-mode denial',async()=>{
+  const calls=[]
+  const {services}=createRuntime({env,fetchImpl:async(url,init)=>{
+    calls.push({url,init})
+    if(init.method==='PATCH')return Response.json({success:false,code:'DEMO_MODE_REQUIRED',message:'시연 모드에서만 변경할 수 있습니다.',data:null},{status:403})
+    return ok({plan_type:'FREE'})
+  }})
+  await assert.rejects(()=>services.updateSubscription('PRO'),{status:403,code:'DEMO_MODE_REQUIRED'})
+  const request=calls.find(row=>row.init.method==='PATCH')
+  assert.equal(request.url,'/api/settings/subscription/')
+  assert.deepEqual(JSON.parse(request.init.body),{plan_type:'PRO'})
+  assert.equal(request.init.credentials,'include')
+  assert.equal(request.init.headers.has('Authorization'),false)
+})
+
+test('Mock subscription changes persist and remain consistent with profile and dashboard',async()=>{
+  const saved=new Map(),storage={getItem:key=>saved.get(key),setItem:(key,value)=>saved.set(key,value)}
+  const runtime=()=>createRuntime({env:{VITE_API_MODE:'mock'},storage}).services
+  const services=runtime()
+  await services.updateSubscription('FREE')
+  assert.equal((await services.subscription()).plan_type,'FREE')
+  await services.updateSubscription('PRO')
+  const reloaded=runtime()
+  assert.equal((await reloaded.subscription()).plan_type,'PRO')
+  assert.equal((await reloaded.profile()).plan_type,'PRO')
+  assert.equal((await reloaded.dashboard()).plan_type,'PRO')
+  await assert.rejects(()=>services.updateSubscription('INVALID'),{status:400})
+})

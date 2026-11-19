@@ -235,6 +235,11 @@ export function createMockServer({ storage, delay = 120 } = {}) {
       return new Response('\uFEFF'+rows.map(row=>row.map(escape).join(',')).join('\r\n'),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="ronrun-export.csv"'}})
     }
     if(key==='GET /api/loan-products/')return response(key,{products:example(key).products.filter(p=>(!query.get('loan_type')||p.loan_type===query.get('loan_type'))&&p.institution_id===Number(query.get('institution_id')))})
+    if(key==='PATCH /api/settings/subscription/'){
+      if(Object.keys(body).some(key=>key!=='plan_type')||!['FREE','PRO'].includes(body.plan_type))return failure('VALIDATION_ERROR','요금제를 확인해 주세요.')
+      state.profile.plan_type=body.plan_type;persist()
+      return Response.json({success:true,code:'SUBSCRIPTION_UPDATE_SUCCESS',message:'요금제 정보를 변경했습니다.',data:{...example('GET /api/settings/subscription/'),plan_type:state.profile.plan_type,pro_features:state.profile.plan_type==='FREE'?[]:example('GET /api/settings/subscription/').pro_features}})
+    }
     if(key==='GET /api/settings/subscription/')return response(key,{...example(key),plan_type:state.profile.plan_type,pro_features:state.profile.plan_type==='FREE'?[]:example(key).pro_features})
     if(method==='GET'&&fixtures[key])return response(key,example(key))
     if(key==='POST /api/auth/logout/')return response(key,{logged_out:true})
