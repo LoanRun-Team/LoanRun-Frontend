@@ -170,7 +170,8 @@ export function createMockServer({ storage, delay = 120 } = {}) {
       }
     }
     if(key==='GET /api/payments/schedule/')return response(key,schedule(query.get('month')||'2026-11',loanId))
-    const payments=state.payments.filter(p=>(!loanId||p.loan_id===loanId)&&(!query.get('start_date')||p.paid_at>=query.get('start_date'))&&(!query.get('end_date')||p.paid_at<=query.get('end_date')))
+    const from=query.get('from')||query.get('start_date'),to=query.get('to')||query.get('end_date'),type=query.get('type')||query.get('payment_type')
+    const payments=state.payments.filter(p=>(!loanId||p.loan_id===loanId)&&(!from||p.paid_at>=from)&&(!to||p.paid_at<=to)&&(!type||p.payment_type===type))
     if(key==='GET /api/payments/'){
       const page=Number(query.get('page'))||1,page_size=Number(query.get('page_size'))||20
       return response(key,{count:payments.length,page,page_size,next_page:page*page_size<payments.length?page+1:null,previous_page:page>1?page-1:null,results:payments.toSorted((a,b)=>b.paid_at.localeCompare(a.paid_at)).slice((page-1)*page_size,page*page_size),totals:Object.fromEntries(['amount','principal_amount','interest_amount','extra_amount'].map(k=>[k,sum(payments,k)]))})

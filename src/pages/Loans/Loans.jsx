@@ -13,7 +13,7 @@ import SavingsRecordDialog from './components/SavingsRecordDialog.jsx'
 import LoanConfirmationDialog from './components/LoanConfirmationDialog.jsx'
 import LoanDialog from './components/LoanDialog.jsx'
 import ApiState from '../../components/ApiState/ApiState.jsx'
-import { services,isMock } from '../../api/runtime.js'
+import { services as defaultServices,mockServices,isHybrid,isMock } from '../../api/runtime.js'
 import { useApiResource } from '../../api/useApiResource.js'
 import { loanView,paymentView,planView,segmentView,savingsView } from '../../api/loanView.js'
 import { errorMessage } from '../../api/ApiError.js'
@@ -23,11 +23,18 @@ import { decorateLoan } from './loanPresentation.js'
 import { loanTabs } from './data.js'
 import { icons } from './icons.js'
 import { v2Icons } from './v2Icons.js'
-import wordmark from '../../assets/home/loanrun-wordmark.svg'
+import ConnectedLoans from './ConnectedLoans.jsx'
+import ExampleNotice from '../../components/ApiState/ExampleNotice.jsx'
 import './Loans.scss'
 import './LoansV2.scss'
 
-export default function Loans({location,navigate}) {
+export default function Loans(props) {
+ const path=props.location.split('?')[0],query=new URLSearchParams(props.location.split('?')[1])
+ if(!isHybrid)return <LoansContent {...props}/>
+ if((path==='/loans'||path==='/loans/'||path==='/loans/history')&&!query.has('preview')&&query.get('source')!=='mock')return <ConnectedLoans {...props}/>
+ return <LoansContent {...props} services={mockServices} example/>
+}
+function LoansContent({location,navigate,services=defaultServices,example=false}) {
   const [dialog,setDialog]=useState(null),[notice,setNotice]=useState(''),[error,setError]=useState(''),[pending,setPending]=useState(false),[fee,setFee]=useState('')
   const [month,setMonth]=useState(seoulToday().slice(0,7)),[historyPage,setHistoryPage]=useState(1)
   const path=location.split('?')[0],query=new URLSearchParams(location.split('?')[1])
@@ -47,7 +54,7 @@ export default function Loans({location,navigate}) {
   const currentLoan=loans.find(l=>l.id===filter)||loans[0]
   const savings=scenario?previewData.savings:savingsView(data?.savings[currentLoan?.id],currentLoan,data?.monthly)
   const title=loanTabs.find(t=>t.id===page)?.label||(page==='history'?'상환 내역':'계획 수정')
-  function go(href){if(scenario)href+=(href.includes('?')?'&':'?')+'preview='+encodeURIComponent(scenario);navigate(href)}
+  function go(href){if(example)href+=(href.includes('?')?'&':'?')+'source=mock';if(scenario)href+=(href.includes('?')?'&':'?')+'preview='+encodeURIComponent(scenario);navigate(href)}
   function onFilter(id){setHistoryPage(1);go(path+'?loan='+id)}
   function open(value){setError('');setDialog(value)}
   function record(initial){open({type:'record',initial,idempotencyKey:crypto.randomUUID()})}
@@ -73,24 +80,24 @@ export default function Loans({location,navigate}) {
     if(paid){record({type:'regular',loanId:String(dialog.item.loan_id)});return}
     return mutate(()=>services.confirmDue(dialog.item.due_item_id,true,dialog.idempotencyKey),'이번 회차를 미납으로 표시했어요')
   }
-  return <div className="loans-shell loans-v2" data-page={page}><Sidebar plan={scenario==='overall-free'||data?.profile?.plan_type==='FREE'?'Free':'Pro'} active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} logoSrc={wordmark} onNavigate={item=>item.parent==='loans'||item.id==='loans'?go(item.href):navigate(item.href)}/>
+  return <div className="loans-shell loans-v2" data-page={page}><Sidebar plan={scenario==='overall-free'||data?.profile?.plan_type==='FREE'?'Free':'Pro'} active="loans" activeSub={page==='history'?'overview':page==='edit'?'plan':page} onNavigate={item=>item.parent==='loans'||item.id==='loans'?go(item.href):navigate(item.href)}/>
     <main className="loans-content" id="main-content">
       {['history','edit'].includes(page)&&<button className="lm-text back-link" onClick={()=>go(page==='history'?'/loans':'/loans/plan?loan='+filter)}><img src={v2Icons.back} alt=""/>{page==='history'?'내 대출':'상환 계획'}</button>}
       <header className="loans-page-header"><h1>{title}</h1>{['segments','plan','history','edit'].includes(page)&&<LoanFilter loans={loans} value={filter} onChange={onFilter}/>}</header>
-      <ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
+      {example&&<ExampleNotice onExit={()=>navigate('/loans')}>이 화면의 금융정보와 기록은 예시이며, 실제 대출에는 반영되지 않아요.</ExampleNotice>}<ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
       {error&&!dialog&&<p className="field-error" role="alert">{error}</p>}
       {resource.status==='success'&&data&&<>
         {page==='overview'&&<Overview loans={loans} history={data.history} summary={data.list} totals={data.paymentData.totals} navigate={go} onAdd={()=>open({type:'add'})} onDelete={loan=>open({type:loan.stage==='paid'?'archive':'delete',loan})} onRate={async loan=>{open({type:'rate',loan,rates:null});try{const rates=await services.rates(loan.id);setDialog(d=>d?.type==='rate'?{...d,rates}:d)}catch(e){setError(errorMessage(e))}}}/>}
         {page==='monthly'&&<MonthlyPayments loans={loans} filter={filter} onFilter={onFilter} month={month} onMonth={setMonth} schedule={previewSchedule(data.schedule,currentLoan,scenario)} payments={data.paymentData.results} confirmations={{}} savings={savings} onRecord={record} onConfirm={item=>open({type:'confirm-payment',item,idempotencyKey:crypto.randomUUID(),loan:loans.find(l=>l.id===String(item.loan_id))})} onSavings={showSavings}/>}
         {page==='segments'&&<SegmentRecords data={segmentView(data.monthly)}/>}
         {page==='history'&&<PaymentHistory loans={loans} history={data.history} filter={filter} pagination={data.paymentData} onPage={setHistoryPage}/>}
-        {page==='plan'&&<RepaymentPlan planData={data.plans} loans={loans} filter={filter} navigate={go} data={planView(data.plans,data.monthly,data.paymentData.totals)} savings={savings} scenario={scenario} onRecord={record} onSavings={showSavings} onSavingsEdit={showSavings} onSavingsDelete={deleteSavings} onShortfall={()=>open({type:'shortfall'})} onFee={()=>{setFee('');open({type:'fee'})}}/>}
-        {page==='edit'&&<PlanEditor key={filter+scenario} loanIds={filter==='all'?loans.map(l=>Number(l.id)):[Number(filter)]} loans={loans} budgetWarning={previewData.warning} scenario={scenario} onCancel={()=>go('/loans/plan?loan='+filter)} onSaved={()=>{go('/loans/plan?loan='+filter);setNotice('상환 계획을 변경했어요')}}/>}
+        {page==='plan'&&<RepaymentPlan api={services} planData={data.plans} loans={loans} filter={filter} navigate={go} data={planView(data.plans,data.monthly,data.paymentData.totals)} savings={savings} scenario={scenario} onRecord={record} onSavings={showSavings} onSavingsEdit={showSavings} onSavingsDelete={deleteSavings} onShortfall={()=>open({type:'shortfall'})} onFee={()=>{setFee('');open({type:'fee'})}}/>}
+        {page==='edit'&&<PlanEditor api={services} key={filter+scenario} loanIds={filter==='all'?loans.map(l=>Number(l.id)):[Number(filter)]} loans={loans} budgetWarning={previewData.warning} scenario={scenario} onCancel={()=>go('/loans/plan?loan='+filter)} onSaved={()=>{go('/loans/plan?loan='+filter);setNotice('상환 계획을 변경했어요')}}/>}
       </>}
     </main>
     {notice&&<div className="loans-toast" role="status">{notice}<button className="lm-icon-button" aria-label="알림 닫기" onClick={()=>setNotice('')}><img src={icons.close} alt=""/></button></div>}
-    {dialog?.type==='add'&&<AddLoanDialog options={data.options} onClose={()=>!pending&&setDialog(null)} onAdd={addLoan} pending={pending} error={error}/>}
-    {dialog?.type==='record'&&<RecordPaymentDialog designV2 loans={loans} initial={dialog.initial} onClose={()=>!pending&&setDialog(null)} onSave={savePayment} pending={pending} error={error}/>}
+    {dialog?.type==='add'&&<AddLoanDialog api={services} options={data.options} onClose={()=>!pending&&setDialog(null)} onAdd={addLoan} pending={pending} error={error}/>}
+    {dialog?.type==='record'&&<RecordPaymentDialog api={services} designV2 loans={loans} initial={dialog.initial} onClose={()=>!pending&&setDialog(null)} onSave={savePayment} pending={pending} error={error}/>}
     {dialog?.type==='savings'&&<SavingsRecordDialog loans={loans} initial={dialog.initial} onClose={()=>!pending&&setDialog(null)} onSave={saveSavings} pending={pending} error={error}/>}
     {['delete','archive','confirm-payment'].includes(dialog?.type)&&<LoanConfirmationDialog kind={dialog.type==='confirm-payment'?'payment':dialog.type} loan={dialog.loan} item={dialog.item} pending={pending} error={error} onClose={()=>!pending&&setDialog(null)} onHistory={()=>{setDialog(null);go('/loans/history?loan='+dialog.loan.id)}} onConfirm={dialog.type==='confirm-payment'?confirmPayment:()=>mutate(()=>services.deleteLoan(dialog.loan.id),'대출을 삭제했어요')}/>}
     {dialog?.type==='shortfall'&&<LoanDialog title="미적립 금액" closeIcon={v2Icons.close} onClose={()=>setDialog(null)} className="v2-shortfall-dialog"><dl className="v2-key-values">{savings?.shortfallRows?.map(row=><div key={row.month}><dt>{row.month}</dt><dd>{won(row.amount)}</dd></div>)}<div><dt>합계</dt><dd className="teal">{won(savings?.shortfall)}</dd></div></dl><p>모으지 못한 금액은 이번 달 목표에 더해져요</p><footer><button className="lm-button primary" onClick={()=>setDialog(null)}>닫기</button></footer></LoanDialog>}

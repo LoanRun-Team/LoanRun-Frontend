@@ -3,7 +3,7 @@ import LegacyRecordPaymentDialog from './LegacyRecordPaymentDialog.jsx'
 import LoanDialog from './LoanDialog.jsx'
 import AmountField from './AmountField.jsx'
 import ApiState from '../../../components/ApiState/ApiState.jsx'
-import { services } from '../../../api/runtime.js'
+import { services as defaultServices } from '../../../api/runtime.js'
 import { useApiResource } from '../../../api/useApiResource.js'
 import { won,seoulToday } from '../../../api/format.js'
 import { v2Icons } from '../v2Icons.js'
@@ -11,10 +11,10 @@ import { v2Icons } from '../v2Icons.js'
 export default function RecordPaymentDialog(props) {
   return props.designV2?<PaymentForm {...props}/>:<LegacyRecordPaymentDialog {...props}/>
 }
-function PaymentForm({loans,initial,onClose,onSave,pending,error}) {
+function PaymentForm({loans,initial,onClose,onSave,pending,error,api=defaultServices}) {
   const [type,setType]=useState(initial.type||'regular'),[loanId,setLoanId]=useState(initial.loanId||loans[0]?.id||''),[date,setDate]=useState(seoulToday()),[amount,setAmount]=useState(initial.amount??loans.find(l=>l.id===initial.loanId)?.payment??''),[details,setDetails]=useState({}),[memo,setMemo]=useState(''),[usedSavings,setUsedSavings]=useState(''),[feeKnown,setFeeKnown]=useState(true)
   const loan=loans.find(l=>l.id===loanId),bullet=loan?.dto.repayment_method==='BULLET'
-  const quote=useApiResource(loanId,signal=>loan?services.previewLoan(loan.dto,signal):Promise.resolve(null))
+  const quote=useApiResource(loanId,signal=>loan?api.previewLoan(loan.dto,signal):Promise.resolve(null))
   const breakdown={principal:type==='extra'?0:quote.data?.estimated_next_principal??0,extra:type==='extra'?Number(amount)||0:0,interest:type==='extra'?0:quote.data?.estimated_next_interest??0,fee:0,...details}
   const detailSum=Object.values(breakdown).reduce((n,v)=>n+(Number(v)||0),0)
   const total=Number(amount),mismatch=!bullet&&Number.isFinite(total)&&detailSum!==total

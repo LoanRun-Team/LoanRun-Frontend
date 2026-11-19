@@ -1,6 +1,6 @@
 import { ApiError } from './ApiError.js'
 
-export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, getHeaders = () => ({}) } = {}) {
+export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, getHeaders = () => ({}), credentials = 'same-origin' } = {}) {
   if (typeof fetchImpl !== 'function') throw new TypeError('An HTTP transport is required')
   async function request(path, { method = 'GET', query, body, headers, signal, responseType = 'json' } = {}) {
     if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) throw new TypeError('API paths must be relative to the configured server')
@@ -12,8 +12,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, ge
     requestHeaders.set('Accept', responseType === 'blob' ? 'text/csv, application/json' : 'application/json')
     if(body !== undefined)requestHeaders.set('Content-Type','application/json')
     let response
-    try { response = await fetchImpl(url,{method,headers:requestHeaders,...(body!==undefined?{body:JSON.stringify(body)}:{}),signal}) }
-    catch(cause) { if(signal?.aborted || cause?.name==='AbortError')throw cause;throw new ApiError('서버에 연결할 수 없습니다.',{kind:'network',cause}) }
+    try { response = await fetchImpl(url,{method,headers:requestHeaders,credentials,...(body!==undefined?{body:JSON.stringify(body)}:{}),signal}) }
+    catch(cause) { if(signal?.aborted || cause?.name==='AbortError'||cause instanceof ApiError)throw cause;throw new ApiError('서버에 연결할 수 없습니다.',{kind:'network',cause}) }
     if(responseType==='blob' && response.ok && response.headers.get('Content-Type')?.includes('text/csv')) {
       const disposition=response.headers.get('Content-Disposition') || ''
       const filename=disposition.match(/filename="([^"]+)"/)?.[1] || 'ronrun-export.csv'

@@ -1,16 +1,10 @@
-import { createApiClient } from './client.js'
-import { createServices } from './services.js'
-import { createMockServer } from './mock/server.js'
+import { createRuntime } from './createRuntime.js'
 
-const env = import.meta.env || {}
-export const isMock = env.VITE_API_MODE !== 'real'
-if(!isMock&&!env.VITE_API_BASE_URL)throw new Error('VITE_API_BASE_URL is required in real mode')
-const mock = isMock ? createMockServer({ storage: globalThis.localStorage }) : null
-export const services = createServices(createApiClient({
-  baseUrl: isMock ? '' : (env.VITE_API_BASE_URL || ''),
-  fetchImpl: mock ? mock.fetch : (...args) => globalThis.fetch(...args),
-  getHeaders: () => {
-    const token = isMock ? 'mock-access-token' : globalThis.sessionStorage?.getItem('loanrun.access_token')
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  },
-}))
+const runtime=createRuntime({env:import.meta.env||{},storage:globalThis.localStorage})
+export const apiMode=runtime.mode
+export const isHybrid=apiMode==='hybrid'
+// Existing design previews are available wherever some Mock UI is enabled.
+export const isMock=apiMode!=='real'
+export const services=runtime.services
+export const mockServices=runtime.mockServices
+export const liveServices=runtime.liveServices

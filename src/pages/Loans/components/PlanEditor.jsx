@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { services } from '../../../api/runtime.js'
+import { services as defaultServices } from '../../../api/runtime.js'
 import { useApiResource } from '../../../api/useApiResource.js'
 import { errorMessage } from '../../../api/ApiError.js'
 import { won,monthLabel,seoulToday } from '../../../api/format.js'
@@ -7,7 +7,7 @@ import ApiState from '../../../components/ApiState/ApiState.jsx'
 import AmountField from './AmountField.jsx'
 import { v2Icons } from '../v2Icons.js'
 import { icons } from '../icons.js'
-export default function PlanEditor({loanIds,loans=[],onSaved,onCancel,budgetWarning,scenario}) {
+export default function PlanEditor({loanIds,loans=[],onSaved,onCancel,budgetWarning,scenario,api=defaultServices}) {
   const selected=loans.filter(l=>loanIds.includes(Number(l.id)))
   const initialDate=selected[0]?.dto.plan?.target_payoff_date||selected[0]?.dto.maturity_date||seoulToday()
   const [mode,setMode]=useState(scenario==='plan-amount-warning'?'EXTRA_AMOUNT':'TARGET_DATE'),[extra,setExtra]=useState(selected[0]?.dto.plan?.extra_monthly_payment??0),[year,setYear]=useState(Number(initialDate.slice(0,4))),[month,setMonth]=useState(Number(initialDate.slice(5,7))),[preference,setPreference]=useState('BALANCED'),[pending,setPending]=useState(false),[error,setError]=useState('')
@@ -18,7 +18,7 @@ export default function PlanEditor({loanIds,loans=[],onSaved,onCancel,budgetWarn
   const resource=useApiResource(JSON.stringify(body)+invalid,async signal=>{
     if(invalid||!loanIds.length)return null
     await new Promise(resolve=>setTimeout(resolve,250));if(signal.aborted)throw new DOMException('Aborted','AbortError')
-    return services.previewPlan(body,signal)
+    return api.previewPlan(body,signal)
   })
   const preview=resource.status==='success'&&!invalid?resource.data:null
   const current=preview?.current_plans||selected.map(l=>l.dto.plan).filter(Boolean)
@@ -26,7 +26,7 @@ export default function PlanEditor({loanIds,loans=[],onSaved,onCancel,budgetWarn
   const proposed=preview?.proposed_plans
   const warning=budgetWarning||preview?.warnings?.find(w=>typeof w==='string'&&w.includes('여유자금'))
   const compareDate=current?.map(p=>p.estimated_payoff_date).filter(Boolean).sort().at(-1)
-  async function save(){if(!preview||invalid)return;setPending(true);setError('');try{await services.savePlan({...body,preview_version:preview.preview_version});onSaved()}catch(e){setError(errorMessage(e))}finally{setPending(false)}}
+  async function save(){if(!preview||invalid)return;setPending(true);setError('');try{await api.savePlan({...body,preview_version:preview.preview_version});onSaved()}catch(e){setError(errorMessage(e))}finally{setPending(false)}}
   const yearStart=Number(seoulToday().slice(0,4)),yearEnd=Math.max(Number(maturity?.slice(0,4)||yearStart)+5,year+2)
   return <>
     <div className="edit-tabs" role="group" aria-label="계획 수정 기준">{[['PREFERENCE','상환 성향으로'],['TARGET_DATE','완납일 기준'],['EXTRA_AMOUNT','추가 상환액 기준']].map(([id,label])=><button key={id} disabled={pending} className={mode===id?'selected':''} aria-pressed={mode===id} onClick={()=>setMode(id)}>{label}</button>)}</div>

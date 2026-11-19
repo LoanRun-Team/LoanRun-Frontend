@@ -2,12 +2,12 @@ import { useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import DetailDialog from '../Home/components/DetailDialog.jsx'
 import ApiState from '../../components/ApiState/ApiState.jsx'
-import { services } from '../../api/runtime.js'
+import { services,mockServices,isHybrid } from '../../api/runtime.js'
+import ExampleNotice from '../../components/ApiState/ExampleNotice.jsx'
 import { useApiResource } from '../../api/useApiResource.js'
 import { errorMessage } from '../../api/ApiError.js'
 import { won, incomeLabels } from '../../api/format.js'
 import avatar from '../../assets/common/avatar.svg'
-import logo from '../../assets/settings/loanrun-wordmark.svg'
 import toggleOn from '../../assets/settings/toggle-on.svg'
 import toggleOff from '../../assets/settings/toggle-off.svg'
 import ExpensesDialog from './components/ExpensesDialog.jsx'
@@ -17,8 +17,13 @@ const tabs=[['profile','프로필'],['income','소득·상환'],['plan','요금�
 export default function Settings({location,navigate}) {
   const tab=location.split('?')[0].split('/')[2]||'profile'
   const active=tabs.some(([id])=>id===tab)?tab:'profile'
-  const resource=useApiResource('settings',async signal=>{
-    const [profile,finance,subscription,notifications,plans]=await Promise.all([services.profile(signal),services.finance(signal),services.subscription(signal),services.notifications(signal),services.plans(undefined,signal)])
+  const financeApi=isHybrid?mockServices:services
+  const resource=useApiResource('settings:'+active,async signal=>{
+    const [profile,subscription]=await Promise.all([services.profile(signal),services.subscription(signal)])
+    const [finance,notifications,plans]=await Promise.all([
+      ['income','account'].includes(active)?financeApi.finance(signal):null,
+      active==='notifications'?services.notifications(signal):null,
+      active==='income'?financeApi.plans(undefined,signal):null])
     return {profile,finance,subscription,notifications,plans}
   })
   const [editing,setEditing]=useState(null),[draft,setDraft]=useState(''),[panel,setPanel]=useState(null),[error,setError]=useState(''),[pending,setPending]=useState(false),[signedOut,setSignedOut]=useState(false)
@@ -28,11 +33,11 @@ export default function Settings({location,navigate}) {
     return <div className="settings-row" key={key||label}><span className="settings-label">{label}</span>{editing===key&&key?<form className="settings-edit" onSubmit={e=>{e.preventDefault();mutate(()=>options.save(draft))}}>
       {options.choices?<select aria-label={label} value={draft} onChange={e=>setDraft(e.target.value)}>{options.choices.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>:<input autoFocus aria-label={label} type="text" inputMode={options.numeric?'numeric':undefined} pattern={options.numeric?'[0-9]+':undefined} required value={draft} onChange={e=>setDraft(e.target.value)}/>}
       <button className="settings-button" disabled={pending}>저장</button><button className="settings-button" type="button" disabled={pending} onClick={()=>setEditing(null)}>취소</button>
-    </form>:<><span className="settings-value">{value}</span>{options.toggle?<button className="settings-toggle" role="switch" aria-label={label} aria-checked={Boolean(options.checked)} disabled={pending||options.disabled} title={options.disabled?'위험 신호 알림은 준비 중이에요':undefined} onClick={()=>mutate(()=>options.onToggle?options.onToggle(!options.checked):services.updateNotifications({[key]:!options.checked}))}><img src={options.checked?toggleOn:toggleOff} alt=""/></button>:options.save?<button className="settings-button" disabled={pending||options.disabled} onClick={()=>{setEditing(key);setDraft(String(options.raw??value));setError('')}}>편집</button>:options.action?<button className={'settings-button '+(options.buttonClass||'')} disabled={pending} onClick={options.action}>{options.button}</button>:null}</>}</div>
+    </form>:<><span className="settings-value">{value}</span>{options.toggle?<button className="settings-toggle" role="switch" aria-label={label} aria-checked={Boolean(options.checked)} disabled={pending||options.disabled} title={options.disabled?'위험 신호 알림은 준비 중이에요':undefined} onClick={()=>mutate(()=>options.onToggle?options.onToggle(!options.checked):services.updateNotifications({[key]:!options.checked}))}><img src={options.checked?toggleOn:toggleOff} alt=""/></button>:options.save?<button className="settings-button" disabled={pending||options.disabled} onClick={()=>{setEditing(key);setDraft(String(options.raw??value));setError('')}}>편집</button>:options.action?<button className={'settings-button '+(options.buttonClass||'')} disabled={pending||options.disabled} title={options.disabled?'아직 사용할 수 없는 기능이에요':undefined} onClick={options.action}>{options.button}</button>:null}</>}</div>
   }
   async function exportData(){await mutate(async()=>{const {blob,filename}=await services.exportData({format:'csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
-  const financeSave=(key,value)=>services.saveFinance({...data.finance,[key]:Number(value)})
-  return <div className={'settings-shell settings-'+active}><Sidebar logoSrc={logo} active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>navigate(item.href)}/>
+  const financeSave=(key,value)=>financeApi.saveFinance({...data.finance,[key]:Number(value)})
+  return <div className={'settings-shell settings-'+active}><Sidebar active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>navigate(item.href)}/>
     <aside className="settings-nav"><h1>설정</h1><nav aria-label="설정 메뉴">{tabs.map(([id,label])=><a key={id} href={'/settings/'+id} className={active===id?'active':''} aria-current={active===id?'page':undefined} onClick={e=>{if(!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&e.button===0){e.preventDefault();setEditing(null);setError('');navigate('/settings/'+id)}}}>{label}</a>)}</nav></aside>
     <main id="main-content" className="settings-content"><ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
     {signedOut?<p role="status">로그아웃되었습니다. 로그인 후 다시 이용해 주세요.</p>:resource.status==='success'&&data&&<>
@@ -40,12 +45,12 @@ export default function Settings({location,navigate}) {
       <section className="settings-section"><h2>{tabs.find(([id])=>id===active)[1]}</h2>
       {error&&<p className="inline-api-error" role="alert">{error}</p>}
       {active==='profile'&&<>{row('이름','name',data.profile.name,{save:value=>services.updateProfile({name:value})})}{row('직업','occupation',data.profile.occupation||'미입력',{raw:data.profile.occupation||'',save:value=>services.updateProfile({occupation:value})})}{row('소득 유형','income_type',incomeLabels[data.profile.income_type],{raw:data.profile.income_type,choices:Object.entries(incomeLabels),save:value=>services.updateProfile({income_type:value})})}</>}
-      {active==='income'&&<>{row('월 실수령액','monthly_income',won(data.finance.monthly_income),{raw:data.finance.monthly_income,numeric:true,save:value=>financeSave('monthly_income',value)})}{row('수령일','payday',data.finance.income_type==='REGULAR'?'매월 '+data.finance.payday+'일':'미지정',{raw:data.finance.payday||'',numeric:true,disabled:data.finance.income_type==='IRREGULAR',save:value=>financeSave('payday',value)})}{row('불규칙 소득','irregular_income',data.finance.income_type==='IRREGULAR'?'켬':'끔',{toggle:true,checked:data.finance.income_type==='IRREGULAR',onToggle:checked=>services.saveFinance({...data.finance,income_type:checked?'IRREGULAR':'REGULAR',payday:checked?null:(data.finance.payday||25)})})}{row('월 목표 상환액',null,won(data.plans.aggregate?.monthly_total_amount),{button:'편집',action:()=>navigate('/loans/plan/edit')})}</>}
+      {active==='income'&&<>{isHybrid&&<ExampleNotice>이 영역은 예시 데이터예요. 실제 재정정보에는 반영되지 않아요.</ExampleNotice>}{row('월 실수령액','monthly_income',won(data.finance.monthly_income),{raw:data.finance.monthly_income,numeric:true,save:value=>financeSave('monthly_income',value)})}{row('수령일','payday',data.finance.income_type==='REGULAR'?'매월 '+data.finance.payday+'일':'미지정',{raw:data.finance.payday||'',numeric:true,disabled:data.finance.income_type==='IRREGULAR',save:value=>financeSave('payday',value)})}{row('불규칙 소득','irregular_income',data.finance.income_type==='IRREGULAR'?'켬':'끔',{toggle:true,checked:data.finance.income_type==='IRREGULAR',onToggle:checked=>financeApi.saveFinance({...data.finance,income_type:checked?'IRREGULAR':'REGULAR',payday:checked?null:(data.finance.payday||25)})})}{row('월 목표 상환액',null,won(data.plans.aggregate?.monthly_total_amount),{button:'편집',action:()=>navigate('/loans/plan/edit')})}</>}
       {active==='plan'&&<>{row('현재 요금제',null,data.subscription.plan_type==='PRO'?'PRO':'무료')}{row('PRO 요금제',null,'월 4,900원(예시)',{button:'업그레이드',buttonClass:'primary',action:()=>setPanel('PRO 시작하기')})}</>}
       {active==='notifications'&&<>{row('납부 예정일','payment_due','3일 전',{toggle:true,checked:data.notifications.payment_due})}{row('위험 신호','risk_signal','',{toggle:true,checked:false,disabled:true})}{row('상환 리포트 업데이트 알림','report_update','',{toggle:true,checked:data.notifications.report_update})}</>}
-      {active==='account'&&<>{row('지출 입력',null,'직접 입력',{button:'편집',action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',action:()=>setPanel('logout')})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',action:()=>setPanel('delete')})}</>}
+      {active==='account'&&<>{row('지출 입력',null,isHybrid?'직접 입력 · 예시':'직접 입력',{button:'편집',action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',disabled:isHybrid,action:()=>setPanel('logout')})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',disabled:isHybrid,action:()=>setPanel('delete')})}</>}
       </section></>}
     </main>
-    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await services.saveFinance(values);setPanel(null)})}/>:['logout','delete'].includes(panel)?<div className="dialog-backdrop"><section className="detail-dialog" role="dialog" aria-modal="true" aria-label={panel==='delete'?'회원 탈퇴':'로그아웃'}><h2>{panel==='delete'?'탈퇴하면 계정 데이터가 삭제돼요.':'로그아웃하시겠어요?'}</h2>{error&&<p role="alert">{error}</p>}<button disabled={pending} onClick={()=>setPanel(null)}>취소</button><button disabled={pending} onClick={()=>mutate(async()=>{if(panel==='delete')await services.deleteAccount();else await services.logout(sessionStorage.getItem('loanrun.refresh_token')||'mock-refresh-token');sessionStorage.removeItem('loanrun.access_token');sessionStorage.removeItem('loanrun.refresh_token');setPanel(null);setSignedOut(true)})}>확인</button></section></div>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
+    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await financeApi.saveFinance(values);setPanel(null)})}/>:['logout','delete'].includes(panel)?<div className="dialog-backdrop"><section className="detail-dialog" role="dialog" aria-modal="true" aria-label={panel==='delete'?'회원 탈퇴':'로그아웃'}><h2>{panel==='delete'?'탈퇴하면 계정 데이터가 삭제돼요.':'로그아웃하시겠어요?'}</h2>{error&&<p role="alert">{error}</p>}<button disabled={pending} onClick={()=>setPanel(null)}>취소</button><button disabled={pending} onClick={()=>mutate(async()=>{if(panel==='delete')await services.deleteAccount();else await services.logout(sessionStorage.getItem('loanrun.refresh_token')||'mock-refresh-token');sessionStorage.removeItem('loanrun.access_token');sessionStorage.removeItem('loanrun.refresh_token');setPanel(null);setSignedOut(true)})}>확인</button></section></div>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
   </div>
 }

@@ -2,4 +2,6 @@
 .api-state button { padding: 10px 20px; border: 1px solid var(--primary); border-radius: 8px; background: white; color: var(--primary-text); }
 .inline-api-error { color: #b3261e; font-size: 14px; line-height: 22px; padding: 12px 0; }
 button:disabled { cursor: not-allowed; }
+.api-example-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 16px; margin-bottom: 16px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--primary-light); color: var(--primary-text); font-size: 14px; line-height: 22px; }
+.api-example-notice button { border: 0; padding: 0; background: transparent; color: inherit; text-decoration: underline; font: inherit; }
 

@@ -264,3 +264,6 @@
   input { padding-right: 44px; text-align: right; }
   > span { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--secondary); pointer-events: none; }
 }
+
+.loans-shell .payment-stack.with-fee {position:relative; > .fee {position:absolute;right:0;top:0;background:#aab2b8;}}
+.loans-shell .chart-legend i.fee {background:#aab2b8;}
