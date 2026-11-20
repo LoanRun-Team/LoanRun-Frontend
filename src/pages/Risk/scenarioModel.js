@@ -6,8 +6,8 @@ import { pct } from './riskModel.js'
 export const EXPENSE_SHOCK = 500000
 export const SCENARIO_TABS = [
   { key: 'CURRENT', label: '현재', body: null },
-  { key: 'RATE_UP', label: '금리 +1%p', body: { rate_increase_pp: 1 } },
-  { key: 'INCOME_DOWN', label: '소득 −5%', body: { income_change_pct: -5 } },
+  { key: 'RATE_UP', label: '금리 +1%p', body: { scenario_type: 'RATE_UP' } },
+  { key: 'INCOME_DOWN', label: '소득 −5%', body: { scenario_type: 'INCOME_DOWN' } },
   { key: 'EXPENSE', label: `예상 못 한 지출 ${EXPENSE_SHOCK / 10000}만 원`, body: null },
 ]
 

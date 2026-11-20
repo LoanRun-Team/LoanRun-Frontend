@@ -257,7 +257,7 @@ export function applyStrategy(body) {
 }
 
 // ── 또래 비교 기준·동의 ────────────────────────────────────────────────
-const AGE_GROUPS = ['AGE_20S', 'AGE_30S', 'AGE_40S', 'AGE_50S_PLUS']
+const AGE_GROUPS = ['AGE_20S', 'AGE_30S', 'AGE_40S', 'AGE_50_PLUS']
 export const comparisonSettings = () => ({ consented: true, age_group: 'AGE_30S', source_type: 'DEMO', income_decile: 3, ...read().comparison })
 export function validateComparisonBody(b) {
   const errors = {}

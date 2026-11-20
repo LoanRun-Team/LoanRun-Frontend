@@ -167,16 +167,21 @@ export const loanExists = id => listLoans().some(l => l.loan_id === id)
 
 // ── POST /api/risks/simulate/ ───────────────────────────────────────────
 // 요청: loan_ids(선택), rate_increase_pp(0~5), income_change_pct(-100~100). 변동금리 대출 잔액에만 금리 상승분이 월 이자로 붙는다.
+// 서버 형식: { scenario_type: CURRENT|RATE_UP|INCOME_DOWN|EXPENSE_UP, loan_ids? }. RATE_UP 은 금리 +1%p, INCOME_DOWN 은 소득 -5% 로 고정이다.
+const SCENARIO_PARAMS = { CURRENT: {}, RATE_UP: { rate_increase_pp: 1 }, INCOME_DOWN: { income_change_pct: -5 }, EXPENSE_UP: {} }
+export const withScenario = b => ({ ...(b ?? {}), ...(SCENARIO_PARAMS[b?.scenario_type] ?? {}) })
 export function validateSimulation(b) {
   const errors = {}
   const body = b ?? {}
+  if (body.scenario_type != null && !(body.scenario_type in SCENARIO_PARAMS)) errors.scenario_type = ['지원하지 않는 시나리오입니다.']
   if (body.loan_ids != null && !(Array.isArray(body.loan_ids) && body.loan_ids.every(id => Number.isInteger(id) && id > 0))) errors.loan_ids = ['대출 ID 배열이어야 합니다.']
   if (body.rate_increase_pp != null && !(typeof body.rate_increase_pp === 'number' && body.rate_increase_pp >= 0 && body.rate_increase_pp <= 5)) errors.rate_increase_pp = ['0~5 사이여야 합니다.']
   if (body.income_change_pct != null && !(typeof body.income_change_pct === 'number' && body.income_change_pct >= -100 && body.income_change_pct <= 100)) errors.income_change_pct = ['-100~100 사이여야 합니다.']
   return errors
 }
 
-export function simulateRisk(b) {
+export function simulateRisk(input) {
+  const b = withScenario(input)
   const ym = ymd(new Date()).slice(0, 7)
   const view = monthView(ym)
   const all = listLoans()

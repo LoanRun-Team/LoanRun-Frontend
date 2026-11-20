@@ -5,7 +5,7 @@ export const AGE_GROUPS = [
   { code: 'AGE_20S', label: '20대' },
   { code: 'AGE_30S', label: '30대' },
   { code: 'AGE_40S', label: '40대' },
-  { code: 'AGE_50S_PLUS', label: '50대 이상' },
+  { code: 'AGE_50_PLUS', label: '50대 이상' },
 ]
 export const DECILES = [1, 2, 3, 4, 5]
 export const ageLabel = code => AGE_GROUPS.find(a => a.code === code)?.label ?? ''

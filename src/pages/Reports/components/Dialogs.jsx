@@ -68,7 +68,7 @@ export function CompareDialog({ onClose, onSaved }) {
     setBusy(true)
     setError(null)
     try {
-      await reportApi.updateComparisonSettings({ consented: true, age_group: form.age_group, income_decile: form.income_decile, source_type: 'DEMO' })
+      await reportApi.updateComparisonSettings({ consented: true, age_group: form.age_group, income_decile: form.income_decile })
       onSaved()
     } catch (err) { setError(err); setBusy(false) }
   }
