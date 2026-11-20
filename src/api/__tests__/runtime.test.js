@@ -26,7 +26,7 @@ test('parallel reads share one completed session bootstrap and use cookies witho
 test('unimplemented dashboard and authentication APIs remain blocked before any request',async()=>{
   let calls=0
   const {services}=createRuntime({env,fetchImpl:async()=>{calls++;return ok({})}})
-  for(const action of [()=>services.dashboard(),()=>services.risks(),()=>services.logout(),()=>services.deleteAccount()])await assert.rejects(action,{code:'API_NOT_READY'})
+  for(const action of [()=>services.dashboard(),()=>services.logout(),()=>services.deleteAccount()])await assert.rejects(action,{code:'API_NOT_READY'})
   assert.equal(calls,0)
 })
 
