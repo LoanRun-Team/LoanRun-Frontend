@@ -1,4 +1,4 @@
-// 상환 리포트 화면 모델. GET /api/reports/latest/ · /strategy/ 응답(REPORT_API.md)을 화면 문구·표시값으로 바꾼다.
+// 상환 리포트 화면 모델. GET /api/reports/latest/ · /strategy/ 응답을 화면 문구·표시값으로 바꾼다.
 import { loanName, won } from '../Budget/budgetModel.js'
 
 export const AGE_GROUPS = [

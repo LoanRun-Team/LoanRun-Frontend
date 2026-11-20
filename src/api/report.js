@@ -1,5 +1,5 @@
 // 상환 리포트에서 쓰는 API. 경로·메서드는 Notion 명세(최종본 2026.11.16)의 reports 계열과 상환 계획 시뮬레이션·저장의 전략 분기 그대로이며,
-// 마지막 슬래시를 유지한다. 요청/응답 필드는 REPORT_API.md 참고. 화면 모델과의 변환은 pages/Reports/reportModel.js.
+// 마지막 슬래시를 유지한다. 화면 모델과의 변환은 pages/Reports/reportModel.js.
 //
 // 흐름: 최신 리포트 조회(GET latest) → NOT_GENERATED·stale 이면 생성(POST) → 상태 확인(GET {id}) → 전략 후보(GET strategy)
 //       → 후보 선택 → 반영 미리보기(POST preview, 전략 분기) → 계획에 반영(PUT, 전략 분기 + preview_version).

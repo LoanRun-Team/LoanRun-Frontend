@@ -1,4 +1,4 @@
-// 위험 분석 화면 모델. GET /api/risks/ 응답(RISK_API.md)을 화면 문구·표시값으로 바꾼다.
+// 위험 분석 화면 모델. GET /api/risks/ 응답을 화면 문구·표시값으로 바꾼다.
 import { loanName, won } from '../Budget/budgetModel.js'
 
 export const LEVELS = [

@@ -1,5 +1,5 @@
 // 예산·지출에서 쓰는 API. 경로·메서드는 URL 명세서(2026-11-15 3차 확정) 그대로이며, 마지막 슬래시를 유지한다.
-// 요청/응답 필드는 BUDGET_API.md 참고. 화면 모델과의 변환은 pages/Budget/budgetModel.js(fromApi, toSaveBody, toAllocationBody).
+// 화면 모델과의 변환은 pages/Budget/budgetModel.js(fromApi, toSaveBody, toAllocationBody).
 //
 // 사용: const budgetApi = createBudgetApi(api)  // api = createApi(...) 가 반환한 클라이언트
 export function createBudgetApi({ request }) {

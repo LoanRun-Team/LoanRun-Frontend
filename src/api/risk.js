@@ -1,5 +1,5 @@
 // 위험 분석에서 쓰는 API. 경로·메서드는 Notion 명세(재정 위험 분석 조회) 그대로이며, 마지막 슬래시를 유지한다.
-// 요청/응답 필드는 RISK_API.md 참고. 화면 모델과의 변환은 pages/Risk/riskModel.js(fromApi).
+// 화면 모델과의 변환은 pages/Risk/riskModel.js(fromApi).
 //
 // 사용: const riskApi = createRiskApi(api)  // api = createApi(...) 가 반환한 클라이언트
 export function createRiskApi({ request }) {
