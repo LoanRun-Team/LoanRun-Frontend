@@ -6,6 +6,12 @@ import Onboarding from './pages/onboarding/Onboarding.jsx'
 import Budget from './pages/Budget/Budget.jsx'
 import Risk from './pages/Risk/Risk.jsx'
 import Reports from './pages/Reports/Reports.jsx'
+import { onboardingApi } from './api/index.js'
+import { parseLiveFeatures } from './api/hybridFetch.js'
+
+// 실서버의 온보딩을 쓰는 배포에서만 첫 방문자를 온보딩으로 보낸다
+const env = import.meta.env
+const redirectToOnboarding = env.VITE_API_MODE === 'real' || (env.VITE_API_MODE === 'hybrid' && parseLiveFeatures(env.VITE_LIVE_FEATURES).includes('onboarding'))
 
 export default function App() {
   const [location, setLocation] = useState(
@@ -30,8 +36,21 @@ export default function App() {
   }
 
   const path = location.split('?')[0]
+  const inOnboarding = path.startsWith('/onboarding')
 
-  if (path.startsWith('/onboarding')) {
+  useEffect(() => {
+    if (!redirectToOnboarding || inOnboarding) return
+    let alive = true
+    onboardingApi.getProgress().then(progress => {
+      if (alive && progress.completed === false) {
+        window.history.replaceState({}, '', '/onboarding')
+        setLocation('/onboarding')
+      }
+    }).catch(() => {})
+    return () => { alive = false }
+  }, [inOnboarding])
+
+  if (inOnboarding) {
     return <Onboarding location={location} navigate={navigate} />
   }
   if (path.startsWith('/settings')) {
