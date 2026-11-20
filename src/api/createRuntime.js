@@ -3,14 +3,29 @@ import { createServices } from './services.js'
 import { createMockServer } from './mock/server.js'
 import { ApiError } from './ApiError.js'
 
-// Audited against LoanRun-Backend develop befc6c7 (2026-11-19).
+// Audited against LoanRun-Backend develop c48b965 (2026-11-20).
 // No failure-based fallback: a live error must never become sample financial data.
 export function isConnectedEndpoint(method,path) {
   if(path==='/api/users/me/')return ['GET','PATCH'].includes(method)
   if(['/api/settings/subscription/','/api/settings/notifications/'].includes(path))return ['GET','PATCH'].includes(method)
+  if(path==='/api/budgets/profile/')return ['GET','PUT'].includes(method)
+  if(path==='/api/loans/')return ['GET','POST'].includes(method)
+  if(/^\/api\/loans\/\d+\/$/.test(path))return ['GET','PATCH','DELETE'].includes(method)
+  if(/^\/api\/loans\/\d+\/rate-history\/$/.test(path))return ['GET','POST'].includes(method)
+  if(path==='/api/payments/')return ['GET','POST'].includes(method)
+  if(/^\/api\/payments\/\d+\/$/.test(path))return ['GET','PATCH','DELETE'].includes(method)
+  if(/^\/api\/payments\/schedule\/\d+\/confirmation\/$/.test(path))return method==='PATCH'
+  if(path==='/api/repayment-savings/')return ['GET','POST'].includes(method)
+  if(/^\/api\/repayment-savings\/\d+\/$/.test(path))return ['PATCH','DELETE'].includes(method)
+  if(path==='/api/repayment-plans/')return ['GET','PUT'].includes(method)
+  if(path==='/api/repayment-plans/preview/')return method==='POST'
+  if(path==='/api/plans/overall/')return method==='GET'
+  if(/^\/api\/budgets\/\d{4}-\d{2}\/$/.test(path))return method==='GET'
+  if(/^\/api\/budgets\/\d{4}-\d{2}\/allocation\/$/.test(path))return method==='PUT'
+  if(['/api/loan-products/options/','/api/loan-products/'].includes(path))return method==='GET'
   if(path==='/api/loans/preview/')return method==='POST'
   if(method!=='GET')return false
-  return ['/api/loans/','/api/payments/','/api/repayment-savings/','/api/settings/export/'].includes(path)
+  return ['/api/loans/','/api/payments/','/api/payments/schedule/','/api/payments/monthly-summary/','/api/repayment-savings/','/api/settings/export/'].includes(path)
     ||/^\/api\/payments\/\d+\/$/.test(path)
     ||/^\/api\/loans\/\d+\/rate-history\/$/.test(path)
 }

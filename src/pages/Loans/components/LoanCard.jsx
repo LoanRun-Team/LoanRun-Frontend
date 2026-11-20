@@ -2,7 +2,7 @@ import ProgressRing from '../../../components/Charts/ProgressRing.jsx'
 import { clampPercent } from '../../../components/Charts/chartGeometry.js'
 import { money } from '../data.js'
 import { v2Icons } from '../v2Icons.js'
-export default function LoanCard({loan,onHistory,onPlan,onRate,onDelete,canDelete=true,canPlan=true,onSavings}) {
+export default function LoanCard({loan,onHistory,onPlan,onRate,onDelete,canDelete=true,canPlan=true,onSavings,onEdit}) {
   const paid=loan.stage==='paid'||loan.balance===0,percent=clampPercent(loan.percent)
   return <article className={'lm-card owned-loan '+(paid?'is-complete':'')}>
     <header><h2>{loan.name}</h2><span className={'lm-chip '+(paid?'complete-chip':'')}>{paid?'완납':loan.variable?'변동금리':'고정금리'}</span></header>
@@ -14,6 +14,6 @@ export default function LoanCard({loan,onHistory,onPlan,onRate,onDelete,canDelet
       <div><dt>금리</dt><dd>{loan.variable?<button className="rate-history-button" onClick={onRate}><span>변동 {loan.rate}%{loan.dto.next_rate_reset_date&&<small>다음 재설정 {loan.dto.next_rate_reset_date}</small>}</span><img src={v2Icons.rateChevron} alt=""/></button>:'고정 '+loan.rate+'%'}</dd></div>
       <div><dt>{paid?'완납일':'다음 상환일 / 목표 완납'}</dt><dd>{paid?loan.finish:(loan.nextDate||'—')+' / '+loan.finish}</dd></div>
     </dl>
-    <footer><button className="lm-button subtle small" onClick={onHistory}>{paid?'상환 기록 보기':'상환 내역'}</button><button className="lm-button subtle small" disabled={!canPlan} title={!canPlan?'상환 계획 기능은 준비 중이에요':undefined} onClick={onPlan}>{paid?'완주 화면 보기':'상환 계획'}</button>{onSavings&&loan.dto.repayment_method==='BULLET'&&<button className="lm-button subtle small" onClick={onSavings}>적립 내역</button>}<button className="lm-text loan-delete-link" disabled={!canDelete} title={!canDelete?'대출 삭제 기능은 준비 중이에요':undefined} onClick={onDelete}>론런에서 삭제</button></footer>
+    <footer>{onEdit&&<button className="lm-button subtle small" onClick={onEdit}>정보 수정</button>}<button className="lm-button subtle small" onClick={onHistory}>{paid?'상환 기록 보기':'상환 내역'}</button><button className="lm-button subtle small" disabled={!canPlan} title={!canPlan?'상환 계획 기능은 준비 중이에요':undefined} onClick={onPlan}>{paid?'완주 화면 보기':'상환 계획'}</button>{onSavings&&loan.dto.repayment_method==='BULLET'&&<button className="lm-button subtle small" onClick={onSavings}>적립 내역</button>}<button className="lm-text loan-delete-link" disabled={!canDelete} title={!canDelete?'대출 삭제 기능은 준비 중이에요':undefined} onClick={onDelete}>론런에서 삭제</button></footer>
   </article>
 }

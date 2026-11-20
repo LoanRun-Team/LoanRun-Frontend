@@ -3,6 +3,7 @@ import DetailDialog from './components/DetailDialog.jsx'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import LoanOverview from './components/LoanOverview.jsx'
 import MonthlyRepayment from './components/MonthlyRepayment.jsx'
+import { ConnectedLoanOverview,ConnectedMonthlyRepayment } from './components/ConnectedHomeFinance.jsx'
 import RiskCard from './components/RiskCard.jsx'
 import ReportEntry from './components/ReportEntry.jsx'
 import RecordPaymentDialog from '../Loans/components/RecordPaymentDialog.jsx'
@@ -39,11 +40,11 @@ export default function Home({navigate}) {
   return <div className={`app-shell home-v2${plan==='Free'?' is-free':''}`}>
     <Sidebar plan={plan} onNavigate={item=>navigate(item.href)}/>
     <main className="home-content" id="main-content"><ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
-      {resource.status==='success'&&dashboard&&<>{isHybrid&&<ExampleNotice>이름·요금제는 실제 내 정보이며, 금융 현황은 아직 예시 데이터예요.</ExampleNotice>}<h1>안녕하세요, {profile.name}님.</h1>
-        <LoanOverview dashboard={dashboard} loanDetails={loans} plans={plans} onViewAll={()=>navigate('/loans')}/>
+      {resource.status==='success'&&dashboard&&<>{isHybrid&&<ExampleNotice>대출·이번 달 일정은 실제 조회 데이터예요. 위험 분석·리포트는 아직 예시 데이터예요.</ExampleNotice>}<h1>안녕하세요, {profile.name}님.</h1>
+        {isHybrid?<ConnectedLoanOverview navigate={navigate}/>:<LoanOverview dashboard={dashboard} loanDetails={loans} plans={plans} onViewAll={()=>navigate('/loans')}/>}
         <div className="dashboard-row">
-          <MonthlyRepayment summary={dashboard.monthly_summary} checklist={dashboard.monthly_checklist} onNavigate={()=>navigate('/loans/monthly')} onBudget={()=>setPanel('예산·지출')} onRecord={openRecord}/>
-          <RiskCard plan={plan} riskLabel={riskLabels[dashboard.risk_summary.level]||'자료 부족'} markerPercent={{STABLE:16,CAUTION:50,WARNING:50,DANGER:84}[dashboard.risk_summary.level]??0} risk={risk} onNavigate={setPanel}/>
+          {isHybrid?<ConnectedMonthlyRepayment navigate={navigate}/>:<MonthlyRepayment summary={dashboard.monthly_summary} checklist={dashboard.monthly_checklist} onNavigate={()=>navigate('/loans/monthly')} onBudget={()=>setPanel('예산·지출')} onRecord={openRecord}/>}
+          <RiskCard plan={plan} riskLabel={riskLabels[dashboard.risk_summary.level]||'자료 부족'} markerPercent={{STABLE:16,CAUTION:50,WARNING:50,DANGER:84}[dashboard.risk_summary.level]??0} risk={risk} onNavigate={target=>target==='위험 분석'?navigate('/risk'):setPanel(target)}/>
         </div>
         <ReportEntry report={dashboard.report_status} onOpen={()=>dashboard.report_status.locked?setPanel('PRO 시작하기'):navigate('/reports')}/>
       </>}

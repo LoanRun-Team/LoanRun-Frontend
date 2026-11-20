@@ -2,7 +2,7 @@ import LoanCard from './LoanCard.jsx'
 import { money } from '../data.js'
 import { v2Icons } from '../v2Icons.js'
 
-export default function Overview({ loans, history, navigate, onAdd, onRate, summary, totals, onDelete,canAdd=true,canDelete=true,canPlan=true,onSavings }) {
+export default function Overview({ loans, history, navigate, onAdd, onRate, summary, totals, onDelete,canAdd=true,canDelete=true,canPlan=true,onSavings,onEdit }) {
   const total = totals.amount
   const principal = totals.principal_amount + totals.extra_amount
   return <>
@@ -12,7 +12,7 @@ export default function Overview({ loans, history, navigate, onAdd, onRate, summ
       <div><p>현재 예상 완납</p><strong>{summary.estimated_payoff_date || '—'}</strong></div>
     </section>
     <section className="owned-loans-section"><header className="section-heading"><h2>보유 대출</h2><button className="lm-button primary" disabled={!canAdd} title={!canAdd?'대출 등록 기능은 준비 중이에요':undefined} onClick={onAdd}><img src={v2Icons.add} alt="" />대출 추가</button></header>
-      <div className="owned-loans-grid">{loans.map(loan => <LoanCard key={loan.id} loan={loan} canDelete={canDelete} canPlan={canPlan} onSavings={onSavings&&(()=>onSavings(loan))} onRate={() => onRate(loan)} onDelete={()=>onDelete(loan)} onHistory={() => navigate('/loans/history?loan=' + loan.id)} onPlan={() => navigate('/loans/plan?loan=' + loan.id)} />)}</div>
+      <div className="owned-loans-grid">{loans.map(loan => <LoanCard onEdit={onEdit&&(()=>onEdit(loan))} key={loan.id} loan={loan} canDelete={canDelete} canPlan={canPlan} onSavings={onSavings&&(()=>onSavings(loan))} onRate={() => onRate(loan)} onDelete={()=>onDelete(loan)} onHistory={() => navigate('/loans/history?loan=' + loan.id)} onPlan={() => navigate('/loans/plan?loan=' + loan.id)} />)}</div>
       {!loans.length&&<p className="v2-empty">아직 등록된 대출이 없어요.</p>}
     </section>
     <section className="lm-card payment-overview">
