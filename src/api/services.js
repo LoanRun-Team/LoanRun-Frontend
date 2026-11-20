@@ -15,6 +15,7 @@ export function createServices(client) {
     deleteAccount: ()=>client.request('/api/users/me/',{method:'DELETE',body:{confirm:true}}),
     dashboard: (loan_id,signal)=>get('/api/dashboard/',{loan_id},signal),
     risks: signal=>get('/api/risks/',undefined,signal),
+    latestReport: signal=>get('/api/reports/latest/',undefined,signal),
     loans: (signal,status='ACTIVE')=>get('/api/loans/',{status},signal),
     loan: (id,signal)=>get('/api/loans/'+id+'/',undefined,signal),
     createLoan: (body,key)=>client.request('/api/loans/',{method:'POST',body,...(key?{headers:{'Idempotency-Key':key}}:{})}),

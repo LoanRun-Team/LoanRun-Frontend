@@ -86,6 +86,7 @@
 
 .detail-dialog { border: 0; color: var(--text); } .detail-dialog::backdrop { background: #021e2f66; }
 .gauge-track::after { left: clamp(0px, calc(var(--risk-marker, 50%) - 2.5px), calc(100% - 5px)); }
+.risk-card .gauge-track[data-known='false']::after { display: none; }
 .gauge-labels span:not(.is-current) { color: var(--tertiary); font-weight: 400; }
 .gauge-labels span.is-current { font-weight: 500; }
 .loans-shell .monthly-schedule-heading .lm-button { border-radius: 8px; }
@@ -131,7 +132,7 @@
   .home-payment-row { display: grid; grid-template-columns: 24px max-content minmax(40px,1fr) max-content; gap: 12px; align-items: center; min-height: 60px; padding: 3px 0; border-bottom: 1px solid var(--divider);
     time { font-weight: 500; color: var(--secondary); white-space: nowrap; }
   }
-  .payment-mark { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #b0cae0; display: grid; place-items: center; flex-shrink: 0;
+  .payment-mark { width: 24px; height: 24px; padding: 0; background: transparent; border-radius: 50%; border: 1.5px solid #b0cae0; display: grid; place-items: center; flex-shrink: 0;
     &.is-paid { background: var(--primary); border: 0; }
     img { display: block; flex-shrink: 0; }
   }

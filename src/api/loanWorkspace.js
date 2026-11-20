@@ -1,6 +1,6 @@
 import { loanView,paymentView } from './loanView.js'
 import { loanTypes } from './format.js'
-import { monthlyPayments } from './connectedViews.js'
+import { monthlyPayments,withRecordedPayments } from './connectedViews.js'
 
 export async function loadLoanWorkspace(api,{page,loanId,month,historyPage=1},signal){
   const [profile,list]=await Promise.all([api.profile(signal),api.loans(signal,'ALL')])
@@ -13,7 +13,8 @@ export async function loadLoanWorkspace(api,{page,loanId,month,historyPage=1},si
     ['segments','plan'].includes(page)?api.monthly({loan_id:loanId},signal):{months:[]}])
   const savings=await Promise.all(details.filter(l=>l.repayment_method==='BULLET'&&['monthly','plan'].includes(page)).map(l=>api.savings(l.loan_id,signal)))
   const records=page==='monthly'?await monthlyPayments(api,month,loanId,signal):paymentData?.results||[]
-  return {profile,list,loans:details.map(loanView),history:records.map(paymentView),records,paymentData,plans,schedule,monthly,savings:Object.fromEntries(savings.map(s=>[s.loan_id,s])),options:{loan_types:Object.entries(loanTypes).map(([code,label])=>({code,label})),institutions:[]}}
+  const chartMonthly=['segments','plan'].includes(page)?await withRecordedPayments(api,monthly,loanId,signal):monthly
+  return {profile,list,loans:details.map(loanView),history:records.map(paymentView),records,paymentData,plans,schedule,monthly:chartMonthly,savings:Object.fromEntries(savings.map(s=>[s.loan_id,s])),options:{loan_types:Object.entries(loanTypes).map(([code,label])=>({code,label})),institutions:[]}}
 }
 
 export function paymentInput(row,dueId){
