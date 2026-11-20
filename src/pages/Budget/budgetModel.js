@@ -77,9 +77,9 @@ export function toSaveBody(m, ym) {
     })),
   }
 }
-// PUT /api/budgets/{year_month}/allocation/ 요청 본문
+// PUT /api/budgets/{year_month}/allocation/ 요청 본문. 서버는 allocation_type 을 필수로 받는다(일시상환 대출은 상환자금 적립, 나머지는 추가 상환).
 export const toAllocationBody = (a, loans) => ({
-  allocations: loans.map(l => ({ loan_id: l.loan_id, amount: a.extras[l.loan_id] || 0 })),
+  allocations: loans.map(l => ({ loan_id: l.loan_id, allocation_type: l.repayment_method === 'BULLET' ? 'REPAYMENT_SAVING' : 'EXTRA_PAYMENT', amount: a.extras[l.loan_id] || 0 })),
   reserve_amount: a.reserve || 0,
 })
 

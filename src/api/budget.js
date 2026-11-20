@@ -9,8 +9,9 @@ export function createBudgetApi({ request }) {
     getMonth: (ym, opts) => request(month(ym), opts),
     saveMonth: (ym, body, opts) => request(month(ym), { method: 'PUT', body, ...opts }),
     // 여유자금 분배 반영
-    applyAllocation: (ym, body, opts) => request(`${month(ym)}allocation/`, { method: 'PUT', body, ...opts }),
+    // 서버가 Idempotency-Key 헤더를 필수로 요구한다. 호출마다 새로 만들고, 같은 요청을 다시 보낼 때만 같은 키를 넘긴다.
+    applyAllocation: (ym, body, { idempotencyKey = crypto.randomUUID(), ...opts } = {}) => request(`${month(ym)}allocation/`, { method: 'PUT', body, headers: { 'Idempotency-Key': idempotencyKey }, ...opts }),
     // 월별 소득 입금 추가 기록(추가 수령, 비정기 입금). 같은 키로 다시 보내도 같은 응답을 받도록 Idempotency-Key 를 붙일 수 있다.
-    createIncomeEntry: (body, { idempotencyKey, ...opts } = {}) => request('/api/income-entries/', { method: 'POST', body, headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined, ...opts }),
+    createIncomeEntry: (body, { idempotencyKey = crypto.randomUUID(), ...opts } = {}) => request('/api/income-entries/', { method: 'POST', body, headers: { 'Idempotency-Key': idempotencyKey }, ...opts }),
   }
 }
