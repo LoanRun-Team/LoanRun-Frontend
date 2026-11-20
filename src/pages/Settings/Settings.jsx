@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import DetailDialog from '../Home/components/DetailDialog.jsx'
 import ApiState from '../../components/ApiState/ApiState.jsx'
-import { services,isHybrid } from '../../api/runtime.js'
+import { services } from '../../api/runtime.js'
 import { useApiResource } from '../../api/useApiResource.js'
 import { errorMessage } from '../../api/ApiError.js'
 import { won, incomeLabels } from '../../api/format.js'
@@ -25,7 +25,7 @@ export default function Settings({location,navigate}) {
     const plans=active==='income'&&finance?await services.plans(undefined,signal):null
     return {profile,finance,subscription,notifications,plans}
   })
-  const [editing,setEditing]=useState(null),[draft,setDraft]=useState(''),[panel,setPanel]=useState(null),[error,setError]=useState(''),[pending,setPending]=useState(false),[signedOut,setSignedOut]=useState(false)
+  const [editing,setEditing]=useState(null),[draft,setDraft]=useState(''),[panel,setPanel]=useState(null),[error,setError]=useState(''),[pending,setPending]=useState(false)
   const data=resource.data
   async function mutate(action) {setPending(true);setError('');try {await action();setEditing(null);resource.reload()}catch(e){setError(errorMessage(e))}finally{setPending(false)}}
   function row(label,key,value,options={}) {
@@ -34,12 +34,14 @@ export default function Settings({location,navigate}) {
       <button className="settings-button" disabled={pending}>저장</button><button className="settings-button" type="button" disabled={pending} onClick={()=>setEditing(null)}>취소</button>
     </form>:<><span className="settings-value">{value}</span>{options.toggle?<button className="settings-toggle" role="switch" aria-label={label} aria-checked={Boolean(options.checked)} disabled={pending||options.disabled} title={options.disabled&&key==='risk_signal'?'위험 신호 알림은 준비 중이에요':undefined} onClick={()=>options.onToggle?options.onToggle(!options.checked):mutate(()=>services.updateNotifications({[key]:!options.checked}))}><img src={options.checked?toggleOn:toggleOff} alt=""/></button>:options.save?<button className="settings-button" disabled={pending||options.disabled} onClick={()=>{setEditing(key);setDraft(String(options.raw??value));setError('')}}>편집</button>:options.action?<button className={'settings-button '+(options.buttonClass||'')} disabled={pending||options.disabled} title={options.disabled?'아직 사용할 수 없는 기능이에요':undefined} onClick={options.action}>{options.button}</button>:null}</>}</div>
   }
+  // 로그인이 없는 익명 세션이라 로그아웃·탈퇴 API 는 쓰지 않는다. 누르면 온보딩 처음 화면으로 보낸다.
+  const startOver=()=>navigate('/onboarding')
   async function exportData(){await mutate(async()=>{const {blob,filename}=await services.exportData({format:'csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
   const financeSave=(key,value)=>financeApi.saveFinance({...data.finance,...(key==='payday'?{income_type:'REGULAR'}:{}),[key]:Number(value)})
   return <div className={'settings-shell settings-'+active}><Sidebar active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>navigate(item.href)}/>
     <aside className="settings-nav"><h1>설정</h1><nav aria-label="설정 메뉴">{tabs.map(([id,label])=><a key={id} href={'/settings/'+id} className={active===id?'active':''} aria-current={active===id?'page':undefined} onClick={e=>{if(!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&e.button===0){e.preventDefault();setEditing(null);setError('');navigate('/settings/'+id)}}}>{label}</a>)}</nav></aside>
     <main id="main-content" className="settings-content"><ApiState status={resource.status} error={resource.error} onRetry={resource.reload}/>
-    {signedOut?<p role="status">로그아웃되었습니다. 로그인 후 다시 이용해 주세요.</p>:resource.status==='success'&&data&&<>
+    {resource.status==='success'&&data&&<>
       <header className="settings-person"><img src={avatar} alt=""/><strong>{data.profile.name}</strong><span>{data.profile.occupation}</span></header>
       <section className="settings-section"><h2>{tabs.find(([id])=>id===active)[1]}</h2>
       {error&&<p className="inline-api-error" role="alert">{error}</p>}
@@ -52,9 +54,9 @@ export default function Settings({location,navigate}) {
       </>}
       {active==='plan'&&<>{row('현재 요금제',null,data.subscription.plan_type==='PRO'?'PRO':'무료')}{data.subscription.plan_type==='PRO'?row('PRO 요금제',null,'이용 중'):row('PRO 요금제',null,'월 4,900원(예시)',{button:pending?'변경 중…':'업그레이드',buttonClass:'primary',action:()=>mutate(()=>services.updateSubscription('PRO'))})}</>}
       {active==='notifications'&&<>{row('납부 예정일','payment_due','3일 전',{toggle:true,checked:data.notifications.payment_due})}{row('위험 신호','risk_signal','',{toggle:true,checked:false,disabled:true})}{row('상환 리포트 업데이트 알림','report_update','',{toggle:true,checked:data.notifications.report_update})}</>}
-      {active==='account'&&<>{row('지출 입력',null,'직접 입력',{button:'편집',disabled:!data.finance,action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',disabled:isHybrid,action:()=>setPanel('logout')})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',disabled:isHybrid,action:()=>setPanel('delete')})}</>}
+      {active==='account'&&<>{row('지출 입력',null,'직접 입력',{button:'편집',disabled:!data.finance,action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',action:startOver})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',action:startOver})}</>}
       </section></>}
     </main>
-    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await financeApi.saveFinance(values);setPanel(null)})}/>:['logout','delete'].includes(panel)?<div className="dialog-backdrop"><section className="detail-dialog" role="dialog" aria-modal="true" aria-label={panel==='delete'?'회원 탈퇴':'로그아웃'}><h2>{panel==='delete'?'탈퇴하면 계정 데이터가 삭제돼요.':'로그아웃하시겠어요?'}</h2>{error&&<p role="alert">{error}</p>}<button disabled={pending} onClick={()=>setPanel(null)}>취소</button><button disabled={pending} onClick={()=>mutate(async()=>{if(panel==='delete')await services.deleteAccount();else await services.logout(sessionStorage.getItem('loanrun.refresh_token')||'mock-refresh-token');sessionStorage.removeItem('loanrun.access_token');sessionStorage.removeItem('loanrun.refresh_token');setPanel(null);setSignedOut(true)})}>확인</button></section></div>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
+    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await financeApi.saveFinance(values);setPanel(null)})}/>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
   </div>
 }
