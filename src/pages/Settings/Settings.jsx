@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar.jsx'
 import DetailDialog from '../Home/components/DetailDialog.jsx'
 import ApiState from '../../components/ApiState/ApiState.jsx'
@@ -36,6 +36,22 @@ export default function Settings({location,navigate}) {
   }
   // 로그인이 없는 익명 세션이라 로그아웃·탈퇴 API 는 쓰지 않는다. 누르면 온보딩 처음 화면으로 보낸다.
   const startOver=()=>navigate('/onboarding')
+  // 탈퇴 성공 후에는 중복 호출을 막고(같은 브라우저의 다음 요청은 새 익명 사용자로 처리된다) 저장된 값을 모두 비운 뒤
+  // 전체 새로고침으로 온보딩 첫 화면에 들어간다. 새로고침이 메모리 캐시도 함께 비운다.
+  // 같은 틱에 두 번 눌러도 요청이 한 번만 나가도록 state 가 아니라 ref 로 막는다.
+  const [deleted,setDeleted]=useState(false),deleting=useRef(false)
+  async function deleteAccount(){
+    if(deleting.current)return
+    deleting.current=true;setPending(true);setError('')
+    try{
+      await services.deleteAccount()
+      setDeleted(true)
+      for(const store of [globalThis.sessionStorage,globalThis.localStorage]){
+        try{Object.keys(store).filter(key=>key.startsWith('loanrun')).forEach(key=>store.removeItem(key))}catch{ /* 저장소를 못 쓰면 건너뜀 */ }
+      }
+      window.location.replace('/onboarding')
+    }catch(e){setError(errorMessage(e));setPending(false);deleting.current=false}
+  }
   async function exportData(){await mutate(async()=>{const {blob,filename}=await services.exportData({format:'csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
   const financeSave=(key,value)=>financeApi.saveFinance({...data.finance,...(key==='payday'?{income_type:'REGULAR'}:{}),[key]:Number(value)})
   return <div className={'settings-shell settings-'+active}><Sidebar active="settings" plan={data?.subscription.plan_type==='PRO'?'Pro':'Free'} onNavigate={item=>navigate(item.href)}/>
@@ -54,9 +70,9 @@ export default function Settings({location,navigate}) {
       </>}
       {active==='plan'&&<>{row('현재 요금제',null,data.subscription.plan_type==='PRO'?'PRO':'무료')}{data.subscription.plan_type==='PRO'?row('PRO 요금제',null,'이용 중'):row('PRO 요금제',null,'월 4,900원(예시)',{button:pending?'변경 중…':'업그레이드',buttonClass:'primary',action:()=>mutate(()=>services.updateSubscription('PRO'))})}</>}
       {active==='notifications'&&<>{row('납부 예정일','payment_due','3일 전',{toggle:true,checked:data.notifications.payment_due})}{row('위험 신호','risk_signal','',{toggle:true,checked:false,disabled:true})}{row('상환 리포트 업데이트 알림','report_update','',{toggle:true,checked:data.notifications.report_update})}</>}
-      {active==='account'&&<>{row('지출 입력',null,'직접 입력',{button:'편집',disabled:!data.finance,action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',action:startOver})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',action:startOver})}</>}
+      {active==='account'&&<>{row('지출 입력',null,'직접 입력',{button:'편집',disabled:!data.finance,action:()=>setPanel('expenses')})}{row('데이터 내보내기',null,'',{button:'내보내기',action:exportData})}{row('로그아웃',null,'',{button:'로그아웃',action:startOver})}{row('회원 탈퇴',null,'',{button:'탈퇴하기',buttonClass:'text',action:()=>{setError('');setPanel('delete')}})}</>}
       </section></>}
     </main>
-    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await financeApi.saveFinance(values);setPanel(null)})}/>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
+    {panel==='expenses'?<ExpensesDialog finance={data.finance} pending={pending} error={error} onClose={()=>!pending&&setPanel(null)} onSave={values=>mutate(async()=>{await financeApi.saveFinance(values);setPanel(null)})}/>:panel==='delete'?<div className="dialog-backdrop"><section className="detail-dialog" role="dialog" aria-modal="true" aria-label="회원 탈퇴"><h2>탈퇴하면 대출·재정정보·예산·납부 기록·리포트가 모두 삭제돼요.</h2><p>삭제한 데이터는 되돌릴 수 없어요. 탈퇴 후에는 온보딩 첫 화면부터 다시 시작해요.</p>{error&&<p role="alert">{error}</p>}<button disabled={pending||deleted} onClick={()=>setPanel(null)}>취소</button><button disabled={pending||deleted} onClick={deleteAccount}>탈퇴하기</button></section></div>:panel&&<DetailDialog title={panel} onClose={()=>setPanel(null)}/>}
   </div>
 }
