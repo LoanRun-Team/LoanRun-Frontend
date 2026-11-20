@@ -14,7 +14,7 @@ function repaymentNote(loan) {
   }
   return null
 }
-export default function LoanOverview({dashboard,loanDetails=[],plans=[],onViewAll}) {
+export default function LoanOverview({dashboard,loanDetails=[],plans=[],onViewAll,nextPaymentKnown=true}) {
   const loans=dashboard.loans,visible=loans.slice(0,4),next=dashboard.next_payment
   const date=next?.due_date?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short'}).format(new Date(next.due_date+'T00:00:00+09:00')):'—'
   return <section className="card loan-overview" aria-labelledby="loans-title"><div className="loan-top">
@@ -22,7 +22,7 @@ export default function LoanOverview({dashboard,loanDetails=[],plans=[],onViewAl
     <div className="loan-metrics">
       <div className="metric"><p>남은 원금</p><strong className="principal">{won(dashboard.total_remaining_principal)}</strong></div>
       <div className="metric"><div className="metric-label"><p>갚은 원금</p><span>처음 빌린 금액 기준</span></div><strong>{won(loans.reduce((sum,l)=>sum+(l.paid_principal||0),0))} · {dashboard.overall_progress_percent==null?'—':Number(dashboard.overall_progress_percent).toLocaleString('ko-KR',{maximumFractionDigits:2})+'%'}</strong></div>
-      <div className="metric"><p>다음 납부일</p><strong>{date}</strong><p>{next?next.product_name+' · 납부 예정액 '+won(next.required_amount):'예정된 납부가 없어요'}</p></div>
+      <div className="metric"><p>다음 납부일</p><strong>{date}</strong><p>{next?next.product_name+' · 납부 예정액 '+won(next.required_amount):nextPaymentKnown?'예정된 납부가 없어요':'이번 달 상환에서 확인해 주세요'}</p></div>
     </div></div>
     <div className="loan-bottom"><ul className="loan-list">{visible.map(loan=>{
       const detail=loanDetails.find(l=>l.loan_id===loan.loan_id)||{}

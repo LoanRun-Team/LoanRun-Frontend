@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { services,isMock } from '../../../api/runtime.js'
+import { services as defaultServices,isMock } from '../../../api/runtime.js'
 import { useApiResource } from '../../../api/useApiResource.js'
 import { errorMessage } from '../../../api/ApiError.js'
 import { won,monthLabel,seoulToday } from '../../../api/format.js'
@@ -15,14 +15,14 @@ function Roadmap({rows}) {
   const width=date=>date?Math.max(0,Math.min(100,((Number(date.slice(0,4))-start+Number(date.slice(5,7))/12)/range)*100)):0
   return <section className="lm-card v3-roadmap"><h2>완납 로드맵</h2><div className="lm-table-scroll"><div className="v3-roadmap-chart"><div className="v3-roadmap-axis"><span>지금</span>{ticks.map(y=><span key={y} style={{left:width(y+'-01')+'%'}}>{y}</span>)}</div>{rows.map(r=><div className="v3-roadmap-row" key={r.loan_id}><div><strong>{r.name}</strong><small>{r.bullet?'만기일시':r.loan?.dto.repayment_method==='EQUAL_PRINCIPAL'?'원금균등':'원리금균등'}</small></div><div className="v3-roadmap-track">{ticks.map(y=><i key={y} style={{left:width(y+'-01')+'%'}}/>)}<div className={'v3-roadmap-bar '+(r.bullet?'bullet':r.loan?.dto.loan_type==='MORTGAGE'?'mortgage':'credit')} style={{width:width(r.payoff)+'%'}}>{r.bullet&&<b/>}{r.handoff_date&&<><b className="v3-handoff-dot" style={{left:Math.min(100,width(r.handoff_date)/Math.max(1,width(r.payoff))*100)+'%'}}/><em style={{left:Math.min(100,width(r.handoff_date)/Math.max(1,width(r.payoff))*100)+'%'}}>추가 상환 이월</em></>}</div><span className="v3-roadmap-end" style={{left:width(r.payoff)+'%'}}>{r.payoff?r.payoff.slice(0,7).split('-').map(Number).join('.')+(r.bullet?' 만기 · 원금 한 번에 상환':' 완납 예상'):'예상일 확인 전'}</span></div></div>)}</div></div></section>
 }
-export default function OverallPlan({loans,navigate,scenario,previewData}) {
+export default function OverallPlan({loans,navigate,scenario,previewData,api=defaultServices}) {
   const [dialog,setDialog]=useState(false),[pending,setPending]=useState(false),[error,setError]=useState(''),[previewOverride,setPreviewOverride]=useState(null)
   const month=seoulToday().slice(0,7),preview=previewData||(isMock?overallPreview(scenario):null)
   const resource=useApiResource('overall:'+scenario,async signal=>{
     if(preview)return preview
-    const profile=await services.profile(signal)
+    const profile=await api.profile(signal)
     if(profile.plan_type==='FREE')return {overall:{state:'LOCKED'},budget:null,loans}
-    const [overall,budget]=await Promise.all([services.overallPlan(signal),services.budgetMonth(month,signal)])
+    const [overall,budget]=await Promise.all([api.overallPlan(signal),api.budgetMonth(month,signal)])
     return {overall,budget,loans}
   })
   const data=previewOverride||resource.data
@@ -33,7 +33,7 @@ export default function OverallPlan({loans,navigate,scenario,previewData}) {
   const manual=overall.strategy_code==='MANUAL',strategy=overall.strategy_code
   async function save(next,sum,adjusted){setPending(true);setError('');try{
     if(preview){setPreviewOverride({...data,overall:{...overall,strategy_code:adjusted?'MANUAL':preview.overall.recommended_strategy_code||preview.overall.strategy_code},budget:{...budget,allocation:{allocations:next.map((r,i)=>({...r,priority:i+1})),reserve_amount:sum.reserve}}})}
-    else {await services.saveAllocation(month,{allocations:next.map(r=>({loan_id:r.loan_id,amount:Number(r.amount)||0,allocation_type:r.bullet?'REPAYMENT_SAVING':'EXTRA_PAYMENT'})),reserve_amount:sum.reserve},crypto.randomUUID());resource.reload()}
+    else {await api.saveAllocation(month,{allocations:next.map(r=>({loan_id:r.loan_id,amount:Number(r.amount)||0,allocation_type:r.bullet?'REPAYMENT_SAVING':'EXTRA_PAYMENT'})),reserve_amount:sum.reserve},crypto.randomUUID());resource.reload()}
     setDialog(false)
   }catch(e){setError(errorMessage(e))}finally{setPending(false)}}
   if(empty)return <section className="lm-card v3-overall-empty"><h2>전체 상환 계획</h2><p>상환 리포트에서 전략을 반영하면 전체 상환 계획이 생겨요</p><button className="lm-button primary" onClick={()=>navigate('/reports')}>내게 맞는 상환 전략 보러가기</button></section>

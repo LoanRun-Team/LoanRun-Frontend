@@ -1,3 +1,4 @@
+import { previewLoanInput } from './loanRequest.js'
 export function createServices(client) {
   const get=(path,query,signal)=>client.request(path,{query,signal})
   return {
@@ -6,6 +7,7 @@ export function createServices(client) {
     finance: signal=>get('/api/budgets/profile/',undefined,signal),
     saveFinance: values=>client.request('/api/budgets/profile/',{method:'PUT',body:Object.fromEntries(['monthly_income','income_type','payday','discretionary_expenses','savings','emergency_fund','fixed_essential_expenses','variable_essential_expenses'].filter(key=>values[key]!==undefined).map(key=>[key,values[key]]))}),
     subscription: signal=>get('/api/settings/subscription/',undefined,signal),
+    updateSubscription: plan_type=>client.request('/api/settings/subscription/',{method:'PATCH',body:{plan_type}}),
     notifications: signal=>get('/api/settings/notifications/',undefined,signal),
     updateNotifications: body=>client.request('/api/settings/notifications/',{method:'PATCH',body}),
     exportData: query=>client.request('/api/settings/export/',{query,responseType:'blob'}),
@@ -15,8 +17,8 @@ export function createServices(client) {
     risks: signal=>get('/api/risks/',undefined,signal),
     loans: (signal,status='ACTIVE')=>get('/api/loans/',{status},signal),
     loan: (id,signal)=>get('/api/loans/'+id+'/',undefined,signal),
-    createLoan: body=>client.request('/api/loans/',{method:'POST',body}),
-    previewLoan: (body,signal)=>client.request('/api/loans/preview/',{method:'POST',body,signal}),
+    createLoan: (body,key)=>client.request('/api/loans/',{method:'POST',body,...(key?{headers:{'Idempotency-Key':key}}:{})}),
+    previewLoan: (body,signal)=>client.request('/api/loans/preview/',{method:'POST',body:previewLoanInput(body),signal}),
     updateLoan: (id,body)=>client.request('/api/loans/'+id+'/',{method:'PATCH',body}),
     deleteLoan: id=>client.request('/api/loans/'+id+'/',{method:'DELETE'}),
     options: signal=>get('/api/loan-products/options/',undefined,signal),
@@ -32,11 +34,11 @@ export function createServices(client) {
     updateSaving: (id,body,key)=>client.request('/api/repayment-savings/'+id+'/',{method:'PATCH',body,headers:{'Idempotency-Key':key}}),
     deleteSaving: (id,key)=>client.request('/api/repayment-savings/'+id+'/',{method:'DELETE',headers:{'Idempotency-Key':key}}),
     confirmDue: (id,unpaid_confirmed,key)=>client.request('/api/payments/schedule/'+id+'/confirmation/',{method:'PATCH',body:{unpaid_confirmed},headers:{'Idempotency-Key':key}}),
-    payments: (query,signal)=>get('/api/payments/',query,signal),
+    payments: (query={},signal)=>{const {start_date,end_date,payment_type,...rest}=query;return get('/api/payments/',{...rest,from:rest.from??start_date,to:rest.to??end_date,type:rest.type??payment_type},signal)},
     payment: (id,signal)=>get('/api/payments/'+id+'/',undefined,signal),
     createPayment: (body,idempotencyKey)=>client.request('/api/payments/',{method:'POST',body,headers:{'Idempotency-Key':idempotencyKey}}),
-    updatePayment: (id,body)=>client.request('/api/payments/'+id+'/',{method:'PATCH',body}),
-    deletePayment: id=>client.request('/api/payments/'+id+'/',{method:'DELETE'}),
+    updatePayment: (id,body,key)=>client.request('/api/payments/'+id+'/',{method:'PATCH',body,headers:{'Idempotency-Key':key}}),
+    deletePayment: (id,key)=>client.request('/api/payments/'+id+'/',{method:'DELETE',headers:{'Idempotency-Key':key}}),
     schedule: (query,signal)=>get('/api/payments/schedule/',query,signal),
     monthly: (query,signal)=>get('/api/payments/monthly-summary/',query,signal),
     rates: (id,signal)=>get('/api/loans/'+id+'/rate-history/',undefined,signal),

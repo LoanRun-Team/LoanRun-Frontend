@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import logo from '../../assets/home/loanrun-logo.svg'
+import logo from '../../assets/home/symbol.svg'
 import './Sidebar.scss'
 
 const sidebarItems = [

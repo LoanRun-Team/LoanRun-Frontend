@@ -170,7 +170,8 @@ export function createMockServer({ storage, delay = 120 } = {}) {
       }
     }
     if(key==='GET /api/payments/schedule/')return response(key,schedule(query.get('month')||'2026-11',loanId))
-    const payments=state.payments.filter(p=>(!loanId||p.loan_id===loanId)&&(!query.get('start_date')||p.paid_at>=query.get('start_date'))&&(!query.get('end_date')||p.paid_at<=query.get('end_date')))
+    const from=query.get('from')||query.get('start_date'),to=query.get('to')||query.get('end_date'),type=query.get('type')||query.get('payment_type')
+    const payments=state.payments.filter(p=>(!loanId||p.loan_id===loanId)&&(!from||p.paid_at>=from)&&(!to||p.paid_at<=to)&&(!type||p.payment_type===type))
     if(key==='GET /api/payments/'){
       const page=Number(query.get('page'))||1,page_size=Number(query.get('page_size'))||20
       return response(key,{count:payments.length,page,page_size,next_page:page*page_size<payments.length?page+1:null,previous_page:page>1?page-1:null,results:payments.toSorted((a,b)=>b.paid_at.localeCompare(a.paid_at)).slice((page-1)*page_size,page*page_size),totals:Object.fromEntries(['amount','principal_amount','interest_amount','extra_amount'].map(k=>[k,sum(payments,k)]))})
@@ -234,6 +235,11 @@ export function createMockServer({ storage, delay = 120 } = {}) {
       return new Response('\uFEFF'+rows.map(row=>row.map(escape).join(',')).join('\r\n'),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="ronrun-export.csv"'}})
     }
     if(key==='GET /api/loan-products/')return response(key,{products:example(key).products.filter(p=>(!query.get('loan_type')||p.loan_type===query.get('loan_type'))&&p.institution_id===Number(query.get('institution_id')))})
+    if(key==='PATCH /api/settings/subscription/'){
+      if(Object.keys(body).some(key=>key!=='plan_type')||!['FREE','PRO'].includes(body.plan_type))return failure('VALIDATION_ERROR','요금제를 확인해 주세요.')
+      state.profile.plan_type=body.plan_type;persist()
+      return Response.json({success:true,code:'SUBSCRIPTION_UPDATE_SUCCESS',message:'요금제 정보를 변경했습니다.',data:{...example('GET /api/settings/subscription/'),plan_type:state.profile.plan_type,pro_features:state.profile.plan_type==='FREE'?[]:example('GET /api/settings/subscription/').pro_features}})
+    }
     if(key==='GET /api/settings/subscription/')return response(key,{...example(key),plan_type:state.profile.plan_type,pro_features:state.profile.plan_type==='FREE'?[]:example(key).pro_features})
     if(method==='GET'&&fixtures[key])return response(key,example(key))
     if(key==='POST /api/auth/logout/')return response(key,{logged_out:true})

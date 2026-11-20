@@ -2,16 +2,16 @@ import { useState } from 'react'
 import LoanDialog from './LoanDialog.jsx'
 import AmountField from './AmountField.jsx'
 import ApiState from '../../../components/ApiState/ApiState.jsx'
-import { services } from '../../../api/runtime.js'
+import { services as defaultServices } from '../../../api/runtime.js'
 import { useApiResource } from '../../../api/useApiResource.js'
 import { seoulToday } from '../../../api/format.js'
 import { v2Icons } from '../v2Icons.js'
 const methods=[['EQUAL_PAYMENT','원리금균등분할상환'],['EQUAL_PRINCIPAL','원금균등분할상환'],['GRACE_INSTALLMENT','거치 후 분할상환'],['BULLET','만기일시상환']]
-export default function AddLoanDialog({options,onClose,onAdd,pending,error}) {
-  const [step,setStep]=useState(1),[manual,setManual]=useState(false)
+export default function AddLoanDialog({options,onClose,onAdd,pending,error,api=defaultServices,manualOnly=false,quote,calculator=manualOnly}) {
+  const [step,setStep]=useState(1),[manual,setManual]=useState(manualOnly)
   const [form,setForm]=useState({loan_type:options.loan_types[0]?.code||'CREDIT',institution_id:options.institutions[0]?.institution_id||'',product_id:'',bank:options.institutions[0]?.name||'',product:'',original:'',balance:'',rate:'',variable:'고정',start:seoulToday(),maturity:'',method:'EQUAL_PAYMENT',day:25,payment:'',extra:'',changeMode:'term',feeStatus:'unknown',feeRate:'',graceMonths:'',postGraceMethod:'EQUAL_PAYMENT'})
   const set=(key,value)=>setForm(prev=>({...prev,[key]:value}))
-  const products=useApiResource(form.loan_type+':'+form.institution_id,signal=>form.institution_id?services.products({loan_type:form.loan_type,institution_id:form.institution_id,loan_form:'GENERAL'},signal):Promise.resolve({products:[]}))
+  const products=useApiResource(form.loan_type+':'+form.institution_id,signal=>!manualOnly&&form.institution_id?api.products({loan_type:form.loan_type,institution_id:form.institution_id,loan_form:'GENERAL'},signal):Promise.resolve({products:[]}))
   const catalog=products.data?.products||[],selected=catalog.find(p=>p.product_id===Number(form.product_id))||catalog[0]
   const field=(key,label,type='text',required=true)=><label className="lm-field" key={key}><span>{label}</span><input name={key} type={type} required={required} max={key==='start'?seoulToday():undefined} value={form[key]} placeholder={key==='product'?'예: 전세자금대출':undefined} onChange={e=>set(key,e.target.value)}/></label>
   const amount=(key,label,helper,required=false)=><AmountField key={key} name={key} label={label} value={form[key]} onChange={v=>set(key,v)} helper={helper} required={required}/>
@@ -19,7 +19,7 @@ export default function AddLoanDialog({options,onClose,onAdd,pending,error}) {
   const kind=options.loan_types.find(t=>t.code===form.loan_type)?.label
   const invalid=Number(form.balance)>Number(form.original)
   function submit(e){e.preventDefault();if(invalid)return;onAdd({...form,product_id:manual?null:selected?.product_id,bank:manual?form.bank:options.institutions.find(i=>i.institution_id===Number(form.institution_id))?.name,product:manual?form.product:selected?.name,kind,variable:form.variable==='변동'})}
-  const title=manual?'대출 추가':step===1?'대출 형태를 선택해 주세요':step===2?'대출 종류와 상품을 선택해 주세요':'상환 방식을 확인해 주세요'
+  const title=calculator?'월 상환액 계산':manual?'대출 추가':step===1?'대출 형태를 선택해 주세요':step===2?'대출 종류와 상품을 선택해 주세요':'상환 방식을 확인해 주세요'
   const stepper=!manual&&<div className="wizard-progress"><span><b>{step}</b> / 3</span><span>{[1,2,3].map(n=><i key={n} className={n<=step?'complete':''}/>)}</span></div>
   const contractFields=<>
     {amount('original',manual?'대출 시작 원금':'최초 대출 원금',null,true)}{amount('balance','현재 남은 원금','은행 앱의 대출 잔액을 입력해 주세요',true)}
@@ -33,13 +33,13 @@ export default function AddLoanDialog({options,onClose,onAdd,pending,error}) {
   return <LoanDialog title={title} onClose={onClose} closeIcon={v2Icons.close} headerExtra={stepper} className={'add-loan-dialog v2-add-dialog '+(manual?'manual':'step-'+step)}>
     {step===1&&!manual?<><div className="loan-type-options"><button type="button" className="selected" onClick={()=>setStep(2)}><span><img src={v2Icons.shield} alt=""/></span><strong>일반 대출</strong><img src={v2Icons.selected} alt="선택됨"/></button></div><footer><button className="lm-button outline" onClick={onClose}>취소</button><button className="lm-button primary" onClick={()=>setStep(2)}>다음</button></footer></>:step===2&&!manual?<><div className="wizard-fields">{select('loan_type','대출 종류',options.loan_types.map(t=>[t.code,t.label]))}{select('institution_id','은행',options.institutions.map(i=>[i.institution_id,i.name]))}<ApiState status={products.status} error={products.error} onRetry={products.reload}/>{products.status==='success'&&(catalog.length?<label className="lm-field"><span>상품명</span><select value={selected?.product_id||''} onChange={e=>set('product_id',e.target.value)}>{catalog.map(p=><option key={p.product_id} value={p.product_id}>{p.name}</option>)}</select></label>:<p>등록된 상품이 없어요. 직접 입력해 주세요.</p>)}</div><button className="lm-text manual-link" onClick={()=>setManual(true)}>찾는 상품이 없어요 · 직접 입력하기</button><footer><button className="lm-button outline" onClick={()=>setStep(1)}>이전</button><button className="lm-button primary" disabled={products.status!=='success'||!selected} onClick={()=>{set('method',selected.repayment_methods[0]||'EQUAL_PAYMENT');setStep(3)}}>다음</button></footer></>:<form onSubmit={submit} aria-busy={pending}>{error&&<p className="inline-api-error" role="alert">{error}</p>}<fieldset disabled={pending} className="v2-fieldset">
       {!manual&&<><section className="v2-inset product-reference"><h3>상품 기본 정보 · 참고용</h3><dl><div><dt>상품명</dt><dd>{selected?.name}</dd></div><div><dt>은행</dt><dd>{options.institutions.find(i=>i.institution_id===Number(form.institution_id))?.name}</dd></div><div><dt>금리 범위</dt><dd>상품 안내에서 확인</dd></div><div><dt>상환 방식</dt><dd>{selected?.repayment_methods.map(m=>methods.find(([code])=>code===m)?.[1]).join(' · ')}</dd></div></dl></section><div className="v2-contract-heading"><strong>내 대출 정보</strong><p>실제 적용 금리와 조건은 대출 약정서 기준으로 확인해 주세요</p></div>{select('method','상환 방식',methods.filter(([code])=>selected?.repayment_methods.includes(code)))}</>}
-      <div className="loan-form-grid">{manual&&<>{field('product','대출 이름')}{select('loan_type','대출 종류',options.loan_types.map(t=>[t.code,t.label]))}</>}{contractFields}</div>
+      <div className="loan-form-grid">{manual&&<>{manualOnly&&field('bank','금융기관')}{field('product','대출 이름')}{select('loan_type','대출 종류',options.loan_types.map(t=>[t.code,t.label]))}</>}{contractFields}</div>
       {invalid&&<p className="field-error" role="alert">현재 남은 원금은 대출 시작 원금 이하여야 해요.</p>}
       {form.method!=='BULLET'&&<section className="v2-contract-change"><h3>추가 상환 후 약정 변경 방식</h3><div className="v2-radio-cards">{[['term','기간 단축형 — 월 납부액은 그대로, 완납일이 빨라져요'],['payment','만기 유지형 — 만기일은 그대로, 이후 월 납부액이 줄어요']].map(([id,label])=><button type="button" aria-pressed={form.changeMode===id} className={form.changeMode===id?'selected':''} key={id} onClick={()=>set('changeMode',id)}>{label}</button>)}</div><p className="field-helper">잘 모르면 대출 약정서나 은행 앱에서 확인할 수 있어요</p></section>}
       {manual&&<section className="v2-contract-change"><h3>중도상환수수료</h3><div className="v2-radio-cards three">{[['yes','있음'],['exempt','면제'],['unknown','잘 모르겠어요']].map(([id,label])=><button type="button" aria-pressed={form.feeStatus===id} className={form.feeStatus===id?'selected':''} key={id} onClick={()=>set('feeStatus',id)}>{label}</button>)}</div>{form.feeStatus==='yes'&&<label className="lm-field"><span>약정 수수료율 (%)</span><input name="feeRate" inputMode="decimal" required pattern="[0-9]+([.][0-9]{1,2})?" value={form.feeRate} onChange={e=>set('feeRate',e.target.value)}/></label>}</section>}
-      <div className={manual?'loan-form-grid v2-optional-fields':'v2-optional-fields'}>{amount('payment','다음 회차 납부 예정액 (선택)','비워 두면 론런이 계산해요')}{manual&&amount('extra','월 추가 상환액 (선택)')}</div>
-      {manual&&<p className="form-notice"><img src={v2Icons.info} alt=""/>입력한 정보는 내 대출에서 수정할 수 있어요</p>}
-      <footer><button type="button" className="lm-button outline" onClick={()=>manual?onClose():setStep(2)}>{manual?'취소':'이전'}</button><button className="lm-button primary" disabled={pending||invalid||!form.original||!form.balance||!form.rate||!form.maturity}>{pending?'저장 중…':'대출 추가하기'}</button></footer>
+      <div className={manual?'loan-form-grid v2-optional-fields':'v2-optional-fields'}>{amount('payment','다음 회차 납부 예정액 (선택)','비워 두면 론런이 계산해요')}{manual&&!manualOnly&&amount('extra','월 추가 상환액 (선택)')}</div>
+      {manual&&!calculator&&<p className="form-notice"><img src={v2Icons.info} alt=""/>입력한 정보는 내 대출에서 수정할 수 있어요</p>}
+      {quote&&<section className="v2-inset" role="status"><h3>계산 결과</h3><p>월 상환액 {Number(quote.estimated_monthly_payment).toLocaleString()}원</p><p>대출을 등록하지 않고 입력한 조건만 계산한 결과예요.</p></section>}<footer><button type="button" className="lm-button outline" onClick={()=>manual?onClose():setStep(2)}>{manual?'취소':'이전'}</button><button className="lm-button primary" disabled={pending||invalid||!form.original||!form.balance||form.rate===''||!form.maturity}>{pending?'처리 중…':calculator?'계산하기':'대출 추가하기'}</button></footer>
     </fieldset></form>}
   </LoanDialog>
 }

@@ -264,3 +264,12 @@
   input { padding-right: 44px; text-align: right; }
   > span { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--secondary); pointer-events: none; }
 }
+
+.loans-shell .payment-stack.with-fee {position:relative; > .fee {position:absolute;right:0;top:0;background:#aab2b8;}}
+.loans-shell .chart-legend i.fee {background:#aab2b8;}
+
+.loans-shell .history-pagination {
+  display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px;
+  margin-top: 12px; padding: 0; font-size: 14px; line-height: 20px;
+  .lm-button.small { height: 28px; padding: 0 12px; font-size: 14px; line-height: 20px; }
+}
