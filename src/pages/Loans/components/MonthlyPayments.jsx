@@ -41,3 +41,5 @@ export default function MonthlyPayments({loans,filter,onFilter,month,onMonth,sch
     </section>
   </div></div>
 }
+
+
