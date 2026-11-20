@@ -2,7 +2,7 @@ import { monthLabel, won, loanTypes, trackLabels } from './format.js'
 
 // Presentation mapping only: currency/date labels and chart series.
 export function loanView(dto) {
-  return {id:String(dto.loan_id),name:dto.product_name,bank:dto.institution_name,product:dto.institution_name+' · '+dto.product_name,balance:dto.remaining_principal,original:dto.original_principal,percent:dto.progress_percent,rate:dto.annual_rate,variable:dto.rate_type==='VARIABLE',interest:won(dto.estimated_remaining_interest),principalPayment:null,interestPayment:null,payment:dto.contractual_monthly_payment??dto.estimated_monthly_payment,day:dto.payment_day,finish:monthLabel(dto.plan?.estimated_payoff_date),nextDate:dto.next_payment?.due_date,type:loanTypes[dto.loan_type],dto}
+  return {id:String(dto.loan_id),name:dto.product_name,bank:dto.institution_name,product:dto.institution_name+' · '+dto.product_name,balance:dto.remaining_principal,original:dto.original_principal,percent:dto.progress_percent,rate:dto.annual_rate,variable:dto.rate_type==='VARIABLE',interest:won(dto.estimated_remaining_interest),principalPayment:dto.next_payment?.principal_amount??null,interestPayment:dto.next_payment?.interest_amount??null,payment:dto.contractual_monthly_payment??dto.estimated_monthly_payment,day:dto.payment_day,finish:monthLabel(dto.plan?.estimated_payoff_date),nextDate:dto.next_payment?.due_date,type:loanTypes[dto.loan_type],dto}
 }
 export function paymentView(dto) {
   return {id:dto.payment_id,loanId:String(dto.loan_id),date:dto.paid_at.replaceAll('-','.'),amount:dto.amount,principal:dto.principal_amount+dto.extra_amount,interest:dto.interest_amount,balance:null,type:dto.payment_type==='EXTRA'?'extra':'regular'}

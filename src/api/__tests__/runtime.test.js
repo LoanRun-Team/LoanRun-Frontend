@@ -4,6 +4,8 @@ import { createRuntime } from '../createRuntime.js'
 import { createServices } from '../services.js'
 import { loanFormInput } from '../loanRequest.js'
 import { loanView } from '../loanView.js'
+import { monthlyRecords,monthlyPayments,homeLoanSummary } from '../connectedViews.js'
+import { loadLoanWorkspace,paymentInput,regularPaymentDue } from '../loanWorkspace.js'
 
 const ok=data=>Response.json({success:true,code:'TEST_SUCCESS',message:'ok',data})
 const env={VITE_API_MODE:'hybrid'}
@@ -21,10 +23,10 @@ test('parallel reads share one completed session bootstrap and use cookies witho
   for(const {init} of calls){assert.equal(init.credentials,'include');assert.equal(init.headers.has('Authorization'),false)}
 })
 
-test('unavailable writes and financial forecasts are blocked before sending any request',async()=>{
+test('unimplemented dashboard and authentication APIs remain blocked before any request',async()=>{
   let calls=0
   const {services}=createRuntime({env,fetchImpl:async()=>{calls++;return ok({})}})
-  for(const action of [()=>services.dashboard(),()=>services.loan(9041),()=>services.createLoan({}),()=>services.createPayment({}),()=>services.savePlan({}),()=>services.deleteAccount()])await assert.rejects(action,{code:'API_NOT_READY'})
+  for(const action of [()=>services.dashboard(),()=>services.risks(),()=>services.logout(),()=>services.deleteAccount()])await assert.rejects(action,{code:'API_NOT_READY'})
   assert.equal(calls,0)
 })
 
@@ -111,4 +113,109 @@ test('Mock subscription changes persist and remain consistent with profile and d
   assert.equal((await reloaded.profile()).plan_type,'PRO')
   assert.equal((await reloaded.dashboard()).plan_type,'PRO')
   await assert.rejects(()=>services.updateSubscription('INVALID'),{status:400})
+})
+
+test('hybrid reads schedule and monthly summaries while authentication remains unavailable',async()=>{
+  const calls=[]
+  const {services}=createRuntime({env,fetchImpl:async url=>{calls.push(url);return ok({months:[],due_items:[]})}})
+  await services.schedule({month:'2026-11',loan_id:9041})
+  await services.monthly({from_month:'2026-06',to_month:'2026-11',loan_id:9041})
+  assert.equal(calls[1],'/api/payments/schedule/?month=2026-11&loan_id=9041')
+  assert.equal(calls[2],'/api/payments/monthly-summary/?from_month=2026-06&to_month=2026-11&loan_id=9041')
+  await assert.rejects(()=>services.deleteAccount(),{code:'API_NOT_READY'})
+})
+
+test('monthly records retain unobserved months, unknown targets and confirmed zero separately',()=>{
+  const {rows}=monthlyRecords({months:[
+    {year_month:'2026-10',observed:false,payment_count:2,actual_amount:null,principal_amount:null,interest_amount:null,extra_amount:null,target_amount:null},
+    {year_month:'2026-11',observed:true,payment_count:0,actual_amount:0,principal_amount:0,interest_amount:0,extra_amount:0,target_amount:100000}]})
+  assert.equal(rows.length,2)
+  assert.equal(rows[0].actual,null);assert.equal(rows[0].target,null);assert.equal(rows[0].paymentCount,2)
+  assert.equal(rows[1].actual,0);assert.equal(rows[1].target,100000)
+})
+
+test('calendar payment reads include every filtered page and correct leap-year month boundary',async()=>{
+  const calls=[],controller=new AbortController()
+  const rows=await monthlyPayments({payments:async(query,signal)=>{
+    calls.push({query,signal});return {results:[{payment_id:query.page}],next_page:query.page===1?2:null}
+  }},'2028-02',9041,controller.signal)
+  assert.deepEqual(rows,[{payment_id:1},{payment_id:2}])
+  assert.equal(calls[0].query.from,'2028-02-01');assert.equal(calls[0].query.to,'2028-02-29')
+  assert.equal(calls[1].query.loan_id,9041);assert.equal(calls[1].signal,controller.signal)
+})
+
+test('home loan summary uses real list balances and never fabricates payoff or due dates',()=>{
+  const summary=homeLoanSummary({total_remaining_principal:700,loans:[{loan_id:9041,original_principal:1000,paid_principal:300}]})
+  assert.equal(summary.total_remaining_principal,700);assert.equal(summary.overall_progress_percent,30)
+  assert.equal(summary.next_payment,null)
+  assert.equal(homeLoanSummary({total_remaining_principal:0,loans:[]}).overall_progress_percent,null)
+})
+
+test('connected writes preserve methods, JSON numbers and caller-provided idempotency keys',async()=>{
+  const calls=[]
+  const {services}=createRuntime({env,fetchImpl:async(url,init)=>{calls.push({url,init});return ok({})}})
+  await services.saveFinance({monthly_income:3000000,income_type:'REGULAR',payday:25,fixed_essential_expenses:1000000,variable_essential_expenses:0,discretionary_expenses:0,savings:0,emergency_fund:null,user_id:99})
+  await services.createLoan({remaining_principal:1000000},'loan-key')
+  await services.updateLoan(9041,{remaining_principal:900000})
+  await services.saveRate(9041,{effective_date:'2026-11-20',annual_rate:4.2})
+  await services.createPayment({loan_id:9041,amount:10000},'create-key')
+  await services.updatePayment(8402,{amount:15000},'update-key')
+  await services.deletePayment(8402,'delete-key')
+  await services.createSaving({loan_id:9041,amount:50000,saved_at:'2026-11-20'},'saving-key')
+  await services.updateSaving(700,{amount:60000},'saving-update-key')
+  await services.deleteSaving(700,'saving-delete-key')
+  await services.savePlan({plans:[{loan_id:9041,mode:'EXTRA_AMOUNT',extra_monthly_payment:10000}],preview_version:'server-token'},'plan-key')
+  const finance=calls.find(c=>c.url==='/api/budgets/profile/')
+  assert.equal(finance.init.method,'PUT');assert.equal(JSON.parse(finance.init.body).monthly_income,3000000)
+  assert.equal(Object.hasOwn(JSON.parse(finance.init.body),'user_id'),false)
+  for(const [path,key] of [['/api/loans/','loan-key'],['/api/payments/','create-key'],['/api/repayment-plans/','plan-key']])assert.equal(calls.find(c=>c.url===path).init.headers.get('Idempotency-Key'),key)
+  const patch=calls.find(c=>c.url==='/api/payments/8402/'&&c.init.method==='PATCH')
+  assert.equal(patch.init.headers.get('Idempotency-Key'),'update-key')
+  const removal=calls.find(c=>c.url==='/api/payments/8402/'&&c.init.method==='DELETE')
+  assert.equal(removal.init.headers.get('Idempotency-Key'),'delete-key');assert.equal(removal.init.body,undefined)
+  for(const {init} of calls){assert.equal(init.credentials,'include');assert.equal(init.headers.has('Authorization'),false)}
+})
+
+test('loan overview stays available without detail, catalog or calendar requests',async()=>{
+  const api=createRuntime({env:{VITE_API_MODE:'mock'}}).services
+  api.loan=api.options=api.products=api.schedule=()=>{throw new Error('unexpected unrelated request')}
+  const data=await loadLoanWorkspace(api,{page:'overview',month:'2026-11'},new AbortController().signal)
+  assert.ok(data.loans.length)
+  assert.equal(data.loans[0].id,String(data.list.loans[0].loan_id))
+  assert.equal(data.schedule,null)
+  assert.equal(data.options.institutions.length,0)
+})
+
+test('monthly payments do not depend on failing loan detail requests',async()=>{
+  const api=createRuntime({env:{VITE_API_MODE:'mock'}}).services
+  api.loan=()=>{throw new Error('detail unavailable')}
+  const data=await loadLoanWorkspace(api,{page:'monthly',month:'2026-11'},new AbortController().signal)
+  assert.ok(data.loans.length)
+  assert.ok(Array.isArray(data.schedule.due_items))
+})
+
+test('a required plan detail error is surfaced rather than replaced with list or Mock data',async()=>{
+  const api=createRuntime({env:{VITE_API_MODE:'mock'}}).services
+  const error=Object.assign(new Error('Service unavailable'),{status:503,code:'SERVICE_UNAVAILABLE'})
+  api.loan=()=>Promise.reject(error)
+  await assert.rejects(()=>loadLoanWorkspace(api,{page:'plan',month:'2026-11'},new AbortController().signal),{status:503,code:'SERVICE_UNAVAILABLE'})
+})
+
+test('payment input separates create-only loan id from editable fields and automatic breakdown',()=>{
+  const body=paymentInput({loanId:'9041',date:'2026-11-20',amount:10000,type:'extra',usedSavings:2000},undefined)
+  assert.deepEqual(body,{paid_at:'2026-11-20',amount:10000,payment_type:'EXTRA',due_item_id:null,savings_used_amount:2000})
+  assert.equal(Object.hasOwn(body,'loan_id'),false)
+  assert.equal(Object.hasOwn(body,'fee_amount'),false)
+  const manual=paymentInput({date:'2026-11-20',amount:10000,type:'regular',breakdown:{principal:7000,extra:0,interest:2000,fee:1000}},402)
+  assert.equal(manual.due_item_id,402)
+  assert.equal(manual.principal_amount+manual.extra_amount+manual.interest_amount+manual.fee_amount,10000)
+})
+
+test('regular payment uses the oldest unpaid due returned by the backend, regardless of payment month',async()=>{
+  const calls=[]
+  const api={loan:async id=>{calls.push(id);return {next_payment:{due_item_id:301,due_date:'2026-10-25',outstanding_amount:10000}}}}
+  assert.equal(await regularPaymentDue(api,'9041'),301)
+  assert.deepEqual(calls,[9041])
+  await assert.rejects(()=>regularPaymentDue({loan:async()=>({next_payment:null})},9041),/정기 회차/)
+  await assert.rejects(()=>regularPaymentDue({loan:async()=>{throw Object.assign(new Error('unavailable'),{status:503})}},9041),{status:503})
 })
