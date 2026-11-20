@@ -9,6 +9,8 @@ export function isConnectedEndpoint(method,path) {
   if(path==='/api/users/me/')return ['GET','PATCH'].includes(method)
   if(['/api/settings/subscription/','/api/settings/notifications/'].includes(path))return ['GET','PATCH'].includes(method)
   if(path==='/api/budgets/profile/')return ['GET','PUT'].includes(method)
+  if(path==='/api/risks/')return method==='GET'
+  if(path==='/api/reports/latest/')return method==='GET'
   if(path==='/api/loans/')return ['GET','POST'].includes(method)
   if(/^\/api\/loans\/\d+\/$/.test(path))return ['GET','PATCH','DELETE'].includes(method)
   if(/^\/api\/loans\/\d+\/rate-history\/$/.test(path))return ['GET','POST'].includes(method)

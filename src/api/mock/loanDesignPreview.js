@@ -48,29 +48,3 @@ export function previewSchedule(schedule,loan,scenario) {
   Object.assign(next.monthly_totals,{scheduled_repayment:sum('required_amount'),actual_repayment:sum('paid_required_amount'),remaining_required_amount:sum('outstanding_amount'),remaining_amount:sum('outstanding_amount'),planned_extra_amount:sum('planned_extra_amount'),actual_extra_amount:sum('paid_extra_amount'),completed_count:next.due_items.filter(d=>d.status==='PAID').length})
   return next
 }
-export function readDesignDrafts(storage=globalThis.localStorage) {
-  try{return JSON.parse(storage?.getItem('loanrun.design-v2-drafts')||'null')||{confirmations:{},savings:{},contracts:{},payments:{}}}catch{return {confirmations:{},savings:{},contracts:{},payments:{}}}
-}
-export function saveDesignDrafts(value,storage=globalThis.localStorage) {
-  try{storage?.setItem('loanrun.design-v2-drafts',JSON.stringify(value))}catch{/* The current mock session remains usable. */}
-}
-export function updateSavingsPreview(data,record,remove=false) {
-  const next=structuredClone(data),old=next.records.find(r=>r.id===record.id)
-  next.records=next.records.filter(r=>r.id!==record.id)
-  if(!remove)next.records.unshift(record)
-  const difference=(remove?0:record.amount)-(old?.amount||0)
-  next.prepared+=difference;next.remaining=Math.max(0,next.remaining-difference)
-  next.monthlyActual=Math.max(0,(next.monthlyActual||0)+difference)
-  next.monthlyPercent=next.monthlyTarget?Math.min(100,next.monthlyActual/next.monthlyTarget*100):0
-  next.comparisons.all.amount=next.prepared
-  next.comparisons.half.amount=Math.round(next.prepared/2)
-  // New savings totals invalidate the fixed forecast examples.
-  // The future backend comparison response will provide fresh forecasts.
-  for(const quote of Object.values(next.comparisons)){quote.interestSaving=null;quote.net=null;quote.fee=null}
-  return next
-}
-export function updateFeePreview(data,fee) {
-  const next=structuredClone(data)
-  for(const value of Object.values(next.comparisons)){value.fee=fee;value.net=value.interestSaving==null?null:value.interestSaving-fee}
-  return next
-}
