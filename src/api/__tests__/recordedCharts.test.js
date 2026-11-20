@@ -4,7 +4,7 @@ import {withRecordedPayments,monthlyRecords} from '../connectedViews.js'
 import {planView,remainingCalendarMonths} from '../loanView.js'
 
 test('recorded chart totals include paginated extras and fees without confirming an unobserved month',async()=>{
-  const source={months:[{year_month:'2026-10',observed:false,actual_amount:null,principal_amount:null,interest_amount:null,extra_amount:null,target_amount:null},{year_month:'2026-11',observed:false,data_status:'INSUFFICIENT',actual_amount:null,principal_amount:null,interest_amount:null,extra_amount:null,target_amount:200}]}
+  const source={months:[{year_month:'2026-10',observed:false,actual_amount:null,principal_amount:null,interest_amount:null,extra_amount:null,target_amount:null},{year_month:'2026-11',observed:false,data_status:'INSUFFICIENT',payment_count:2,actual_amount:null,principal_amount:null,interest_amount:null,extra_amount:null,target_amount:200}]}
   const calls=[],signal=new AbortController().signal
   const monthly=await withRecordedPayments({payments:async(query,s)=>{
     calls.push([query,s]);return {results:[{paid_at:'2026-11-20',amount:query.page===1?110:55,principal_amount:query.page===1?100:0,extra_amount:query.page===1?0:50,interest_amount:query.page===1?10:0,fee_amount:query.page===1?0:5}],next_page:query.page===1?2:null}
@@ -20,13 +20,22 @@ test('recorded chart totals include paginated extras and fees without confirming
 })
 
 test('server-confirmed actuals win, missing plans stay unknown, and failure does not become zero',async()=>{
-  const source={months:[{year_month:'2026-11',observed:true,data_status:'RECORDED',actual_amount:0,principal_amount:0,extra_amount:0,interest_amount:0,target_amount:null}]}
+  const source={months:[{year_month:'2026-11',observed:false,data_status:'RECORDED',payment_count:1,actual_amount:0,principal_amount:0,extra_amount:0,interest_amount:0,target_amount:null}]}
   const api={payments:async()=>({results:[{paid_at:'2026-11-20',amount:100,principal_amount:100,extra_amount:0,interest_amount:0,fee_amount:0}],next_page:null})}
   const monthly=await withRecordedPayments(api,source)
   assert.equal(monthly.months[0].actual_amount,0)
   const plan=planView({plans:[],aggregate:{},progress:{}},monthly,{amount:0,principal_amount:0,extra_amount:0,interest_amount:0})
   assert.deepEqual(plan.planned,[null])
   await assert.rejects(withRecordedPayments({payments:async()=>{throw Error('offline')}},source),/offline/)
+})
+
+test('payment history is not requested when every month is observed or the server reports no payments',async()=>{
+  const api={payments:async()=>{throw Error('unexpected request')}}
+  const observed={months:[{year_month:'2026-11',observed:true,payment_count:3,actual_amount:100}]}
+  const none={months:[{year_month:'2026-11',observed:false,payment_count:0,actual_amount:null},{year_month:'2026-10',observed:false,actual_amount:null}]}
+  assert.equal(await withRecordedPayments(api,observed,7),observed)
+  assert.equal(await withRecordedPayments(api,none,7),none)
+  assert.deepEqual((await withRecordedPayments(api,{months:[]},7)).months,[])
 })
 
 test('remaining calendar months round up partial months and clamp month-end anniversaries',()=>{
