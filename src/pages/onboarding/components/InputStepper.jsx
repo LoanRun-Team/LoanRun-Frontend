@@ -1,4 +1,4 @@
-// Figma: Stepper / 입력 단계 — "1 / 3" + 막대 3개. 온보딩 S-01b~c(대출 입력)에서 사용.
+// 입력 단계 표시("1 / 3"과 막대 3개). 대출 입력 단계에서 쓴다.
 const TOTAL = 2
 
 export default function InputStepper({ step }) {

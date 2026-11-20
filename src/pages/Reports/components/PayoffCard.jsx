@@ -1,6 +1,6 @@
 import { GRADES, gradeLabel, payoffHeadline, scenarioRows } from '../reportModel.js'
 
-// Figma F4: Card / 완납 가능성. 현재 속도 기준 등급과 3단계 게이지, 시나리오 3행(현재 속도 · 금리 +1%p · 소득 −5%).
+// 완납 가능성. 현재 속도 기준 등급과 3단계 게이지, 시나리오 3행(현재 속도, 금리 +1%p, 소득 −5%)을 보여 준다.
 export default function PayoffCard({ report }) {
   const current = report.payoff_scenarios?.find(s => s.type === 'CURRENT')
   if (!current) return <section className="rp-card"><h2>완납 가능성</h2><p className="rp-empty">등록된 대출이 없어 계산할 수 없어요.</p></section>

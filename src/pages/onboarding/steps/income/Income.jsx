@@ -5,7 +5,7 @@ import SelectField from '../../components/SelectField.jsx'
 import Banner from '../../components/Banner.jsx'
 import { incomeTypeOptions, occupationOptions, paymentDayOptions } from '../../data.js'
 
-// Figma: S-02A 소득 / S-02A-b 비정기 소득
+// 소득 입력(정기, 비정기).
 // 소득 유형이 정기면 월 실수령액 + 지급일, 비정기면 "예상 월 소득(최근 3개월 평균)"만 받는다. (income_type·monthly_income·payday 는 프로필 API 필드)
 export default function Income({ form, setForm }) {
   const income = form.income

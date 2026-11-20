@@ -3,7 +3,7 @@ import Dialog from './Dialog.jsx'
 import MoneyField from './MoneyField.jsx'
 import { incomeTotal, monthName, surplusOf, won, fmt } from '../budgetModel.js'
 
-// Figma: 이번 달 금액 입력 (D1-e 정기 소득 / D1-e-1 추가 수령 기록 / D1-e-2 비정기 소득)
+// 이번 달 금액 입력. 정기 소득, 추가 수령 기록, 비정기 소득 화면을 함께 쓴다.
 // 소득 유형(정기·비정기)은 온보딩에서 정한 값을 따르고, 소득·지출·저축 금액은 이번 달 실제 값으로 고칠 수 있다.
 const DAY_OPTIONS = (ym, lastDay) => Array.from({ length: lastDay }, (_, i) => ({ value: i + 1, label: `${monthName(ym)} ${i + 1}일` }))
 

@@ -4,7 +4,7 @@
 // 대출 종류 표시명(loan_type). 선택 목록은 API 가 주지만, 이미 등록한 대출을 표시할 때는 코드만 있어서 여기서 변환한다.
 export const loanTypeLabels = { CREDIT: '신용대출', MORTGAGE: '주택담보대출', JEONSE: '전세자금대출', STUDENT: '학자금대출', AUTO: '자동차대출', OTHER: '기타' }
 
-// S-01c 상환 방법 → repayment_method. (Figma 의 "변동금리" 화면은 상환 방법이 아니라 rate_type=VARIABLE)
+// 상환 방법을 repayment_method 로 바꾼다. 화면의 "변동금리"는 상환 방법이 아니라 rate_type=VARIABLE 이다.
 export const repaymentMethods = [
   { value: 'EQUAL_PAYMENT', label: '원리금균등분할상환' },
   { value: 'EQUAL_PRINCIPAL', label: '원금균등분할상환' },

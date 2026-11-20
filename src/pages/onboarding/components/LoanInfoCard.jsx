@@ -4,7 +4,7 @@ import { methodLabel } from '../data.js'
 import { fmtNumber } from '../format.js'
 import { fmtYM, loanChipLabel } from '../planModel.js'
 
-// Figma: S-03c 대출 정보 카드(만기일시) — 상환 방식·남은 원금·금리·만기·매월 내는 이자 + 현재까지 마련한 상환자금(선택)
+// 만기일시 대출 정보 카드. 상환 방식, 남은 원금, 금리, 만기, 매월 내는 이자와 현재까지 마련한 상환자금(선택)을 보여 준다.
 // 마련한 상환자금은 대출 등록 때만 받는 값(initial_savings_balance)이라, 입력을 마치면(onSavings) 대출을 다시 등록해 반영한다.
 export default function LoanInfoCard({ loan, onSavings, busy, error }) {
   const [text, setText] = useState(loan.initial_savings_balance || null)

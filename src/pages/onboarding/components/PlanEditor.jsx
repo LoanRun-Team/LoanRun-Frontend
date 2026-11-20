@@ -7,7 +7,7 @@ import { PREFERENCES, preferenceText } from '../preferences.js'
 import { fmtNumber } from '../format.js'
 import { fmtYM, isLump, savingChips, tabsFor, targetYM } from '../planModel.js'
 
-// Figma: S-03b / S-03c 조기 상환 설정 — 세그먼트 탭 + 왼쪽(입력) / 오른쪽(계산 결과) 카드
+// 조기 상환 설정. 세그먼트 탭, 왼쪽 입력 카드, 오른쪽 계산 결과 카드로 이뤄진다.
 const EXTRA_CHIPS = [50000, 100000, 200000]
 const thisYear = new Date().getFullYear()
 const MONTHS = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: String(i + 1) }))

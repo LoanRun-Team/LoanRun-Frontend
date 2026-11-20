@@ -1,6 +1,6 @@
-// 위험 분석 mock. 응답 필드는 Notion 명세(재정 위험 분석 조회)와 같다.
-// 값은 월별 예산 mock(monthView)과 등록한 대출에서 명세의 산식대로 계산한다. 계산식은 화면 확인용이며 실제 값은 서버 엔진이 만든다.
-// PRO 여부는 sessionStorage 'loanrun-mock-plan' 이 'FREE' 일 때만 403 PRO_REQUIRED 로 돌려준다(기본 PRO).
+// 위험 분석 mock. 필드는 Notion 명세(재정 위험 분석 조회)와 같다.
+// 값은 월별 예산 mock(monthView)과 등록한 대출에서 명세의 산식대로 계산하고, 실제 값은 서버가 만든다.
+// PRO 여부는 sessionStorage 'loanrun-mock-plan' 이 'FREE' 일 때만 403 PRO_REQUIRED 로 돌려준다(기본은 PRO).
 import { listLoans } from './loans.js'
 import { getProfile } from './plans.js'
 import { isMonth, monthView } from './budgets.js'
@@ -165,7 +165,7 @@ export function parseRiskQuery(query) {
 }
 export const loanExists = id => listLoans().some(l => l.loan_id === id)
 
-// ── POST /api/risks/simulate/ ───────────────────────────────────────────
+// POST /api/risks/simulate/
 // 요청: loan_ids(선택), rate_increase_pp(0~5), income_change_pct(-100~100). 변동금리 대출 잔액에만 금리 상승분이 월 이자로 붙는다.
 // 서버 형식: { scenario_type: CURRENT|RATE_UP|INCOME_DOWN|EXPENSE_UP, loan_ids? }. RATE_UP 은 금리 +1%p, INCOME_DOWN 은 소득 -5% 로 고정이다.
 const SCENARIO_PARAMS = { CURRENT: {}, RATE_UP: { rate_increase_pp: 1 }, INCOME_DOWN: { income_change_pct: -5 }, EXPENSE_UP: {} }

@@ -1,7 +1,7 @@
 import { compareLabel, manWon, pct1 } from '../reportModel.js'
 
-// Figma F4: Card / 페이스 분석 · 상환 속도. 내 상환 속도(월 원금 상환률·6개월 원금 감소율)를 보여 준다.
-// 또래 비교가 DEMO 가 아니면(자료 부족·동의 안 함) F4-n 처럼 안내와 "비교 기준 변경"을 보여 준다.
+// 페이스 분석. 내 상환 속도(월 원금 상환률, 6개월 원금 감소율)를 보여 준다.
+// 또래 비교가 DEMO 가 아니면(자료 부족, 동의 안 함) 안내와 "비교 기준 변경"을 보여 준다.
 export default function PaceCard({ report, onCompare }) {
   const pace = report.pace_analysis
   const comparison = report.comparison

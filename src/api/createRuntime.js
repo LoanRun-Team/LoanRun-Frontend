@@ -10,7 +10,7 @@ import { ApiError } from './ApiError.js'
 
 export function isConnectedEndpoint(method, path) {
   if (path === '/api/users/me/')
-    return ['GET', 'PATCH'].includes(method)
+    return ['GET', 'PATCH', 'DELETE'].includes(method)
 
   if ([
     '/api/settings/subscription/',

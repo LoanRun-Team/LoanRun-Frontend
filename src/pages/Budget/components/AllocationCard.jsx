@@ -4,7 +4,7 @@ import plus from '../../../assets/onboarding/icon-plus.svg'
 import info from '../../../assets/onboarding/icon-info.svg'
 import { STEP, allocationSum, fmt, labelYM, loanName, payoffYM, won } from '../budgetModel.js'
 
-// Figma: 이번달 여유자금 배분 — 대출별 추가 상환과 남겨두기를 나누고, 합계가 여유자금과 같을 때만 반영할 수 있다.
+// 이번 달 여유자금 배분. 대출별 추가 상환과 남겨두기를 나누고, 합계가 여유자금과 같을 때만 반영할 수 있다.
 function AmountStepper({ label, value, onChange, disabled }) {
   const set = n => onChange(Math.max(0, n))
   return <div className="bd-alloc-row">

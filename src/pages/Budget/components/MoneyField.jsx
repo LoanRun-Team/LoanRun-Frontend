@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 import { fmt } from '../budgetModel.js'
 
-// 금액 입력 — 우측 정렬, 천 단위 쉼표, 단위 "원". 값은 number | null.
+// 금액 입력. 오른쪽 정렬에 천 단위 쉼표, 단위는 "원"이고 값은 number | null 이다.
 export default function MoneyField({ label, value, onChange, hideLabel = false, placeholder = '0' }) {
   const id = useId()
   const [text, setText] = useState(() => (value == null ? '' : fmt(value)))

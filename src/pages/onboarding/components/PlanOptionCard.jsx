@@ -1,4 +1,4 @@
-// Figma: SelectCard(가로형) — 아이콘 박스 40 + 제목 + 설명. selected 는 primary 2px + primary-light, 아이콘 박스 흰색.
+// 가로형 선택 카드(아이콘, 제목, 설명). 선택되면 강조색 테두리와 연한 배경이 된다.
 export default function PlanOptionCard({ icon, title, description, selected, onSelect, name }) {
   return <button type="button" role="radio" aria-checked={selected} name={name} className={`ob-plan-option${selected ? ' selected' : ''}`} onClick={onSelect}>
     <span className="ob-plan-option-icon"><img src={icon} alt="" width="20" height="20" /></span>

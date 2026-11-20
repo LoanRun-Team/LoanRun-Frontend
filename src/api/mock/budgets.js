@@ -1,5 +1,5 @@
-// 월별 예산 mock. 요청/응답 필드는 Notion 명세(월별 예산·재정정보 조회, 월별 재정정보 입력·수정, 여유자금 분배 반영)와 같다.
-// 월별 입력값은 sessionStorage 에 둔다. 입력하지 않은 달은 온보딩에서 저장한 기본 재정정보(source: DEFAULT)로 채운다.
+// 월별 예산 mock. 필드는 Notion 명세(월별 예산 조회·저장, 여유자금 배분)와 같다.
+// 월별 입력값은 sessionStorage 에 두고, 입력하지 않은 달은 온보딩의 기본 재정정보(source: DEFAULT)로 채운다.
 import { listLoans } from './loans.js'
 import { getProfile } from './plans.js'
 

@@ -3,7 +3,7 @@ import { riskApi } from '../../../api/index.js'
 import { EXPENSE_SHOCK, SCENARIO_TABS, emergencyRunway, hasEmergency, limitGroups, lumpNeeds, scenarioStats } from '../scenarioModel.js'
 import { won } from '../../Budget/budgetModel.js'
 
-// Figma: E1 / E1-j / H11 — 위험 시나리오(4탭) · 어디까지 버틸 수 있나요 · 비상자금으로 버티는 기간 · 한 번에 필요한 돈
+// 위험 시나리오(4탭), 어디까지 버틸 수 있나요, 비상자금으로 버티는 기간, 한 번에 필요한 돈 카드.
 export default function ScenarioCards({ data, budget, loans }) {
   const [tab, setTab] = useState('CURRENT')
   const [sims, setSims] = useState({})

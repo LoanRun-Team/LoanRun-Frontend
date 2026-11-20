@@ -1,4 +1,4 @@
-// Figma: Step nav — 이전(outline) / 다음(primary), 높이 52. 첫 스텝의 이전은 비활성(opacity 40%), hidePrev 면 이전 버튼을 숨긴다.
+// 이전(outline)·다음(primary) 이동 버튼. 첫 스텝의 이전은 비활성이고, hidePrev 면 이전 버튼을 숨긴다.
 export default function StepNav({ onBack, onNext, canNext, isFirst, busy, error, nextLabel = '다음', hidePrev = false, bar = false }) {
   return <nav className={`ob-step-nav${bar ? ' in-bar' : ''}`} aria-label="단계 이동">
     {error && <p className="ob-error ob-nav-error" role="alert">{error}</p>}

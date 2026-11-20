@@ -1,7 +1,7 @@
 import iconUpload from '../../../assets/reports/icon-upload.svg'
 import { compareLabel, periodLabel, updatedLabel } from '../reportModel.js'
 
-// Figma F4: 제목 + AI 리포트 칩 + PDF 저장, 아래에 리포트 메타(갱신일 · 분석 기간 · 비교 기준).
+// 제목, AI 리포트 칩, PDF 저장 버튼과 리포트 메타(갱신일, 분석 기간, 비교 기준).
 export default function ReportHeader({ report, onCompare }) {
   const compare = report ? compareLabel(report.comparison) : ''
   return <>

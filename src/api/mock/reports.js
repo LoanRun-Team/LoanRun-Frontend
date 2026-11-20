@@ -1,6 +1,6 @@
-// 상환 리포트 mock. 응답 필드는 Notion 명세(최종본 2026.11.16)의 reports 계열과 같다.
-// 값은 등록한 대출·월별 예산 mock 에서 계산한다. 계산식은 화면 확인용 근사치이며 실제 값은 서버 엔진이 만든다.
-// 확인용 스위치(sessionStorage): 'loanrun-mock-plan'='FREE' → 403 PRO_REQUIRED, 'loanrun-mock-report-fail'='1' → 생성 실패.
+// 상환 리포트 mock. 필드는 Notion 명세(최종본 2026.11.16)의 reports 계열과 같다.
+// 값은 등록한 대출과 월별 예산 mock 에서 계산하고, 계산식은 화면 확인용 근사치이다.
+// 확인용 스위치(sessionStorage): 'loanrun-mock-plan'='FREE' 이면 403 PRO_REQUIRED, 'loanrun-mock-report-fail'='1' 이면 생성 실패.
 import { listLoans } from './loans.js'
 import { getProfile } from './plans.js'
 import { monthView } from './budgets.js'
@@ -24,14 +24,14 @@ export const proRequired = () => ({ status: 403, body: { success: false, code: '
 const balanceOf = l => (l.loan_form === 'CREDIT_LINE' ? l.used_amount : l.remaining_principal) ?? 0
 const isBullet = l => l.repayment_method === 'BULLET'
 
-// ── 데이터 버전: 대출·재정·적용한 전략이 바뀌면 달라진다(리포트 stale, 전략 STALE 판단에 쓴다) ──
+// 데이터 버전: 대출·재정·적용한 전략이 바뀌면 달라진다(리포트 stale, 전략 STALE 판단에 쓴다)
 export function dataRevision() {
   const loans = listLoans().map(l => [l.loan_id, balanceOf(l), l.annual_rate, l.estimated_monthly_payment])
   const view = monthView(currentYM())
   return `rev-${hash(JSON.stringify([loans, view.monthly_income, view.discretionary_expenses, view.allocation.total_allocated, read().strategy?.code ?? null]))}`
 }
 
-// ── 월 단위 시뮬레이션: 추가 상환 배분(loanId → 원)을 넣으면 대출별 완납일·총 이자를 돌려준다 ──
+// 월 단위 시뮬레이션: 추가 상환 배분(loanId → 원)을 넣으면 대출별 완납일·총 이자를 돌려준다
 function simulate(loan, extra) {
   const r = loan.annual_rate / 1200
   let balance = balanceOf(loan)
@@ -50,7 +50,7 @@ function simulate(loan, extra) {
   return { payoff_date: ymd(payoff), interest: Math.round(interest) }
 }
 
-// ── 전략 후보 ──────────────────────────────────────────────────────────
+// 전략 후보
 const STRATEGY_COPY = {
   RATE_RISK: { label: '금리 위험 대비', advantages: ['변동금리 대출 노출을 빠르게 줄여요.'], disadvantages: ['고정 고금리 대출의 이자 절감은 늦어질 수 있어요.'], reason: '변동금리 노출을 먼저 줄여요.' },
   INTEREST_SAVING: { label: '이자 절감', advantages: ['높은 이율의 원금을 먼저 줄여요.'], disadvantages: ['변동금리 변동 위험이 오래 남을 수 있어요.'], reason: '높은 금리부터 갚아 예상 이자를 줄여요.' },
@@ -192,7 +192,7 @@ export function strategyView(reportId) {
   }
 }
 
-// ── 반영 미리보기·저장(상환 계획 시뮬레이션·저장 API 의 전략 분기) ─────────────
+// 반영 미리보기·저장(상환 계획 시뮬레이션·저장 API 의 전략 분기)
 export const isStrategyBody = body => body && body.report_id != null
 
 export function validateStrategyBody(body, withPreview) {
@@ -256,7 +256,7 @@ export function applyStrategy(body) {
   }
 }
 
-// ── 또래 비교 기준·동의 ────────────────────────────────────────────────
+// 또래 비교 기준·동의
 const AGE_GROUPS = ['AGE_20S', 'AGE_30S', 'AGE_40S', 'AGE_50_PLUS']
 export const comparisonSettings = () => ({ consented: true, age_group: 'AGE_30S', source_type: 'DEMO', income_decile: 3, ...read().comparison })
 export function validateComparisonBody(b) {
@@ -273,7 +273,7 @@ export function saveComparison(b) {
   return comparisonSettings()
 }
 
-// ── 리포트 본문 ────────────────────────────────────────────────────────
+// 리포트 본문
 function monthsSinceStart(loans) {
   const earliest = loans.map(l => l.start_date).filter(Boolean).sort()[0]
   if (!earliest) return 0
@@ -352,8 +352,8 @@ function reportBody(state) {
   }
 }
 
-// ── 생성·조회 ──────────────────────────────────────────────────────────
-// 상태 전이: POST → PENDING → (조회 1회) RUNNING → (조회 2회) COMPLETED 또는 FAILED. 실패는 'loanrun-mock-report-fail'='1' 일 때.
+// 생성·조회
+// 상태는 POST 직후 PENDING, 조회 1회 뒤 RUNNING, 2회 뒤 COMPLETED(또는 FAILED)로 바뀐다. 실패는 'loanrun-mock-report-fail'='1' 일 때.
 function advance(state) {
   if (!state.report || state.report.status === 'COMPLETED' || state.report.status === 'FAILED') return
   const polls = (state.report.polls ?? 0) + 1

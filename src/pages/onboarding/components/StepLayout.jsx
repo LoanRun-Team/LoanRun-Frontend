@@ -2,8 +2,8 @@ import Stepper from './Stepper.jsx'
 import InputStepper from './InputStepper.jsx'
 import StepNav from './StepNav.jsx'
 
-// 모든 온보딩 화면의 공통 틀: Stepper wrap + Title block + 본문 + 하단 이동.
-// step.wide: S-03 처럼 넓은 본문(1032) / step.bar: 하단 고정 바 형태의 이동 / footer: 화면이 직접 정하는 하단 바(S-03 요약 바)
+// 모든 온보딩 화면의 공통 틀(스텝 표시, 제목, 본문, 하단 이동).
+// step.wide 는 넓은 본문, step.bar 는 하단 고정 이동 바, footer 는 화면이 직접 정하는 하단 바다.
 export default function StepLayout({ step, heading, children, nav, footer }) {
   const navProps = { ...nav, hidePrev: step.hidePrev }
   return <>

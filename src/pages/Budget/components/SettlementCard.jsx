@@ -1,6 +1,6 @@
 import { monthName, shiftYM, won } from '../budgetModel.js'
 
-// Figma: N월 여유자금 정산 — 여유자금 사용 내역(총 추가 상환·예비비·이월)
+// N월 여유자금 정산. 총 추가 상환, 예비비, 이월 같은 여유자금 사용 내역을 보여 준다.
 export default function SettlementCard({ ym, settlement: s }) {
   return <section className="bd-card" aria-labelledby="bd-settle-title">
     <h3 id="bd-settle-title" className="large">{monthName(ym)} 여유자금 정산</h3>

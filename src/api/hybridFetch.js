@@ -1,9 +1,7 @@
-// hybrid 모드에서 온보딩·예산·위험·리포트 API 를 영역별로 실서버에 연결한다.
-// 백엔드에 컨트롤러가 올라오고 개발 서버가 새 이미지로 바뀐 영역만 VITE_LIVE_FEATURES 에 적는다.
-//   예) VITE_LIVE_FEATURES=budget,finance
-// 값이 없으면 모두 Mock 이고, 서버 실패를 Mock 데이터로 대신하지 않는다(실패는 그대로 화면에 오류로 보인다).
+// hybrid 모드에서 영역별로 실서버를 연결한다. VITE_LIVE_FEATURES 에 쓴 영역만 서버로 가고 나머지는 Mock 이다.
+// 예: VITE_LIVE_FEATURES=budget,finance. 서버가 실패해도 Mock 데이터로 대신하지 않고 오류를 그대로 보여 준다.
 const FEATURES = {
-  // 월 예산 조회·수정, 여유자금 배분, 소득 입금 (대출 목록은 배분 화면이 같이 읽는다)
+  // 월 예산, 여유자금 배분, 소득 입금. 배분 화면이 대출 목록도 읽는다
   budget: [
     ['GET', /^\/api\/budgets\/\d{4}-\d{2}\/$/],
     ['PUT', /^\/api\/budgets\/\d{4}-\d{2}\/$/],

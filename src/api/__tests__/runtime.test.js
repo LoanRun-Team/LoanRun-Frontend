@@ -26,7 +26,7 @@ test('parallel reads share one completed session bootstrap and use cookies witho
 test('unimplemented dashboard and authentication APIs remain blocked before any request',async()=>{
   let calls=0
   const {services}=createRuntime({env,fetchImpl:async()=>{calls++;return ok({})}})
-  for(const action of [()=>services.dashboard(),()=>services.logout(),()=>services.deleteAccount()])await assert.rejects(action,{code:'API_NOT_READY'})
+  for(const action of [()=>services.dashboard(),()=>services.logout()])await assert.rejects(action,{code:'API_NOT_READY'})
   assert.equal(calls,0)
 })
 
@@ -122,7 +122,17 @@ test('hybrid reads schedule and monthly summaries while authentication remains u
   await services.monthly({from_month:'2026-06',to_month:'2026-11',loan_id:9041})
   assert.equal(calls[1],'/api/payments/schedule/?month=2026-11&loan_id=9041')
   assert.equal(calls[2],'/api/payments/monthly-summary/?from_month=2026-06&to_month=2026-11&loan_id=9041')
-  await assert.rejects(()=>services.deleteAccount(),{code:'API_NOT_READY'})
+  await assert.rejects(()=>services.logout('x'),{code:'API_NOT_READY'})
+})
+
+test('account deletion is sent as DELETE /api/users/me/ with confirm:true and the session cookie',async()=>{
+  const calls=[]
+  const {services}=createRuntime({env,fetchImpl:async(url,init)=>{calls.push({url,init});return ok({deleted:true})}})
+  assert.deepEqual(await services.deleteAccount(),{deleted:true})
+  const call=calls.find(c=>c.init?.method==='DELETE')
+  assert.equal(call.url,'/api/users/me/');assert.equal(call.init.credentials,'include')
+  assert.deepEqual(JSON.parse(call.init.body),{confirm:true})
+  assert.equal(new Headers(call.init.headers).has('Idempotency-Key'),false)
 })
 
 test('monthly records retain unobserved months, unknown targets and confirmed zero separately',()=>{

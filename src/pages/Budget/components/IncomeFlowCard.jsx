@@ -1,7 +1,7 @@
 import PieChart from './PieChart.jsx'
 import { incomeTotal, monthName, pieSlices, won } from '../budgetModel.js'
 
-// Figma: N월 소득 흐름 — 금액을 입력하면 원그래프, 입력 전에는 입력 안내.
+// N월 소득 흐름. 금액을 입력하면 원그래프를, 입력 전에는 안내를 보여준다.
 // 지난달(readOnly)은 slices 를 직접 받아 보여주고 금액 입력 버튼을 숨긴다.
 export default function IncomeFlowCard({ ym, month, repayment, readOnly = false, slices, onEnter }) {
   const title = `${monthName(ym)} 소득 흐름`

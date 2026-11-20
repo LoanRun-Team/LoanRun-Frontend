@@ -1,4 +1,4 @@
-// 리포트 생성 중(F4-s)과 생성 실패(F4-e). 실패는 다시 시도(POST force=true)와 홈으로 가기를 준다.
+// 리포트 생성 중과 생성 실패 화면. 실패하면 다시 시도(POST force=true)와 홈으로 가기를 준다.
 export function Generating() {
   return <section className="rp-card rp-state" role="status" aria-live="polite">
     <span className="rp-spinner" aria-hidden="true" />

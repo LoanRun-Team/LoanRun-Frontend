@@ -8,7 +8,7 @@ import { useSavingsBalance } from './useSavingsBalance.js'
 import { useSurplus } from './useSurplus.js'
 import HouseholdPlan from './HouseholdPlan.jsx'
 
-// Figma: S-03m 다중채무 — 대출마다 목표를 정한다. 위쪽 알약으로 대출을 고르고, 아래는 S-03b/S-03c 와 같은 편집기.
+// 다중채무 화면. 대출마다 목표를 정한다. 위쪽 알약으로 대출을 고르고, 아래는 조기 상환·목표 완납일과 같은 편집기를 쓴다.
 export default function MultiLoan({ form, setForm, preview }) {
   const { loans, goal } = form
   const active = loans.find(l => String(l.loan_id) === String(goal.activeLoanId))

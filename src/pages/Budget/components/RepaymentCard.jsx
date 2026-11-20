@@ -1,6 +1,6 @@
 import { dayLabel, fmt, loanName, monthName } from '../budgetModel.js'
 
-// Figma: 이번 달 상환 — 이번 달 상환 예정액(기본 + 추가)과 현재 상환액. detail 이면 상환 일정까지 펼친다(D1-d).
+// 이번 달 상환. 상환 예정액(기본 + 추가)과 현재 상환액을 보여 주고, detail 이면 상환 일정까지 펼친다.
 export function Stat({ label, value, unit = '원', small = false, text }) {
   return <div className={`bd-stat${small ? ' small' : ''}`}>
     <span>{label}</span>

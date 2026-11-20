@@ -3,7 +3,7 @@ import NumberField from './NumberField.jsx'
 import { diffMonths, fmtNumber, fmtWon, todayISO } from '../format.js'
 import { PREFERENCE_LABEL, fmtGap, fmtYM, isLump, planPayload } from '../planModel.js'
 
-// Figma: Card / 계산 결과 — 값 두 개(Stat box) + 목표 비상자금(선택) + (성향 탭이면) 직접 설정 금액
+// 계산 결과 카드. 값 두 개와 목표 비상자금(선택), 성향 탭이면 직접 설정 금액을 보여 준다.
 export function StatBox({ stats }) {
   return <div className="ob-stat-box">
     {stats.map((s, i) => <div key={s.label}>

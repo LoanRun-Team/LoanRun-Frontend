@@ -17,7 +17,7 @@ const emergencyOf = budget => budget.emergency_fund ?? 0
 export const hasEmergency = budget => budget.emergency_fund != null
 
 // 탭 하나의 세 칸(월 여유자금 / 추가 상환 / 기본 상환). sim 은 그 탭의 시뮬레이션 응답(현재·지출 탭은 null).
-// 문구는 Figma E1 선택지(위험 시나리오 탭 4개)를 따른다.
+// 문구는 디자인의 위험 시나리오 탭 4개를 따른다.
 export function scenarioStats(tabKey, data, budget, sim, loans = []) {
   const extra = plannedExtra(budget)
   const baseCash = data.indicators.available_cash
@@ -53,7 +53,7 @@ export function scenarioStats(tabKey, data, budget, sim, loans = []) {
 }
 
 const ceil1 = n => Math.ceil(n * 10 - 1e-9) / 10
-// 어디까지 버틸 수 있나요(Figma "어디까지 버틸 수 있나요 · 상태" 4가지):
+// 어디까지 버틸 수 있나요의 상태 4가지:
 // 정상 / 이미 부족(여유자금 < 0) / 이미 1단계(여유자금 < 추가 상환 목표) / 계산 불가(변동금리 대출 없음, 소득 미입력)
 export function limitGroups(data, budget, loans) {
   const income = budget.monthly_income

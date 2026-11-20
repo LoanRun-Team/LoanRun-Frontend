@@ -1,6 +1,6 @@
 import { previewRows } from '../reportModel.js'
 
-// Figma F4: 반영 미리보기 — 고른 전략을 반영했을 때 현재 계획과 달라지는 값. 저장은 하지 않는다(POST preview).
+// 반영 미리보기. 고른 전략을 반영했을 때 현재 계획과 달라지는 값을 보여 주며 저장은 하지 않는다(POST preview).
 export default function PreviewCard({ candidate, preview, loans, currentCode, onApply, onPlan, applying }) {
   return <section className="rp-card" aria-labelledby="rp-preview-title" aria-live="polite">
     <div className="rp-card-head">

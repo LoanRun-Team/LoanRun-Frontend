@@ -1,4 +1,4 @@
-// Figma F4: 지금 하면 좋은 것 — 제안 카드 3개. 서버가 준 suggestions[] 의 action 에 따라 이동 버튼을 붙인다.
+// 지금 하면 좋은 것. 제안 카드 3개이고, 서버가 준 suggestions[] 의 action 에 따라 이동 버튼을 붙인다.
 // action 값은 명세 예시(REPAYMENT_PLAN)만 확인돼 있고 나머지(BUDGET·RISK)는 화면 이동 대상으로 가정했다.
 const ACTIONS = {
   REPAYMENT_PLAN: { label: '상환 계획 수정하기', href: '/loans/plan' },

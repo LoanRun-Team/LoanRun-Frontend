@@ -1,7 +1,7 @@
 import { fmtWon } from '../format.js'
 import { PREFERENCE_LABEL, draftOf, fmtYM, isLump, modeSummary } from '../planModel.js'
 
-// Figma: Footer(S-03) — 위쪽 가는 primary 선 + 선택 요약 3칸 + "이 계획으로 시작하기"
+// 하단 바. 선택 요약 3칸과 "이 계획으로 시작하기" 버튼.
 export default function PlanFooter({ form, preview, nav }) {
   const loans = form.loans
   const multi = loans.length > 1

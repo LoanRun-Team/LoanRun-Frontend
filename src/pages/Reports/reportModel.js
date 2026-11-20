@@ -19,7 +19,7 @@ export const periodLabel = report => {
   return `분석 기간 최근 ${n >= 6 || n === 0 ? 6 : n}개월`
 }
 
-// "2045.03" — 전략 카드·미리보기 표에 쓰는 완납 예상일
+// 전략 카드·미리보기 표에 쓰는 완납 예상일. 예: "2045.03"
 export const ymDot = iso => (iso ? `${iso.slice(0, 4)}.${iso.slice(5, 7)}` : '-')
 // "2045년 3월"
 export const ymKo = iso => (iso ? `${iso.slice(0, 4)}년 ${Number(iso.slice(5, 7))}월` : '-')
@@ -31,7 +31,7 @@ export const manWon = n => (n == null ? '-' : Math.abs(n) >= 10000 ? `${Math.rou
 export const signedWon = n => `${n < 0 ? '−' : '+'}${won(Math.abs(n))}`
 export const signedMan = n => `${n < 0 ? '−' : '+'}${manWon(Math.abs(n))}`
 
-// ── 완납 가능성 ─────────────────────────────────────────────────────────
+// 완납 가능성
 export const GRADES = [
   { code: 'LOW', label: '낮음' },
   { code: 'MEDIUM', label: '보통' },
@@ -53,7 +53,7 @@ export const payoffHeadline = report => {
   return current?.estimated_payoff_date ? `지금 속도면 ${ymKo(current.estimated_payoff_date)}에 모두 갚을 수 있어요` : '완납일을 계산하지 못했어요'
 }
 
-// ── 상환 전략 ───────────────────────────────────────────────────────────
+// 상환 전략
 // 대출 이름: 종류 이름이 겹치면 은행 이름을 붙인다.
 export function loanLabel(loans, id) {
   const loan = loans.find(l => l.loan_id === id)
@@ -98,12 +98,12 @@ export function situationCells(s) {
 // 현재 적용 중인 전략 이름. 직접 정한 계획(MANUAL)·적용 전(NONE)은 "직접 정한 금액".
 export const currentStrategyName = (strategy, code) => strategy?.candidates?.find(c => c.strategy_code === (code ?? strategy.current_strategy?.strategy_code))?.label ?? '직접 정한 금액'
 
-// ── 반영 미리보기 ───────────────────────────────────────────────────────
+// 반영 미리보기
 const monthsBetween = (from, to) => (Number(to.slice(0, 4)) - Number(from.slice(0, 4))) * 12 + Number(to.slice(5, 7)) - Number(from.slice(5, 7))
 const latestDate = plans => plans.map(p => p.estimated_payoff_date).filter(Boolean).sort().at(-1) ?? null
 const sumOf = (plans, key) => plans.reduce((s, p) => s + (p[key] ?? 0), 0)
 
-// 미리보기 표 행. { key, label, before, after, note } — note 는 변경 폭("2개월 늦어요", "+100,000원").
+// 미리보기 표 행. { key, label, before, after, note }. note 는 변경 폭("2개월 늦어요", "+100,000원").
 export function previewRows(preview, loans, currentCode) {
   const manual = !currentCode || currentCode === 'NONE' || currentCode === 'MANUAL'
   const rows = [{

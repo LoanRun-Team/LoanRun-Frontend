@@ -3,7 +3,7 @@ import { fmtNumber } from '../format.js'
 
 const display = (value, decimals) => (value == null ? '' : decimals ? String(value) : fmtNumber(value))
 
-// Figma: Field / Number — 우측 정렬 입력 + 단위. decimals>0 이면 소수 입력(금리), 아니면 천 단위 쉼표 정수(금액·개월).
+// 오른쪽 정렬 숫자 입력과 단위. decimals>0 이면 소수 입력(금리), 아니면 천 단위 쉼표 정수(금액·개월).
 // 값은 number | null 로 올린다. 입력 중에는 직접 친 문자열을 그대로 두고, 포커스가 없을 때 value 가 바뀌면(계산 결과 등) 표시를 맞춘다.
 export default function NumberField({ label, labelExtra, hideLabel = false, value, onChange, unit, decimals = 0, placeholder = '0', disabled = false, helper, onCommit }) {
   const id = useId()
