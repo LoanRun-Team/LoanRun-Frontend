@@ -1,5 +1,5 @@
 import StatusChip from './StatusChip.jsx'
-import { LEVELS, levelLabel, pct, reasonText } from '../riskModel.js'
+import { LEVELS, levelClass, levelLabel, pct, reasonText } from '../riskModel.js'
 import { won } from '../../Budget/budgetModel.js'
 
 // 점검 행 이름은 Figma E1 기준(선택 지출 한도 사용률 · 변동금리 위험)으로 보여 준다. 변동금리 대출이 없으면 값은 '없음'.
@@ -13,9 +13,9 @@ export default function LevelCard({ data, loans = [], onStrategy }) {
   return <section className="rk-card" aria-labelledby="rk-level-title">
     <div className="rk-grade">
       <h2 id="rk-level-title" className="rk-title">재정 위험도</h2>
-      <p className={`rk-level ${level.toLowerCase()}`}>{levelLabel(level)}</p>
+      <p className={`rk-level ${levelClass(level)}`}>{levelLabel(level)}</p>
       <ol className="rk-gauge" aria-label="재정 위험도 3단계">
-        {LEVELS.map(step => <li key={step.code} className={step.code === level ? `on ${level.toLowerCase()}` : ''} aria-current={step.code === level ? 'step' : undefined}>
+        {LEVELS.map(step => <li key={step.code} className={step.code === level ? `on ${levelClass(level)}` : ''} aria-current={step.code === level ? 'step' : undefined}>
           <i aria-hidden="true" /><span>{step.label}</span>
         </li>)}
       </ol>

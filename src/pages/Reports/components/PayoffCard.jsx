@@ -4,7 +4,7 @@ import { GRADES, gradeLabel, payoffHeadline, scenarioRows } from '../reportModel
 export default function PayoffCard({ report }) {
   const current = report.payoff_scenarios?.find(s => s.type === 'CURRENT')
   if (!current) return <section className="rp-card"><h2>완납 가능성</h2><p className="rp-empty">등록된 대출이 없어 계산할 수 없어요.</p></section>
-  const tone = current.level.toLowerCase()
+  const tone = current.level?.toLowerCase() ?? 'none'
   return <section className="rp-card" aria-labelledby="rp-payoff-title">
     <h2 id="rp-payoff-title">완납 가능성</h2>
     <div className="rp-grade">
@@ -18,7 +18,7 @@ export default function PayoffCard({ report }) {
     <ul className="rp-scenarios">
       {scenarioRows(report).map(row => <li key={row.key}>
         <strong>{row.label}</strong>
-        <span className={`rp-level ${row.level.toLowerCase()}`}>{gradeLabel(row.level)}</span>
+        <span className={`rp-level ${row.level?.toLowerCase() ?? 'none'}`}>{gradeLabel(row.level)}</span>
         <span className="rp-scenario-text">{row.text}</span>
       </li>)}
     </ul>

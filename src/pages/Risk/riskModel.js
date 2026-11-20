@@ -7,6 +7,8 @@ export const LEVELS = [
   { code: 'DANGER', label: '위험' },
 ]
 export const levelLabel = code => LEVELS.find(l => l.code === code)?.label ?? '-'
+// 서버는 데이터가 부족하면 level 을 null 로 준다. 클래스 이름은 값이 없을 때 'none'.
+export const levelClass = code => code?.toLowerCase() ?? 'none'
 
 // 비율(%)은 소수 첫째 자리까지, 값이 없으면 '-'
 export const pct = n => (n == null ? '-' : `${Number(n) < 0 ? '−' : ''}${Math.abs(Number(Number(n).toFixed(1)))}%`)
