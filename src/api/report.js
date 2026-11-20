@@ -9,7 +9,11 @@ export function createReportApi({ request }) {
     getLatest: ({ loanId } = {}, opts) => request('/api/reports/latest/', { query: { loan_id: loanId }, ...opts }),
     // 리포트 생성·재시도. 202 로 접수되며 이후 getReport(report_id) 로 상태를 확인한다. force 는 FAILED 재시도에만 true.
     generate: ({ loanId = null, force = false } = {}, opts) => request('/api/reports/', { method: 'POST', body: { loan_id: loanId, force }, ...opts }),
-    getReport: (reportId, opts) => request(`/api/reports/${reportId}/`, opts),
+    // 서버는 {id} 조회에서 리포트 내용을 바로 돌려주고, latest 는 report 안에 담아 준다. 화면은 latest 모양을 쓰므로 같은 모양으로 맞춘다.
+    getReport: async (reportId, opts) => {
+      const data = await request(`/api/reports/${reportId}/`, opts)
+      return 'report' in data ? data : { report_id: data.report_id, status: data.status, generated_at: data.generated_at, stale: data.stale, report: data, updated_at: data.updated_at }
+    },
     // 상환 전략 후보와 현재 전략. reportId 를 생략하면 최신 완료 리포트 기준.
     getStrategy: ({ reportId } = {}, opts) => request('/api/reports/strategy/', { query: { report_id: reportId }, ...opts }),
     getComparisonSettings: opts => request('/api/reports/comparison-settings/', opts),
