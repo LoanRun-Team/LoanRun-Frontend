@@ -4,7 +4,7 @@ import { onboardingApi } from '../../../../api/index.js'
 import { loanTypeLabels, initialForm } from '../../data.js'
 import { diffMonths, fmtNumber } from '../../format.js'
 
-// Figma: S-01d 대출 요약 — 등록한 대출 목록(수정 / 삭제) + 대출 추가
+// 대출 요약. 등록한 대출 목록(수정, 삭제)과 대출 추가.
 const ym = iso => `${Number(iso.slice(0, 4))}년 ${Number(iso.slice(5, 7))}월`
 const rateWord = { FIXED: '고정', VARIABLE: '변동' }
 

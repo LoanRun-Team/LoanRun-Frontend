@@ -4,7 +4,7 @@ import { draftOf } from '../../planModel.js'
 import { planUpdater } from './usePlanPreview.js'
 import { useSavingsBalance } from './useSavingsBalance.js'
 
-// Figma: S-03c 목표 완납일 설정 — 만기일시 대출은 완납일(또는 월 적립액)을 정해야 계획이 만들어진다
+// 목표 완납일 설정. 만기일시 대출은 완납일(또는 월 적립액)을 정해야 계획이 만들어진다.
 export default function TargetDate({ form, setForm, preview }) {
   const loan = form.loans[0]
   const draft = draftOf(form.goal, loan.loan_id)

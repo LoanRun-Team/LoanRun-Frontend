@@ -26,7 +26,7 @@ export function reasonText(data) {
   return data.level === 'STABLE' ? `${head} · 금리가 올라도 지금 계획을 지킬 수 있어요` : `${head} · 작은 변화에도 계획이 흔들릴 수 있어요`
 }
 
-// ── 다가오는 위험 ───────────────────────────────────────────────────────
+// 다가오는 위험
 const EVENT_LINE = {
   PAYMENT_DUE: '이번 달 납부일이 다가왔어요',
   RATE_RESET: '변동금리 재산정으로 월 납부가 바뀌어요',
@@ -46,7 +46,7 @@ export const upcomingOf = (data, loans) => data.upcoming_events.map(e => {
   }
 })
 
-// ── 지난 6개월 변화 ─────────────────────────────────────────────────────
+// 지난 6개월 변화
 const UNIT = { PCT: '%', PP: '%p', KRW: '원' }
 const signed = n => `${n < 0 ? '−' : '+'}${Math.abs(n)}`
 const REASON = { RATE: '금리', INCOME: '소득', EXPENSE: '선택 지출' }
@@ -74,7 +74,7 @@ export function burdenLine(data) {
   return `${head} · ${data.rate_thresholds.reduce_extra_from === 0 ? '추가 상환이 줄어들 수 있어요' : '추가 상환은 유지 중이에요'}`
 }
 
-// "6개월 중 금리 변동 1번 · 선택 지출 증가 2번 · 소득 감소 1번" — 0번인 항목은 뺀다.
+// "6개월 중 금리 변동 1번 · 선택 지출 증가 2번 · 소득 감소 1번" 0번인 항목은 뺀다.
 export function countsLine(data) {
   const rows = data.six_month_changes
   const parts = [

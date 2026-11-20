@@ -1,4 +1,4 @@
-// Figma: SelectCard / 대출 형태 — default / selected(라디오 채움). 2열 FILL 로 사용.
+// 대출 형태 선택 카드. 2열로 배치하고 선택되면 라디오가 채워진다.
 import radioSelected from '../../../assets/onboarding/radio-selected.svg'
 
 export default function SelectCard({ label, icon, selected, onSelect, name }) {

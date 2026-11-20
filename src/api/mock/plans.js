@@ -1,5 +1,5 @@
-// 상환 계획·재정정보·온보딩 완료 mock. 요청/응답 필드는 Notion 명세(상환 계획 시뮬레이션, 저장·수정, 기본 재정정보 등록·수정, 온보딩 완료)와 같다.
-// 계산식은 화면 확인용 근사치이며 실제 계산은 서버 엔진이 한다.
+// 상환 계획·재정정보·온보딩 완료 mock. 필드는 Notion 명세와 같다.
+// 계산식은 화면 확인용 근사치이고 실제 계산은 서버가 한다.
 import { listLoans } from './loans.js'
 
 const KEY = 'loanrun-mock-onboarding'
@@ -37,7 +37,7 @@ function householdCap() {
   const scheduled = listLoans().reduce((sum, l) => sum + l.estimated_monthly_payment, 0)
   return Math.max(0, (p.monthly_income ?? 0) - scheduled - (p.fixed_essential_expenses ?? 0) - (p.variable_essential_expenses ?? 0) - (p.discretionary_expenses ?? 0) - (p.savings ?? 0))
 }
-// 우선순위: 변동금리 중 잔액이 큰 순 → 고정금리 중 금리가 높은 순. 성향 금액은 1순위부터 잔액 한도까지 채운다.
+// 우선순위는 변동금리 중 잔액이 큰 순, 그다음 고정금리 중 금리가 높은 순이다. 성향 금액은 1순위부터 잔액 한도까지 채운다.
 function allocatePreference(loans, preference) {
   let left = Math.round(householdCap() * (PREFERENCE_PCT[preference] ?? 0) / 100)
   const order = loans.filter(l => l.repayment_category !== 'LUMP_SUM').sort((a, b) => (a.rate_type === b.rate_type ? (a.rate_type === 'VARIABLE' ? b.remaining_principal - a.remaining_principal : b.annual_rate - a.annual_rate) : (a.rate_type === 'VARIABLE' ? -1 : 1)))

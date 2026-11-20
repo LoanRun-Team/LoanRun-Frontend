@@ -1,8 +1,6 @@
-// 온보딩에서 쓰는 API. 경로·메서드는 URL 명세서(2026-11-15 3차 확정) 그대로이며, 마지막 슬래시를 유지한다.
-// 화면 폼 값이 API snake_case 와 같은 키라서 여기서는 가공하지 않고 그대로 주고받는다.
-// 아직 상세 스펙을 읽지 않은 엔드포인트(온보딩 진행/완료, 재정정보, 상환 계획)는 해당 화면을 구현할 때 확인한다.
+// 온보딩 API. 경로는 URL 명세서 3차 확정본을 따르고 마지막 슬래시를 유지한다.
+// 화면 폼 값이 API 의 snake_case 키와 같아서 가공하지 않고 그대로 주고받는다.
 //
-// 사용: const onboardingApi = createOnboardingApi(api)  // api = createApi(...) 가 반환한 클라이언트
 export function createOnboardingApi({ request }) {
   return {
     // 온보딩 재진입 및 완료 상태 확인

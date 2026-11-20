@@ -1,6 +1,6 @@
 import { compareLabel } from '../reportModel.js'
 
-// Figma F4: CompareBars — 세로 막대(또래 | 나). 막대 높이 = 120 × 값 ÷ 두 값 중 큰 값.
+// 세로 막대 비교(또래, 나). 막대 높이는 120 × 값 ÷ 두 값 중 큰 값이다.
 function CompareBars({ title, peer, mine, format }) {
   const max = Math.max(peer, mine) || 1
   const bar = (value, who) => <div className={`rp-bar ${who}`}>
@@ -14,7 +14,7 @@ function CompareBars({ title, peer, mine, format }) {
   </div>
 }
 
-// Figma F4: Card / 갚는 방식 비교. 소득 대비 월 상환 비율과 추가 상환 횟수를 또래(가상 예시)와 비교한다. 비교가 DEMO 일 때만 보인다.
+// 갚는 방식 비교. 소득 대비 월 상환 비율과 추가 상환 횟수를 또래(가상 예시)와 비교하고, 비교가 DEMO 일 때만 보인다.
 export default function WaysCard({ comparison }) {
   const ratioGap = Math.abs(comparison.monthly_debt_service_ratio_pct - comparison.peer_monthly_debt_service_ratio_pct)
   const countGap = Math.abs(comparison.extra_payment_count_6m - comparison.peer_extra_payment_count_6m)

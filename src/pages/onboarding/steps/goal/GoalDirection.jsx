@@ -7,7 +7,7 @@ import { fmtNumber } from '../../format.js'
 import { draftOf, fmtYM } from '../../planModel.js'
 import { planUpdater } from './usePlanPreview.js'
 
-// Figma: S-03a 목표 방향 선택 / S-03a-1 만기까지 · 결과 확인
+// 목표 방향 선택과 "만기까지" 결과 확인.
 // "만기까지"를 고르면 오른쪽에 계획 요약이 나오고 바로 시작할 수 있다. "일찍 갚고 싶어요"는 조기 상환 설정(S-03b)으로 넘어간다.
 export default function GoalDirection({ form, setForm, jump, preview }) {
   const loan = form.loans[0]

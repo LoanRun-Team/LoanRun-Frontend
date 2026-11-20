@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react'
 import calendar from '../../../assets/onboarding/icon-calendar.svg'
 import { fmtDate, maskDate, parseMaskedDate } from '../format.js'
 
-// Figma: 실행일 / 만기일 — "2023. 03. 15" 모양 입력 + 달력 아이콘. 달력은 브라우저 기본 날짜 선택기를 연다.
+// 실행일·만기일 입력. "2023. 03. 15" 모양이고 달력 아이콘을 누르면 브라우저 기본 날짜 선택기를 연다.
 // readOnly 는 자동 계산된 값(만기일)을 보여줄 때 쓰는 비활성 표시. 값은 'YYYY-MM-DD' | null.
 export default function DateField({ label, labelExtra, value, onChange, max, readOnly = false, placeholder = 'YYYY. MM. DD' }) {
   const id = useId()

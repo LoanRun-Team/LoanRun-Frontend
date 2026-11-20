@@ -23,7 +23,7 @@ function Dialog({ title, onClose, wide, children }) {
   </div>
 }
 
-// Figma F4-a: 이 전략으로 계획을 바꿀까요? 변경 전·후 표를 보여 주고 "반영하기"로 PUT 한다.
+// 전략 반영 확인창. 변경 전·후 표를 보여 주고 "반영하기"를 누르면 PUT 한다.
 export function ConfirmDialog({ candidate, preview, loans, currentCode, busy, error, onCancel, onConfirm }) {
   const rows = previewRows(preview, loans, currentCode).filter(r => r.key !== 'interest')
   const ordered = [...rows.filter(r => r.key !== 'payoff'), ...rows.filter(r => r.key === 'payoff')]
@@ -43,7 +43,7 @@ export function ConfirmDialog({ candidate, preview, loans, currentCode, busy, er
   </Dialog>
 }
 
-// Figma F4-a-c: 미리보기 뒤에 정보가 바뀌어 409 STRATEGY_STALE 가 오면, 최신 정보로 다시 계산하게 한다.
+// 미리보기 뒤에 정보가 바뀌어 409 STRATEGY_STALE 가 오면 최신 정보로 다시 계산하게 한다.
 export function RecalcDialog({ onRecalc, onClose }) {
   return <Dialog title="정보가 변경되어 다시 확인이 필요해요" onClose={onClose}>
     <p className="rp-dialog-text">미리보기 이후 대출·재정 정보가 바뀌었어요. 최신 정보로 다시 계산한 뒤 반영할 수 있어요.</p>
@@ -51,7 +51,7 @@ export function RecalcDialog({ onRecalc, onClose }) {
   </Dialog>
 }
 
-// Figma F4-d: 비교 기준 변경. 연령대·소득 분위를 고르고 적용하면 PATCH 후 리포트를 다시 만든다(비교 기준이 바뀌면 stale).
+// 비교 기준 변경. 연령대·소득 분위를 고르고 적용하면 PATCH 한 뒤 리포트를 다시 만든다(비교 기준이 바뀌면 stale).
 export function CompareDialog({ onClose, onSaved }) {
   const [form, setForm] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -95,7 +95,7 @@ export function CompareDialog({ onClose, onSaved }) {
   </Dialog>
 }
 
-// Figma F4-free: PRO 가 아니면(403 PRO_REQUIRED) 리포트 위에 안내를 띄운다. PRO 결제 화면은 아직 없어 "시작하기"는 안내만 한다.
+// PRO 가 아니면(403 PRO_REQUIRED) 리포트 위에 안내를 띄운다. 결제 화면은 아직 없어서 "시작하기"는 안내만 한다.
 export function LockedDialog({ onStart, onLater }) {
   return <Dialog title="상환 리포트는 PRO에서 볼 수 있어요" onClose={onLater}>
     <p className="rp-dialog-text">내 상환 속도와 완납 가능성, 나에게 맞는 상환 전략을 한 번에 확인해 보세요.</p>

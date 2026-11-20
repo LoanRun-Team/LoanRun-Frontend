@@ -26,7 +26,7 @@ export function baseSchedule(loans, ym) {
 }
 export const nextPayDay = (schedule, today) => schedule.find(r => r.day > today)?.day ?? null
 
-// ── 월별 예산 API ↔ 화면 모델 ───────────────────────────────────────────
+// 월별 예산 API ↔ 화면 모델
 // month = {
 //   ym, entered, income_type: 'REGULAR'|'IRREGULAR', base_income, extras: [{id, day, amount}], receipts: [{id, day, amount}],
 //   fixed, variable, discretionary, savings, repayment(정기 상환 예정), repaid(현재 상환액), available(여유자금),
@@ -99,7 +99,7 @@ export const pieSlices = (m, repayment) => [
   { key: 'surplus', label: '여유자금', value: Math.max(0, surplusOf(m, repayment)) },
 ].map(s => ({ ...s, color: SLICE_COLORS[s.key] }))
 
-// ── 여유자금 분할 ──────────────────────────────────────────────────────
+// 여유자금 분할
 export const STEP = 10000
 const TYPE_LABEL = { CREDIT: '신용대출', MORTGAGE: '주택담보대출', JEONSE: '전세자금대출', STUDENT: '학자금대출', AUTO: '자동차대출', OTHER: '기타' }
 export const loanName = loan => TYPE_LABEL[loan.loan_type] ?? loan.loan_type
@@ -133,7 +133,7 @@ export function payoffYM(loans, extras = {}) {
   return months.length ? shiftYM(now, Math.max(...months)) : null
 }
 
-// ── 지난달(읽기 전용) ───────────────────────────────────────────────────
+// 지난달(읽기 전용)
 // 월별 예산 API 가 주는 값만으로 구성한다(상환액·저축·필수·선택 지출·여유자금과 그 배분).
 export const pastSlices = m => [
   { key: 'repay', label: '상환', value: m.repaid || m.repayment, color: SLICE_COLORS.repay },

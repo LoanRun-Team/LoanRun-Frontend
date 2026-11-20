@@ -11,7 +11,7 @@ import { buildLoanBody, withDefaults } from '../../loanForm.js'
 import { addMonths, fmtNumber, todayISO } from '../../format.js'
 import { feeChoices, feeLoanTypes, feeMethods, methodShort, paymentDayOptions, postGraceMethods, prepaymentPolicies, rateTypeLabel, repaymentMethods, resetMonthOptions } from '../../data.js'
 
-// Figma: S-01c 상환 방식 — 상품 기본 정보(참고용) + 내 대출 정보
+// 상환 방식. 상품 기본 정보(참고용)와 내 대출 정보.
 // 상환 방식에 따라 보이는 필드가 달라진다: 분할형은 추가 상환 후 약정 변경 방식, 주택담보·전세자금은 중도상환수수료, 만기일시는 이자 납부일.
 // 입력이 유효하면 기본 월 상환액을 /api/loans/preview/ 로 계산해 "다음 회차 납부 예정액"의 안내값으로 보여준다.
 export default function RepaymentInfo({ form, setForm }) {

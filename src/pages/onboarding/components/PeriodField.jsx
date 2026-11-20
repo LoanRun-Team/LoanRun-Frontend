@@ -1,6 +1,6 @@
 import NumberField from './NumberField.jsx'
 
-// Figma: Field / Period — 년 + 개월 두 칸.
+// 년·개월 두 칸 입력.
 export default function PeriodField({ label, years, months, onChange }) {
   return <div className="ob-field">
     <span className="ob-label">{label}</span>

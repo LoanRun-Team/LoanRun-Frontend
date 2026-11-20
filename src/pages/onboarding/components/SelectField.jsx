@@ -3,7 +3,7 @@ import chevronDown from '../../../assets/onboarding/icon-chevron-down.svg'
 import check from '../../../assets/onboarding/icon-check.svg'
 import chevronRight from '../../../assets/onboarding/icon-chevron-right.svg'
 
-// Figma: Dropdown (closed / open / disabled) + Option (default / selected) + 메뉴 하단 직접 입력.
+// 드롭다운(닫힘, 열림, 비활성)과 옵션, 메뉴 하단 직접 입력.
 // options: [{ value, label }], value: 선택된 option.value, footerAction: { label, onClick }
 export default function SelectField({ label, hideLabel = false, options = [], value, onChange, placeholder = '선택해 주세요', disabled = false, emptyText = '선택할 수 있는 항목이 없어요', footerAction, helper }) {
   const [openState, setOpen] = useState(false)

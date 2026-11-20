@@ -2,7 +2,7 @@ import iconLock from '../../../assets/risk/icon-lock.svg'
 import iconCheck from '../../../assets/risk/icon-check.svg'
 import iconInfo from '../../../assets/onboarding/icon-info.svg'
 
-// Figma E2: PRO 가 아닐 때(403 PRO_REQUIRED)의 화면. 뒤에 흐리게 보이는 미리보기는 화면에 박아 둔 예시이고, 위에 PRO 안내가 뜬다.
+// PRO 가 아닐 때(403 PRO_REQUIRED)의 화면. 뒤에 흐리게 보이는 미리보기는 화면에 박아 둔 예시이고, 위에 PRO 안내가 뜬다.
 const PREVIEW_ROWS = [
   { label: '소득 대비 상환', value: '25.7%', chip: '양호', tone: 'stable' },
   { label: '여유자금', value: '120,000원', chip: '주의', tone: 'caution' },

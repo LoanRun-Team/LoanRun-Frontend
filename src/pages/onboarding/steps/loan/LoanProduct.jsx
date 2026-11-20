@@ -5,7 +5,7 @@ import TextField from '../../components/TextField.jsx'
 import { onboardingApi } from '../../../../api/index.js'
 import { useRequest } from '../../useRequest.js'
 
-// Figma: S-01b 대출 종류와 상품 / S-01b-open 드롭다운 열림
+// 대출 종류와 상품 선택.
 // 의존 순서: 대출 종류 → 은행 → 상품명. 앞 단계를 바꾸면 뒤 선택은 초기화된다.
 // "직접 입력" 모드: 은행명·상품명을 텍스트로 받는다(API: product_id=null, institution_name·product_name 필수).
 export default function LoanProduct({ form, setForm }) {

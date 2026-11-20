@@ -1,6 +1,6 @@
 import { upcomingOf } from '../riskModel.js'
 
-// Figma: Card / 다가오는 위험 — 날짜 칩(D-day · 날짜), 대출 이름, 한 줄 설명. 30일 이내(is_imminent)면 이름 옆에 점을 찍는다.
+// 다가오는 위험. 날짜 칩(D-day, 날짜), 대출 이름, 한 줄 설명을 보여 주고 30일 이내(is_imminent)면 이름 옆에 점을 찍는다.
 export default function UpcomingCard({ data, loans }) {
   const alerts = upcomingOf(data, loans)
   return <section className="rk-card" aria-labelledby="rk-upcoming-title">

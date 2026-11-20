@@ -8,7 +8,7 @@ import { PREFERENCES, preferenceText } from '../../preferences.js'
 import { fmtNumber, fmtWon } from '../../format.js'
 import { PREFERENCE_LABEL, draftOf, fmtGap, fmtYM, isLump, loanChipLabel } from '../../planModel.js'
 
-// Figma: S-03m-1 다중채무 · 전체 — 가구 단위로 상환 성향·완납일·추가 상환액을 정하면 대출별로 나눠 배분한다.
+// 다중채무 전체 탭. 가구 단위로 상환 성향·완납일·추가 상환액을 정하면 대출별로 나눠 배분한다.
 // 만기일시(적립) 대출은 대출별 탭에서 따로 정하므로 여기서는 일괄 적용하지 않는다.
 const TABS = [{ id: 'preference', label: '상환 성향으로' }, { id: 'date', label: '완납일 기준' }, { id: 'extra', label: '추가 상환액 기준' }]
 const thisYear = new Date().getFullYear()

@@ -2,7 +2,7 @@ import dotIncrease from '../../../assets/risk/dot-increase.svg'
 import dotDecrease from '../../../assets/risk/dot-decrease.svg'
 import { burdenLine, changeOf, countsLine } from '../riskModel.js'
 
-// Figma: Card / 위험 기록 — 지난 6개월 동안 월 부담이 바뀐 이벤트(날짜·무슨 일이 있었나·결과)와 요약.
+// 위험 기록. 지난 6개월 동안 월 부담이 바뀐 이벤트(날짜, 무슨 일이 있었나, 결과)와 요약을 보여 준다.
 export default function ChangesCard({ data }) {
   const changes = data.six_month_changes.map(changeOf)
   return <section className="rk-card" aria-labelledby="rk-changes-title">

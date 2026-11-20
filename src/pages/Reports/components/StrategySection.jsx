@@ -2,7 +2,7 @@ import radioOn from '../../../assets/reports/radio-on.svg'
 import { won } from '../../Budget/budgetModel.js'
 import { allocationLine, savingOf, situationCells, ymDot } from '../reportModel.js'
 
-// Figma F4: 상환 전략 — 지금 내 상황 3칸, 전략 선택(설명 카드 + 후보 카드). 후보를 고르기 전에는 아무 카드도 선택하지 않는다(F4-0).
+// 상환 전략. 지금 내 상황 3칸과 전략 선택(설명 카드, 후보 카드)을 보여 주고, 후보를 고르기 전에는 아무 카드도 선택하지 않는다.
 function Situation({ situation }) {
   return <div className="rp-sub">
     <h3>지금 내 상황</h3>
@@ -40,7 +40,7 @@ function Candidate({ candidate, loans, recommended, selected, current, onSelect 
   </button>
 }
 
-// 후보를 계산할 수 없을 때(F4-v): 만기 상환자금이 부족해 추천을 보류한다.
+// 후보를 계산할 수 없을 때. 만기 상환자금이 부족해 추천을 보류한다.
 function Unrecommended({ situation, onPlan, onBudget }) {
   return <div className="rp-card rp-unrec">
     <h3>지금은 추가 상환 전략을 추천하기 어려워요</h3>

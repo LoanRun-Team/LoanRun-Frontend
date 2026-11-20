@@ -2,7 +2,7 @@ import StepCard from '../../components/StepCard.jsx'
 import NumberField from '../../components/NumberField.jsx'
 import Banner from '../../components/Banner.jsx'
 
-// Figma: S-02B 생활비·저축 (필드 이름은 PUT /api/budgets/profile/ 요청 본문과 같다)
+// 생활비·저축 입력. 필드 이름은 PUT /api/budgets/profile/ 요청 본문과 같다.
 const FIELDS = [
   { key: 'fixed_essential_expenses', label: '고정 필수 지출(월세·보험료·통신비)', placeholder: '예: 700,000' },
   { key: 'variable_essential_expenses', label: '변동 필수 지출(식비·교통비·생필품)', placeholder: '예: 400,000' },
